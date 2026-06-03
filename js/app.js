@@ -1,14 +1,13 @@
 // ============================================================
-// Organizador de Horarios Universitarios v2
+// Organizador de Horarios Universitarios v3
 // ============================================================
-// FEATURES:
-// - Per-day custom schedule (each day can have different hours)
-// - Conflict detection per day/time
-// - 18 credit limit
-// - Drag & drop (mouse + touch)
-// - 3 schedule recommendations
-// - Export to text
-// - localStorage persistence
+// Improvements:
+// 1. Multi-course subjects (one subject, many course offerings)
+// 2. Multi-disciplinary personal schedule (subjects from different courses)
+// 3. Conflict detection only on personal schedule
+// 4. Register subjects without adding to personal schedule
+// 5. Smart recommendations using all offerings
+// 6. JSON export/import
 // ============================================================
 
 const App = (() => {
@@ -17,39 +16,34 @@ const App = (() => {
     const START_HOUR = 7;
     const END_HOUR = 22;
     const MAX_CREDITS = 18;
-
-    // Course code mapping: last 2 digits determine default time
-    const COURSE_TIMES = {
-        '01': { start: 7, end: 9 },
-        '02': { start: 10, end: 13 },
-        '03': { start: 14, end: 16 },
-        '04': { start: 17, end: 19 },
-        '05': { start: 20, end: 22 },
-    };
+    const STORAGE_KEY = 'oh_data_v3';
 
     // ---- State ----
-    let subjects = [];
+    let subjects = [];       // All registered subjects
+    let currentTab = 'registered'; // 'registered' | 'personal'
 
-    // ---- DOM Shortcuts ----
+    // ---- DOM ----
     const $ = id => document.getElementById(id);
 
     const DOM = {
-        grid:             $('scheduleGrid'),
-        subjectsList:     $('subjectsList'),
-        totalCredits:     $('totalCredits'),
-        subjectCount:     $('subjectCount'),
-        modal:            $('subjectModal'),
-        modalTitle:       $('modalTitle'),
-        recModal:         $('recommendationsModal'),
-        recBody:          $('recommendationsBody'),
-        form:             $('subjectForm'),
-        name:             $('subjectName'),
-        course:           $('subjectCourse'),
-        credits:          $('subjectCredits'),
-        color:            $('subjectColor'),
-        editId:           $('editId'),
-        dayScheduleList:  $('dayScheduleList'),
-        toastContainer:   $('toastContainer'),
+        grid:               $('scheduleGrid'),
+        subjectsList:       $('subjectsList'),
+        totalCredits:       $('totalCredits'),
+        subjectCount:       $('subjectCount'),
+        modal:              $('subjectModal'),
+        modalTitle:         $('modalTitle'),
+        offeringModal:      $('offeringModal'),
+        offeringModalBody:  $('offeringModalBody'),
+        recModal:           $('recommendationsModal'),
+        recBody:            $('recommendationsBody'),
+        form:               $('subjectForm'),
+        name:               $('subjectName'),
+        credits:            $('subjectCredits'),
+        color:              $('subjectColor'),
+        editId:             $('editId'),
+        offeringsContainer: $('offeringsContainer'),
+        toastContainer:     $('toastContainer'),
+        importFileInput:    $('importFileInput'),
     };
 
     // ============================================================
@@ -61,10 +55,10 @@ const App = (() => {
         return `${h - 12}:00 PM`;
     }
 
-    function getTimeOptions() {
+    function timeOpts() {
         const opts = [];
         for (let h = START_HOUR; h <= END_HOUR; h++) {
-            opts.push({ value: h, label: getTimeLabel(h) });
+            opts.push({ v: h, l: getTimeLabel(h) });
         }
         return opts;
     }
@@ -73,15 +67,11 @@ const App = (() => {
         return Date.now().toString(36) + Math.random().toString(36).slice(2, 6);
     }
 
-    function parseCourseCode(code) {
-        if (!code || code.length < 3) return null;
-        const suffix = code.slice(-2);
-        return COURSE_TIMES[suffix] || null;
-    }
-
     function timesOverlap(s1, e1, s2, e2) {
         return (s1 * 60) < (e2 * 60) && (s2 * 60) < (e1 * 60);
     }
+
+    function clone(obj) { return JSON.parse(JSON.stringify(obj)); }
 
     // ============================================================
     // TOAST
@@ -101,156 +91,265 @@ const App = (() => {
     }
 
     // ============================================================
-    // LOCAL STORAGE
+    // STORAGE
     // ============================================================
-    function loadSubjects() {
+    function loadData() {
         try {
-            const d = localStorage.getItem('oh_subjects');
-            subjects = d ? JSON.parse(d) : [];
+            const d = localStorage.getItem(STORAGE_KEY);
+            if (d) {
+                const parsed = JSON.parse(d);
+                subjects = parsed.subjects || [];
+                // migration: ensure personalSchedule array exists
+                subjects.forEach(s => {
+                    if (!s.personalSchedule) s.personalSchedule = [];
+                });
+            } else {
+                subjects = [];
+            }
         } catch (e) { subjects = []; }
         return subjects;
     }
 
-    function saveSubjects() {
-        localStorage.setItem('oh_subjects', JSON.stringify(subjects));
+    function saveData() {
+        localStorage.setItem(STORAGE_KEY, JSON.stringify({ subjects }));
     }
 
     function getTotalCredits() {
-        return subjects.reduce((sum, s) => sum + s.credits, 0);
+        // Count credits only for subjects that have personal schedule entries
+        const usedIds = new Set();
+        subjects.forEach(s => {
+            if (s.personalSchedule && s.personalSchedule.length > 0) usedIds.add(s.id);
+        });
+        return subjects.filter(s => usedIds.has(s.id)).reduce((sum, s) => sum + s.credits, 0);
+    }
+
+    function hasPersonalEntries(subject) {
+        return subject.personalSchedule && subject.personalSchedule.length > 0;
     }
 
     // ============================================================
-    // CONFLICT DETECTION (per-day)
+    // CONFLICT DETECTION (personal schedule only)
     // ============================================================
-    function checkConflict(subject, list) {
-        // subject.schedules = { "Lun": { start, end }, "Mar": { start, end }, ... }
-        const sched = subject.schedules || {};
-        for (const day in sched) {
-            if (!sched[day]) continue;
-            const s1 = sched[day].start;
-            const e1 = sched[day].end;
-            for (const other of list) {
-                if (other.id === subject.id) continue;
-                const oSched = other.schedules || {};
-                const oDay = oSched[day];
-                if (!oDay) continue;
-                if (timesOverlap(s1, e1, oDay.start, oDay.end)) return true;
+    function checkPersonalConflict(entries, excludeSubjectId) {
+        for (let i = 0; i < entries.length; i++) {
+            for (let j = i + 1; j < entries.length; j++) {
+                const a = entries[i], b = entries[j];
+                if (a.day !== b.day) continue;
+                if (a.subjectId === b.subjectId) continue;
+                if (excludeSubjectId && (a.subjectId === excludeSubjectId || b.subjectId === excludeSubjectId)) continue;
+                if (timesOverlap(a.start, a.end, b.start, b.end)) return true;
             }
         }
         return false;
     }
 
-    // ============================================================
-    // FORM: PER-DAY SCHEDULE ROWS
-    // ============================================================
-    const timeOpts = getTimeOptions();
-
-    function buildStartOpts(selected) {
-        let h = '';
-        for (let i = 0; i < timeOpts.length - 1; i++) {
-            const sel = timeOpts[i].value === selected ? 'selected' : '';
-            h += `<option value="${timeOpts[i].value}" ${sel}>${timeOpts[i].label}</option>`;
-        }
-        return h;
-    }
-
-    function buildEndOpts(selected) {
-        let h = '';
-        for (let i = 1; i < timeOpts.length; i++) {
-            const sel = timeOpts[i].value === selected ? 'selected' : '';
-            h += `<option value="${timeOpts[i].value}" ${sel}>${timeOpts[i].label}</option>`;
-        }
-        return h;
-    }
-
-    function renderDayScheduleRows(schedules) {
-        // schedules = { "Lun": { start: 7, end: 9 }, ... } or null for new
-        const defaultS = { start: 7, end: 9 };
-        let html = '';
-        DAYS.forEach(day => {
-            const sd = schedules ? (schedules[day] || null) : null;
-            const s = sd || defaultS;
-            const checked = sd ? 'checked' : '';
-            html += `
-                <div class="day-sched-row" data-day="${day}">
-                    <label class="day-sched-check">
-                        <input type="checkbox" class="day-cb" value="${day}" ${checked}>
-                        <span class="day-label">${day}</span>
-                    </label>
-                    <div class="day-sched-times">
-                        <select class="day-start" ${sd ? '' : 'disabled'}>
-                            ${buildStartOpts(s.start)}
-                        </select>
-                        <span class="day-sep">a</span>
-                        <select class="day-end" ${sd ? '' : 'disabled'}>
-                            ${buildEndOpts(s.end)}
-                        </select>
-                    </div>
-                    <button type="button" class="btn-icon day-copy" title="Copiar horario a todos los días"><i class="fas fa-copy"></i></button>
-                </div>
-            `;
-        });
-        DOM.dayScheduleList.innerHTML = html;
-
-        // Toggle enable/disable time selects based on checkbox
-        DOM.dayScheduleList.querySelectorAll('.day-cb').forEach(cb => {
-            cb.addEventListener('change', () => {
-                const row = cb.closest('.day-sched-row');
-                const selects = row.querySelectorAll('.day-start, .day-end');
-                selects.forEach(s => s.disabled = !cb.checked);
-                // If newly checked, set default times
-                if (cb.checked) {
-                    const st = row.querySelector('.day-start');
-                    const en = row.querySelector('.day-end');
-                    // Try to parse from course code
-                    const courseVal = DOM.course.value.trim();
-                    const parsed = parseCourseCode(courseVal);
-                    if (parsed) {
-                        st.value = parsed.start;
-                        en.value = parsed.end;
-                    }
-                }
-            });
-        });
-
-        // Copy button
-        DOM.dayScheduleList.querySelectorAll('.day-copy').forEach(btn => {
-            btn.addEventListener('click', () => {
-                const row = btn.closest('.day-sched-row');
-                const cb = row.querySelector('.day-cb');
-                if (!cb.checked) {
-                    showToast('Activa este día primero', 'warning');
-                    return;
-                }
-                const srcStart = row.querySelector('.day-start').value;
-                const srcEnd = row.querySelector('.day-end').value;
-                DOM.dayScheduleList.querySelectorAll('.day-sched-row').forEach(r => {
-                    const rCb = r.querySelector('.day-cb');
-                    rCb.checked = true;
-                    const st = r.querySelector('.day-start');
-                    const en = r.querySelector('.day-end');
-                    st.disabled = false;
-                    en.disabled = false;
-                    st.value = srcStart;
-                    en.value = srcEnd;
+    function getAllPersonalEntries() {
+        const entries = [];
+        subjects.forEach(sub => {
+            if (sub.personalSchedule) {
+                sub.personalSchedule.forEach(e => {
+                    entries.push({ ...e, subjectId: sub.id });
                 });
-                showToast('Horario copiado a todos los días', 'info');
+            }
+        });
+        return entries;
+    }
+
+    function hasConflictWithPersonal(newEntries, excludeSubjectId) {
+        const all = getAllPersonalEntries().filter(e => e.subjectId !== excludeSubjectId);
+        const combined = [...all, ...newEntries];
+        return checkPersonalConflict(combined, excludeSubjectId);
+    }
+
+    // ============================================================
+    // OFFERING SELECTOR MODAL
+    // ============================================================
+    function showOfferingSelector(subjectId, dayIndex, rowIndex) {
+        const sub = subjects.find(s => s.id === subjectId);
+        if (!sub) return;
+
+        DOM.offeringModalBody.innerHTML = '';
+        const p = document.createElement('p');
+        p.style.marginBottom = '12px';
+        p.innerHTML = `<strong>${sub.name}</strong> - Selecciona el curso y horario:`;
+        DOM.offeringModalBody.appendChild(p);
+
+        if (!sub.offerings || sub.offerings.length === 0) {
+            DOM.offeringModalBody.innerHTML += '<p class="text-small" style="color:var(--danger)">Esta materia no tiene cursos configurados</p>';
+            DOM.offeringModal.classList.add('active');
+            return;
+        }
+
+        sub.offerings.forEach((off, idx) => {
+            const days = Object.keys(off.schedules || {}).filter(d => off.schedules[d]);
+            if (days.length === 0) return;
+
+            const btn = document.createElement('button');
+            btn.className = 'btn btn-outline';
+            btn.style.width = '100%';
+            btn.style.textAlign = 'left';
+            btn.style.marginBottom = '8px';
+            btn.style.padding = '12px';
+            btn.style.borderRadius = '8px';
+            btn.style.justifyContent = 'flex-start';
+            btn.style.flexWrap = 'wrap';
+            btn.style.gap = '6px';
+
+            let html = `<strong style="width:100%">Curso ${off.courseCode}</strong>`;
+            days.forEach(day => {
+                const s = off.schedules[day];
+                html += `<span class="rec-subject" style="background:${sub.color};font-size:0.7rem;padding:2px 6px;margin:0">${day} ${getTimeLabel(s.start)}-${getTimeLabel(s.end)}</span>`;
             });
+            btn.innerHTML = html;
+
+            btn.addEventListener('click', () => {
+                DOM.offeringModal.classList.remove('active');
+                // Place on grid using first day of this offering
+                const targetDay = DAYS[dayIndex];
+                // Check if this offering has the target day
+                if (off.schedules[targetDay]) {
+                    const s = off.schedules[targetDay];
+                    const newStart = rowIndex + START_HOUR;
+                    const duration = s.end - s.start;
+                    const newEnd = newStart + duration;
+                    if (newEnd > END_HOUR) {
+                        showToast('Excede el límite de las 10 PM', 'error');
+                        return;
+                    }
+                    // Build entry for conflict check
+                    const entry = { subjectId, day: targetDay, start: newStart, end: newEnd };
+                    if (hasConflictWithPersonal([entry])) {
+                        showToast(`"${sub.name}" se cruza con otra materia en ${targetDay}`, 'error');
+                        return;
+                    }
+                    // Add to personal schedule
+                    if (!sub.personalSchedule) sub.personalSchedule = [];
+                    // Remove existing entries for this subject on this day
+                    sub.personalSchedule = sub.personalSchedule.filter(e => e.day !== targetDay);
+                    sub.personalSchedule.push({ offeringIndex: idx, day: targetDay, start: newStart, end: newEnd });
+                    saveData();
+                    renderAll();
+                    showToast(`${sub.name} agregado a ${targetDay} ${getTimeLabel(newStart)}`, 'success');
+                } else {
+                    // Place on first available day of the offering
+                    const availDay = days[0];
+                    const s = off.schedules[availDay];
+                    if (!sub.personalSchedule) sub.personalSchedule = [];
+                    sub.personalSchedule.push({ offeringIndex: idx, day: availDay, start: s.start, end: s.end });
+                    saveData();
+                    renderAll();
+                    showToast(`${sub.name} agregado en ${availDay} (${getTimeLabel(s.start)}-${getTimeLabel(s.end)})`, 'success');
+                }
+            });
+
+            DOM.offeringModalBody.appendChild(btn);
+        });
+
+        DOM.offeringModal.classList.add('active');
+    }
+
+    // ============================================================
+    // FORM: OFFERINGS (Course blocks)
+    // ============================================================
+    function renderOfferings(offerings) {
+        DOM.offeringsContainer.innerHTML = '';
+        if (!offerings || offerings.length === 0) {
+            offerings = [{ courseCode: '', schedules: {} }];
+        }
+
+        const opts = timeOpts();
+        const startOpts = opts.slice(0, -1).map(o =>
+            `<option value="${o.v}">${o.l}</option>`
+        ).join('');
+        const endOpts = opts.slice(1).map(o =>
+            `<option value="${o.v}">${o.l}</option>`
+        ).join('');
+
+        offerings.forEach((off, idx) => {
+            const row = document.createElement('div');
+            row.className = 'offering-row';
+            row.dataset.index = idx;
+
+            // Header
+            const header = document.createElement('div');
+            header.className = 'offering-header';
+            header.innerHTML = `
+                <label>
+                    <i class="fas fa-graduation-cap"></i> Curso:
+                    <input type="text" class="offering-course-input" value="${off.courseCode}" placeholder="Ej: 401">
+                </label>
+                <button type="button" class="offering-delete" title="Eliminar curso">&times;</button>
+            `;
+            row.appendChild(header);
+
+            // Schedule grid
+            const schedDiv = document.createElement('div');
+            schedDiv.className = 'offering-schedules';
+
+            DAYS.forEach(day => {
+                const sd = off.schedules ? off.schedules[day] : null;
+                const dayRow = document.createElement('div');
+                dayRow.className = 'offering-day-row';
+                dayRow.innerHTML = `
+                    <input type="checkbox" class="day-cb" ${sd ? 'checked' : ''}>
+                    <span class="day-lb">${day}</span>
+                    <select class="day-start" ${sd ? '' : 'disabled'}>
+                        ${startOpts}
+                    </select>
+                    <select class="day-end" ${sd ? '' : 'disabled'}>
+                        ${endOpts}
+                    </select>
+                `;
+                // Set values
+                if (sd) {
+                    dayRow.querySelector('.day-start').value = sd.start;
+                    dayRow.querySelector('.day-end').value = sd.end;
+                }
+                // Toggle on checkbox
+                dayRow.querySelector('.day-cb').addEventListener('change', function() {
+                    const st = dayRow.querySelector('.day-start');
+                    const en = dayRow.querySelector('.day-end');
+                    st.disabled = !this.checked;
+                    en.disabled = !this.checked;
+                    if (this.checked && !st.value) {
+                        st.value = 7;
+                        en.value = 9;
+                    }
+                });
+                schedDiv.appendChild(dayRow);
+            });
+
+            row.appendChild(schedDiv);
+
+            // Delete offering
+            header.querySelector('.offering-delete').addEventListener('click', () => {
+                row.remove();
+            });
+
+            DOM.offeringsContainer.appendChild(row);
         });
     }
 
-    function getSchedulesFromForm() {
-        const sched = {};
-        DOM.dayScheduleList.querySelectorAll('.day-sched-row').forEach(row => {
-            const cb = row.querySelector('.day-cb');
-            if (!cb.checked) return;
-            const day = cb.value;
-            const start = parseInt(row.querySelector('.day-start').value);
-            const end = parseInt(row.querySelector('.day-end').value);
-            if (start >= end) return;
-            sched[day] = { start, end };
+    function getOfferingsFromForm() {
+        const offerings = [];
+        DOM.offeringsContainer.querySelectorAll('.offering-row').forEach(row => {
+            const courseCode = row.querySelector('.offering-course-input').value.trim();
+            if (!courseCode) return;
+            const schedules = {};
+            row.querySelectorAll('.offering-day-row').forEach(dr => {
+                const cb = dr.querySelector('.day-cb');
+                if (!cb.checked) return;
+                const day = dr.querySelector('.day-lb').textContent;
+                const start = parseInt(dr.querySelector('.day-start').value);
+                const end = parseInt(dr.querySelector('.day-end').value);
+                if (start >= end) return;
+                schedules[day] = { start, end };
+            });
+            if (Object.keys(schedules).length > 0) {
+                offerings.push({ courseCode, schedules });
+            }
         });
-        return sched;
+        return offerings;
     }
 
     // ============================================================
@@ -262,15 +361,15 @@ const App = (() => {
         if (subject) {
             DOM.modalTitle.innerHTML = '<i class="fas fa-edit"></i> Editar Materia';
             DOM.name.value = subject.name;
-            DOM.course.value = subject.course;
             DOM.credits.value = subject.credits;
             DOM.color.value = subject.color;
             DOM.editId.value = subject.id;
-            renderDayScheduleRows(subject.schedules || {});
+            renderOfferings(subject.offerings || []);
         } else {
             DOM.modalTitle.innerHTML = '<i class="fas fa-plus-circle"></i> Nueva Materia';
-            renderDayScheduleRows(null);
+            renderOfferings([{ courseCode: '', schedules: {} }]);
         }
+        // Set first day-enabled to default times
         DOM.modal.classList.add('active');
     }
 
@@ -284,25 +383,18 @@ const App = (() => {
     // CRUD
     // ============================================================
     function addSubject(data) {
-        if (getTotalCredits() + data.credits > MAX_CREDITS) {
-            showToast(`Máximo ${MAX_CREDITS} créditos`, 'error');
-            return false;
-        }
+        // No credit check on register - only when added to personal schedule
         const sub = {
             id: generateId(),
             name: data.name,
-            course: data.course,
             credits: data.credits,
             color: data.color,
-            schedules: data.schedules, // { "Lun": {start, end}, ... }
+            offerings: data.offerings,
+            personalSchedule: [],  // Empty until user adds to schedule
             createdAt: Date.now()
         };
-        if (checkConflict(sub, subjects)) {
-            showToast('Esta materia se cruza con otra existente', 'error');
-            return false;
-        }
         subjects.push(sub);
-        saveSubjects();
+        saveData();
         renderAll();
         showToast(`"${data.name}" registrada`, 'success');
         return true;
@@ -312,21 +404,28 @@ const App = (() => {
         const idx = subjects.findIndex(s => s.id === id);
         if (idx === -1) return false;
 
-        const others = subjects.filter(s => s.id !== id);
-        const otherCredits = others.reduce((sum, s) => sum + s.credits, 0);
-        if (otherCredits + data.credits > MAX_CREDITS) {
-            showToast(`Máximo ${MAX_CREDITS} créditos`, 'error');
-            return false;
-        }
+        // Preserve personal schedule
+        const oldPersonal = subjects[idx].personalSchedule || [];
 
-        const updated = { ...subjects[idx], ...data };
-        if (checkConflict(updated, others)) {
-            showToast('Esta materia se cruza con otra existente', 'error');
-            return false;
-        }
+        // Check if personal schedule entries are still valid with new offerings
+        // Validate each entry
+        const validPersonal = oldPersonal.filter(e => {
+            const off = data.offerings[e.offeringIndex];
+            if (!off) return false;
+            return off.schedules[e.day] && off.schedules[e.day].start === e.start && off.schedules[e.day].end === e.end;
+        });
+
+        const updated = {
+            ...subjects[idx],
+            name: data.name,
+            credits: data.credits,
+            color: data.color,
+            offerings: data.offerings,
+            personalSchedule: validPersonal
+        };
 
         subjects[idx] = updated;
-        saveSubjects();
+        saveData();
         renderAll();
         showToast(`"${data.name}" actualizada`, 'success');
         return true;
@@ -335,19 +434,22 @@ const App = (() => {
     function deleteSubject(id) {
         if (!confirm('¿Eliminar esta materia de todos los registros?')) return;
         subjects = subjects.filter(s => s.id !== id);
-        saveSubjects();
+        saveData();
         renderAll();
         showToast('Materia eliminada', 'info');
     }
 
-    function getScheduledDays(subject) {
-        // Returns array of { day, start, end } for scheduling grid
-        const list = [];
-        const sched = subject.schedules || {};
-        for (const day in sched) {
-            if (sched[day]) list.push({ day, start: sched[day].start, end: sched[day].end });
+    function removeFromPersonalSchedule(subjectId, day) {
+        const sub = subjects.find(s => s.id === subjectId);
+        if (!sub) return;
+        if (day !== undefined) {
+            sub.personalSchedule = sub.personalSchedule.filter(e => e.day !== day);
+        } else {
+            sub.personalSchedule = [];
         }
-        return list;
+        saveData();
+        renderAll();
+        showToast('Materia quitada del horario personal', 'info');
     }
 
     // ============================================================
@@ -355,37 +457,59 @@ const App = (() => {
     // ============================================================
     function renderSubjectsList() {
         DOM.subjectsList.innerHTML = '';
-        if (subjects.length === 0) {
+
+        let list = subjects;
+
+        if (currentTab === 'personal') {
+            list = subjects.filter(s => hasPersonalEntries(s));
+        }
+
+        if (list.length === 0) {
+            const msg = currentTab === 'personal'
+                ? 'No hay materias en tu horario personal. Arrastra desde "Registradas" o usa "Recomendar Horarios".'
+                : 'No hay materias registradas. Agrega tus materias para comenzar.';
             DOM.subjectsList.innerHTML = `
                 <div class="empty-state">
-                    <i class="fas fa-book-open"></i>
-                    <p>No hay materias registradas</p>
-                    <p class="text-small">Agrega tus materias para comenzar</p>
+                    <i class="fas fa-${currentTab === 'personal' ? 'calendar-check' : 'book-open'}"></i>
+                    <p>${msg}</p>
                 </div>
             `;
             return;
         }
 
-        subjects.forEach(sub => {
-            const sched = sub.schedules || {};
-            const dayList = Object.keys(sched).filter(d => sched[d]);
-            let timesStr = dayList.map(d => `${d} ${getTimeLabel(sched[d].start)}-${getTimeLabel(sched[d].end)}`).join(', ');
-            if (!timesStr) timesStr = 'Sin horario';
+        list.forEach(sub => {
+            const offerings = sub.offerings || [];
+            const coursesStr = offerings.map(o => o.courseCode).filter(c => c).join(', ') || 'Sin curso';
+            const inSchedule = hasPersonalEntries(sub);
 
             const card = document.createElement('div');
             card.className = 'subject-card';
             card.dataset.id = sub.id;
             card.draggable = true;
+
+            let scheduleStr = '';
+            if (inSchedule) {
+                const days = sub.personalSchedule.map(e =>
+                    `${e.day} ${getTimeLabel(e.start)}-${getTimeLabel(e.end)}`
+                ).join(', ');
+                scheduleStr = `<span><i class="fas fa-calendar-check"></i> ${days}</span>`;
+            }
+
+            const addBtn = inSchedule
+                ? `<button class="btn-icon remove-sched" title="Quitar del horario personal" data-id="${sub.id}"><i class="fas fa-times-circle"></i></button>`
+                : `<button class="btn-icon add-sched" title="Agregar al horario personal" data-id="${sub.id}"><i class="fas fa-plus-circle"></i></button>`;
+
             card.innerHTML = `
                 <div class="subject-color-bar" style="background:${sub.color}"></div>
                 <div class="subject-card-content">
                     <div class="subject-name">${sub.name}</div>
                     <div class="subject-meta">
-                        <span><i class="fas fa-hashtag"></i> ${sub.course}</span>
                         <span><i class="fas fa-star"></i> ${sub.credits} créd.</span>
-                        <span><i class="fas fa-clock"></i> ${timesStr}</span>
+                        <span><i class="fas fa-graduation-cap"></i> ${coursesStr}</span>
+                        ${scheduleStr}
                     </div>
                     <div class="subject-actions">
+                        ${addBtn}
                         <button class="btn-icon edit" title="Editar" data-id="${sub.id}"><i class="fas fa-edit"></i></button>
                         <button class="btn-icon delete" title="Eliminar" data-id="${sub.id}"><i class="fas fa-trash"></i></button>
                     </div>
@@ -393,28 +517,61 @@ const App = (() => {
             `;
             DOM.subjectsList.appendChild(card);
 
-            // Edit
-            card.querySelector('.edit').addEventListener('click', (e) => {
+            // Events
+            card.querySelector('.edit').addEventListener('click', e => {
                 e.stopPropagation();
                 const s = subjects.find(x => x.id === sub.id);
                 if (s) openModal(s);
             });
-            // Delete
-            card.querySelector('.delete').addEventListener('click', (e) => {
+            card.querySelector('.delete').addEventListener('click', e => {
                 e.stopPropagation();
                 deleteSubject(sub.id);
             });
+            const addSched = card.querySelector('.add-sched');
+            if (addSched) {
+                addSched.addEventListener('click', e => {
+                    e.stopPropagation();
+                    // Open offering selector to add to personal schedule
+                    if (!sub.offerings || sub.offerings.length === 0) {
+                        showToast('Esta materia no tiene cursos configurados', 'warning');
+                        return;
+                    }
+                    // Add all days from first offering to personal schedule
+                    const off = sub.offerings[0];
+                    if (!sub.personalSchedule) sub.personalSchedule = [];
+                    Object.keys(off.schedules).forEach(day => {
+                        const existing = sub.personalSchedule.find(e => e.day === day);
+                        if (!existing) {
+                            sub.personalSchedule.push({
+                                offeringIndex: 0,
+                                day,
+                                start: off.schedules[day].start,
+                                end: off.schedules[day].end
+                            });
+                        }
+                    });
+                    saveData();
+                    renderAll();
+                    showToast(`"${sub.name}" agregado al horario personal`, 'success');
+                });
+            }
+            const removeSched = card.querySelector('.remove-sched');
+            if (removeSched) {
+                removeSched.addEventListener('click', e => {
+                    e.stopPropagation();
+                    removeFromPersonalSchedule(sub.id);
+                });
+            }
         });
 
         setupDragCards();
     }
 
     // ============================================================
-    // DRAG & DROP (mouse + touch)
+    // DRAG & DROP
     // ============================================================
     function setupDragCards() {
         document.querySelectorAll('.subject-card').forEach(card => {
-            // HTML5 Drag
             card.addEventListener('dragstart', e => {
                 card.classList.add('dragging');
                 e.dataTransfer.setData('text/plain', card.dataset.id);
@@ -424,7 +581,7 @@ const App = (() => {
                 document.querySelectorAll('.slot-cell.drag-over').forEach(c => c.classList.remove('drag-over'));
             });
 
-            // Touch events for mobile
+            // Touch
             let touchClone = null;
             card.addEventListener('touchstart', e => {
                 const t = e.touches[0];
@@ -464,10 +621,34 @@ const App = (() => {
                 if (cell) {
                     const col = parseInt(cell.dataset.col);
                     const row = parseInt(cell.dataset.row);
-                    placeSubjectOnGrid(card.dataset.id, col, row);
+                    handleDrop(card.dataset.id, col, row);
                 }
             }, { passive: true });
         });
+    }
+
+    function handleDrop(subjectId, colIndex, rowIndex) {
+        const sub = subjects.find(s => s.id === subjectId);
+        if (!sub) { showToast('Materia no encontrada', 'error'); return; }
+
+        const day = DAYS[colIndex];
+        if (!day) return;
+
+        // Check if subject has offerings
+        if (!sub.offerings || sub.offerings.length === 0) {
+            showToast('Esta materia no tiene horarios configurados', 'warning');
+            return;
+        }
+
+        // Check if subject already has this day in personal schedule
+        const existing = (sub.personalSchedule || []).find(e => e.day === day);
+        if (existing) {
+            showToast(`"${sub.name}" ya está en ${day}. Quítalo primero.`, 'warning');
+            return;
+        }
+
+        // Show offering selector
+        showOfferingSelector(subjectId, colIndex, rowIndex);
     }
 
     // ============================================================
@@ -504,23 +685,22 @@ const App = (() => {
                 cell.dataset.col = d;
                 cell.dataset.row = hour - START_HOUR;
 
-                // Drop
                 cell.addEventListener('dragover', e => { e.preventDefault(); cell.classList.add('drag-over'); });
                 cell.addEventListener('dragleave', () => cell.classList.remove('drag-over'));
                 cell.addEventListener('drop', e => {
                     e.preventDefault();
                     cell.classList.remove('drag-over');
                     const id = e.dataTransfer.getData('text/plain');
-                    if (id) placeSubjectOnGrid(id, d, hour - START_HOUR);
+                    if (id) handleDrop(id, d, hour - START_HOUR);
                 });
 
                 // Click to remove block
                 cell.addEventListener('click', () => {
                     const block = cell.querySelector('.subject-block');
                     if (block) {
-                        block.remove();
-                        highlightConflicts();
-                        showToast('Materia quitada del horario', 'info');
+                        const id = block.dataset.id;
+                        const day = DAYS[parseInt(block.dataset.day)];
+                        removeFromPersonalSchedule(id, day);
                     }
                 });
 
@@ -528,7 +708,6 @@ const App = (() => {
             }
         }
 
-        // Render blocks from per-day schedules
         renderAllScheduleBlocks();
     }
 
@@ -536,18 +715,21 @@ const App = (() => {
         DOM.grid.querySelectorAll('.subject-block').forEach(b => b.remove());
 
         subjects.forEach(sub => {
-            const sched = sub.schedules || {};
-            for (const day in sched) {
-                if (!sched[day]) continue;
-                const dayIndex = DAYS.indexOf(day);
-                if (dayIndex === -1) continue;
-                const { start, end } = sched[day];
-                const duration = end - start;
-                const row = start - START_HOUR;
+            if (!sub.personalSchedule) return;
+            sub.personalSchedule.forEach(entry => {
+                const dayIndex = DAYS.indexOf(entry.day);
+                if (dayIndex === -1) return;
+                const duration = entry.end - entry.start;
+                const row = entry.start - START_HOUR;
 
-                const cells = DOM.grid.querySelectorAll(`.slot-cell[data-day="${dayIndex}"][data-hour="${start}"]`);
-                if (cells.length === 0) continue;
+                const cells = DOM.grid.querySelectorAll(`.slot-cell[data-day="${dayIndex}"][data-hour="${entry.start}"]`);
+                if (cells.length === 0) return;
                 const firstCell = cells[0];
+
+                // Get course code from offering
+                let courseInfo = '';
+                const off = sub.offerings ? sub.offerings[entry.offeringIndex] : null;
+                if (off) courseInfo = ` (${off.courseCode})`;
 
                 const block = document.createElement('div');
                 block.className = 'subject-block';
@@ -557,9 +739,9 @@ const App = (() => {
                 block.dataset.duration = duration;
                 block.style.background = sub.color;
                 block.innerHTML = `
-                    <div class="sb-name">${sub.name}</div>
-                    <div class="sb-time">${getTimeLabel(start)} - ${getTimeLabel(end)}</div>
-                    <button class="sb-delete" data-id="${sub.id}" title="Quitar">&times;</button>
+                    <div class="sb-name">${sub.name}${courseInfo}</div>
+                    <div class="sb-time">${getTimeLabel(entry.start)} - ${getTimeLabel(entry.end)}</div>
+                    <button class="sb-delete" data-id="${sub.id}" data-day="${entry.day}" title="Quitar">&times;</button>
                 `;
                 block.style.position = 'absolute';
                 block.style.left = '2px';
@@ -572,10 +754,9 @@ const App = (() => {
 
                 block.querySelector('.sb-delete').addEventListener('click', e => {
                     e.stopPropagation();
-                    block.remove();
-                    highlightConflicts();
+                    removeFromPersonalSchedule(sub.id, entry.day);
                 });
-            }
+            });
         });
 
         highlightConflicts();
@@ -585,26 +766,25 @@ const App = (() => {
         DOM.grid.querySelectorAll('.conflict-highlight').forEach(c => c.classList.remove('conflict-highlight'));
         DOM.grid.querySelectorAll('.subject-block.conflict').forEach(c => c.classList.remove('conflict'));
 
-        const placed = [];
-        DOM.grid.querySelectorAll('.subject-block').forEach(b => {
-            placed.push({
-                el: b,
-                id: b.dataset.id,
-                day: parseInt(b.dataset.day),
-                start: parseInt(b.dataset.startRow) + START_HOUR,
-                duration: parseInt(b.dataset.duration),
+        const entries = [];
+        subjects.forEach(sub => {
+            if (!sub.personalSchedule) return;
+            sub.personalSchedule.forEach(e => {
+                const dayIndex = DAYS.indexOf(e.day);
+                if (dayIndex === -1) return;
+                const blk = DOM.grid.querySelector(`.subject-block[data-id="${sub.id}"][data-day="${dayIndex}"]`);
+                if (blk) entries.push({ el: blk, day: dayIndex, start: e.start, end: e.end });
             });
         });
 
-        for (let i = 0; i < placed.length; i++) {
-            for (let j = i + 1; j < placed.length; j++) {
-                if (placed[i].day !== placed[j].day) continue;
-                const a = placed[i], b = placed[j];
-                if (timesOverlap(a.start, a.start + a.duration, b.start, b.start + b.duration)) {
-                    a.el.classList.add('conflict');
-                    b.el.classList.add('conflict');
-                    const cA = a.el.closest('.slot-cell');
-                    const cB = b.el.closest('.slot-cell');
+        for (let i = 0; i < entries.length; i++) {
+            for (let j = i + 1; j < entries.length; j++) {
+                if (entries[i].day !== entries[j].day) continue;
+                if (timesOverlap(entries[i].start, entries[i].end, entries[j].start, entries[j].end)) {
+                    entries[i].el.classList.add('conflict');
+                    entries[j].el.classList.add('conflict');
+                    const cA = entries[i].el.closest('.slot-cell');
+                    const cB = entries[j].el.closest('.slot-cell');
                     if (cA) cA.classList.add('conflict-highlight');
                     if (cB) cB.classList.add('conflict-highlight');
                 }
@@ -613,111 +793,22 @@ const App = (() => {
     }
 
     // ============================================================
-    // PLACE SUBJECT ON GRID (drag-drop)
-    // ============================================================
-    function placeSubjectOnGrid(subjectId, colIndex, rowIndex) {
-        const sub = subjects.find(s => s.id === subjectId);
-        if (!sub) {
-            showToast('Materia no encontrada', 'error');
-            return;
-        }
-
-        const day = DAYS[colIndex];
-        if (!day) return;
-        const newStart = rowIndex + START_HOUR;
-        // Use the subject's own duration from any existing schedule entry, or default 2h
-        let duration = 2;
-        const sched = sub.schedules || {};
-        if (sched[day]) {
-            duration = sched[day].end - sched[day].start;
-        } else {
-            // Find first schedule entry to get duration
-            for (const d in sched) {
-                if (sched[d]) { duration = sched[d].end - sched[d].start; break; }
-            }
-        }
-        const newEnd = newStart + duration;
-        if (newEnd > END_HOUR) {
-            showToast('Excede el límite de las 10 PM', 'error');
-            return;
-        }
-
-        // Check conflicts with existing blocks
-        let hasOverlap = false;
-        DOM.grid.querySelectorAll('.subject-block').forEach(block => {
-            if (block.dataset.id === subjectId) return;
-            if (parseInt(block.dataset.day) !== colIndex) return;
-            const bStart = parseInt(block.dataset.startRow) + START_HOUR;
-            const bDur = parseInt(block.dataset.duration);
-            if (timesOverlap(newStart, newEnd, bStart, bStart + bDur)) hasOverlap = true;
-        });
-
-        if (hasOverlap) {
-            showToast(`"${sub.name}" se cruza con otra materia en ${day}`, 'error');
-            return;
-        }
-
-        // Remove existing block for this subject on this day
-        DOM.grid.querySelectorAll(`.subject-block[data-id="${subjectId}"]`).forEach(b => {
-            if (parseInt(b.dataset.day) === colIndex) b.remove();
-        });
-
-        // Find cell
-        const cells = DOM.grid.querySelectorAll(`.slot-cell[data-day="${colIndex}"][data-hour="${newStart}"]`);
-        if (cells.length === 0) return;
-        const firstCell = cells[0];
-
-        const block = document.createElement('div');
-        block.className = 'subject-block';
-        block.dataset.id = sub.id;
-        block.dataset.day = colIndex;
-        block.dataset.startRow = rowIndex;
-        block.dataset.duration = duration;
-        block.style.background = sub.color;
-        block.innerHTML = `
-            <div class="sb-name">${sub.name}</div>
-            <div class="sb-time">${getTimeLabel(newStart)} - ${getTimeLabel(newEnd)}</div>
-            <button class="sb-delete" data-id="${sub.id}" title="Quitar">&times;</button>
-        `;
-        block.style.position = 'absolute';
-        block.style.left = '2px';
-        block.style.right = '2px';
-        block.style.top = '2px';
-        block.style.zIndex = '10';
-        block.style.height = `calc(${duration * 60}px - 4px)`;
-        firstCell.style.position = 'relative';
-        firstCell.appendChild(block);
-
-        block.querySelector('.sb-delete').addEventListener('click', e => {
-            e.stopPropagation();
-            block.remove();
-            highlightConflicts();
-        });
-
-        // Update subject's schedule for this day
-        if (!sub.schedules) sub.schedules = {};
-        sub.schedules[day] = { start: newStart, end: newEnd };
-        saveSubjects();
-
-        highlightConflicts();
-        showToast(`${sub.name} en ${day} ${getTimeLabel(newStart)}`, 'success');
-    }
-
-    // ============================================================
-    // HEADER UPDATE
+    // HEADER
     // ============================================================
     function updateHeader() {
         const total = getTotalCredits();
         DOM.totalCredits.innerHTML = `<i class="fas fa-star"></i> Créditos: ${total} / ${MAX_CREDITS}`;
         DOM.totalCredits.style.background = total >= MAX_CREDITS ? 'rgba(255,200,0,0.25)' : 'rgba(255,255,255,0.15)';
-        DOM.subjectCount.innerHTML = `<i class="fas fa-book"></i> Materias: ${subjects.length}`;
+        const inSchedule = subjects.filter(s => hasPersonalEntries(s)).length;
+        DOM.subjectCount.innerHTML = `<i class="fas fa-book"></i> En horario: ${inSchedule} / ${subjects.length}`;
     }
 
     // ============================================================
-    // RECOMMENDATIONS ENGINE
+    // RECOMMENDATIONS
     // ============================================================
     function generateRecommendations() {
-        if (subjects.length === 0) {
+        const inSchedule = subjects.filter(s => hasPersonalEntries(s));
+        if (inSchedule.length === 0 && subjects.length === 0) {
             showToast('Registra materias primero', 'warning');
             return;
         }
@@ -728,30 +819,38 @@ const App = (() => {
             return;
         }
 
-        // Ensure each subject has a base schedule from course code or defaults
-        subjects.forEach(sub => {
-            if (!sub.schedules || Object.keys(sub.schedules).length === 0) {
-                // Assign default schedule
-                const parsed = parseCourseCode(sub.course);
-                const start = parsed ? parsed.start : 7;
-                const end = parsed ? parsed.end : 9;
-                sub.schedules = {};
-                // Assign to all weekdays (Lun-Vie) by default for recommendation
-                ['Lun', 'Mar', 'Mié', 'Jue', 'Vie'].forEach(d => {
-                    sub.schedules[d] = { start, end };
+        // Only recommend for subjects NOT yet scheduled
+        const unscheduled = subjects.filter(s => !hasPersonalEntries(s));
+        if (unscheduled.length === 0) {
+            showToast('Todas las materias ya están en tu horario personal', 'info');
+            return;
+        }
+
+        const alreadyScheduled = subjects.filter(s => hasPersonalEntries(s));
+
+        // Get all personal entries as base
+        const baseEntries = [];
+        alreadyScheduled.forEach(s => {
+            if (s.personalSchedule) {
+                s.personalSchedule.forEach(e => {
+                    baseEntries.push({ ...e, subjectId: s.id, subjectName: s.name, color: s.color });
                 });
             }
         });
-        saveSubjects();
 
         const recommendations = [];
 
-        const rec1 = buildBalanced();
-        if (rec1) recommendations.push(rec1);
-        const rec2 = buildCompact();
-        if (rec2) recommendations.push(rec2);
-        const rec3 = buildMorning();
-        if (rec3) recommendations.push(rec3);
+        const r1 = buildRec(unscheduled, baseEntries, 'balanced', 'Balanceado', 'fa-scale-balanced', 'balanced',
+            'Distribuye las nuevas materias en días con menos carga');
+        if (r1) recommendations.push(r1);
+
+        const r2 = buildRec(unscheduled, baseEntries, 'compact', 'Compacto', 'fa-compress', 'compact',
+            'Concentra las nuevas materias en la menor cantidad de días');
+        if (r2) recommendations.push(r2);
+
+        const r3 = buildRec(unscheduled, baseEntries, 'morning', 'Matutino', 'fa-sun', 'spread',
+            'Prioriza horarios de mañana para las nuevas materias');
+        if (r3) recommendations.push(r3);
 
         if (recommendations.length === 0) {
             showToast('No se pudieron generar recomendaciones', 'error');
@@ -761,111 +860,85 @@ const App = (() => {
         showRecommendationsModal(recommendations);
     }
 
-    function buildBalanced() {
-        // Spread across days evenly
-        const sorted = [...subjects].sort((a, b) => {
-            const aStart = getFirstStart(a);
-            const bStart = getFirstStart(b);
-            return aStart - bStart;
-        });
-        const assigned = {};
+    function buildRec(unscheduled, baseEntries, type, name, icon, badge, desc) {
         const schedule = [];
+        const usedDays = {};
 
-        for (const sub of sorted) {
-            const baseSched = sub.schedules || {};
-            const days = Object.keys(baseSched).filter(d => baseSched[d]);
-            // Pick day with least subjects
-            const counts = days.map(d => ({ day: d, count: (assigned[d] || []).length }));
-            counts.sort((a, b) => a.count - b.count);
-            if (counts.length === 0) continue;
-            const chosen = counts[0].day;
-            if (!assigned[chosen]) assigned[chosen] = [];
-            assigned[chosen].push(sub.id);
-            schedule.push({ id: sub.id, day: chosen, subject: sub, start: baseSched[chosen].start, end: baseSched[chosen].end });
+        // Build a list of all possible placements from offerings
+        const candidates = [];
+        unscheduled.forEach(sub => {
+            const offerings = sub.offerings || [];
+            offerings.forEach((off, offIdx) => {
+                Object.keys(off.schedules).forEach(day => {
+                    if (!off.schedules[day]) return;
+                    candidates.push({
+                        subjectId: sub.id,
+                        subject: sub,
+                        offeringIndex: offIdx,
+                        courseCode: off.courseCode,
+                        day,
+                        start: off.schedules[day].start,
+                        end: off.schedules[day].end
+                    });
+                });
+            });
+        });
+
+        // Sort based on strategy
+        if (type === 'balanced') {
+            candidates.sort((a, b) => {
+                // Sort by start time then by subject name
+                if (a.start !== b.start) return a.start - b.start;
+                return a.subject.name.localeCompare(b.subject.name);
+            });
+        } else if (type === 'compact') {
+            candidates.sort((a, b) => (a.end - a.start) - (b.end - b.start));
+        } else if (type === 'morning') {
+            candidates.sort((a, b) => {
+                const aM = a.start < 14 ? 0 : 1;
+                const bM = b.start < 14 ? 0 : 1;
+                return aM - bM || a.start - b.start;
+            });
+        }
+
+        const usedSubjects = new Set();
+        for (const cand of candidates) {
+            if (usedSubjects.has(cand.subjectId)) continue;
+
+            // Check if this day has capacity constraints
+            const dayEntries = [
+                ...baseEntries,
+                ...schedule
+            ].filter(e => e.day === cand.day);
+
+            const testEntry = { subjectId: cand.subjectId, day: cand.day, start: cand.start, end: cand.end };
+            const allTest = [...dayEntries, testEntry];
+
+            if (checkPersonalConflict(allTest)) continue;
+
+            schedule.push({
+                subjectId: cand.subjectId,
+                subject: cand.subject,
+                offeringIndex: cand.offeringIndex,
+                courseCode: cand.courseCode,
+                day: cand.day,
+                start: cand.start,
+                end: cand.end
+            });
+
+            usedSubjects.add(cand.subjectId);
+            if (!usedDays[cand.day]) usedDays[cand.day] = 0;
+            usedDays[cand.day]++;
         }
 
         if (schedule.length === 0) return null;
+
         return {
-            type: 'balanced', name: 'Balanceado', icon: 'fa-scale-balanced', badge: 'balanced',
-            description: 'Distribuye las materias uniformemente entre los días',
-            schedule, daysUsed: Object.keys(assigned).length,
+            type, name, icon, badge, description, schedule,
+            daysUsed: Object.keys(usedDays).length,
             totalHours: schedule.reduce((s, item) => s + (item.end - item.start), 0),
+            subjectsCount: schedule.length
         };
-    }
-
-    function buildCompact() {
-        // Pack into fewest days
-        const sorted = [...subjects].sort((a, b) => {
-            const aDur = getAvgDuration(a);
-            const bDur = getAvgDuration(b);
-            return aDur - bDur; // shorter first to pack more
-        });
-        const assigned = {};
-        const schedule = [];
-
-        for (const sub of sorted) {
-            const baseSched = sub.schedules || {};
-            const days = Object.keys(baseSched).filter(d => baseSched[d]);
-            const counts = days.map(d => ({ day: d, count: (assigned[d] || []).length }));
-            counts.sort((a, b) => b.count - a.count); // most packed first
-            if (counts.length === 0) continue;
-            const chosen = counts[0].day;
-            if (!assigned[chosen]) assigned[chosen] = [];
-            assigned[chosen].push(sub.id);
-            schedule.push({ id: sub.id, day: chosen, subject: sub, start: baseSched[chosen].start, end: baseSched[chosen].end });
-        }
-
-        if (schedule.length === 0) return null;
-        return {
-            type: 'compact', name: 'Compacto', icon: 'fa-compress', badge: 'compact',
-            description: 'Concentra en la menor cantidad de días',
-            schedule, daysUsed: Object.keys(assigned).length,
-            totalHours: schedule.reduce((s, item) => s + (item.end - item.start), 0),
-        };
-    }
-
-    function buildMorning() {
-        // Prefer morning hours
-        const sorted = [...subjects].sort((a, b) => {
-            const aStart = getFirstStart(a);
-            const bStart = getFirstStart(b);
-            const aM = aStart < 14 ? 0 : 1;
-            const bM = bStart < 14 ? 0 : 1;
-            return aM - bM || aStart - bStart;
-        });
-        const assigned = {};
-        const schedule = [];
-
-        for (const sub of sorted) {
-            const baseSched = sub.schedules || {};
-            const days = Object.keys(baseSched).filter(d => baseSched[d]);
-            if (days.length === 0) continue;
-            const chosen = days[0];
-            if (!assigned[chosen]) assigned[chosen] = [];
-            assigned[chosen].push(sub.id);
-            schedule.push({ id: sub.id, day: chosen, subject: sub, start: baseSched[chosen].start, end: baseSched[chosen].end });
-        }
-
-        if (schedule.length === 0) return null;
-        return {
-            type: 'morning', name: 'Matutino', icon: 'fa-sun', badge: 'spread',
-            description: 'Prioriza horarios de la mañana (antes de 2 PM)',
-            schedule, daysUsed: Object.keys(assigned).length,
-            totalHours: schedule.reduce((s, item) => s + (item.end - item.start), 0),
-        };
-    }
-
-    function getFirstStart(sub) {
-        const s = sub.schedules || {};
-        for (const d in s) { if (s[d]) return s[d].start; }
-        return 7;
-    }
-
-    function getAvgDuration(sub) {
-        const s = sub.schedules || {};
-        let total = 0, count = 0;
-        for (const d in s) { if (s[d]) { total += (s[d].end - s[d].start); count++; } }
-        return count ? total / count : 2;
     }
 
     function showRecommendationsModal(recommendations) {
@@ -881,19 +954,20 @@ const App = (() => {
             rec.schedule.forEach(item => {
                 const sub = item.subject;
                 subjectsHtml += `<span class="rec-subject" style="background:${sub.color}">
-                    ${sub.name} (${item.day} ${getTimeLabel(item.start)}-${getTimeLabel(item.end)})
+                    ${sub.name} (Curso ${item.courseCode} - ${item.day} ${getTimeLabel(item.start)}-${getTimeLabel(item.end)})
                 </span> `;
             });
 
             card.innerHTML = `
                 <div class="rec-card-header">
                     <h3><i class="fas ${rec.icon}"></i> ${rec.name}</h3>
-                    <span class="rec-badge ${rec.badge}">${rec.daysUsed} día${rec.daysUsed !== 1 ? 's' : ''}</span>
+                    <span class="rec-badge ${rec.badge}">${rec.subjectsCount} mat. en ${rec.daysUsed} día${rec.daysUsed !== 1 ? 's' : ''}</span>
                 </div>
                 <div class="rec-card-body">${subjectsHtml}</div>
                 <div class="rec-card-footer">
-                    <span><i class="far fa-clock"></i> ${rec.totalHours}h totales</span>
+                    <span><i class="far fa-clock"></i> ${rec.totalHours}h</span>
                     <span><i class="fas fa-calendar-day"></i> ${rec.daysUsed} día${rec.daysUsed !== 1 ? 's' : ''}</span>
+                    <span><i class="fas fa-graduation-cap"></i> ${rec.subjectsCount} materias</span>
                 </div>
             `;
 
@@ -911,112 +985,111 @@ const App = (() => {
     }
 
     function applyRec(rec) {
-        DOM.grid.querySelectorAll('.subject-block').forEach(b => b.remove());
-
-        // Update subject schedules per recommendation
         rec.schedule.forEach(item => {
-            const sub = subjects.find(s => s.id === item.id);
+            const sub = subjects.find(s => s.id === item.subjectId);
             if (!sub) return;
-            if (!sub.schedules) sub.schedules = {};
-            sub.schedules[item.day] = { start: item.start, end: item.end };
+            if (!sub.personalSchedule) sub.personalSchedule = [];
+            // Remove existing entry for this day
+            sub.personalSchedule = sub.personalSchedule.filter(e => e.day !== item.day);
+            sub.personalSchedule.push({
+                offeringIndex: item.offeringIndex,
+                day: item.day,
+                start: item.start,
+                end: item.end
+            });
         });
-        saveSubjects();
-        renderAllScheduleBlocks();
+        saveData();
+        renderAll();
         DOM.recModal.classList.remove('active');
-        showToast('Recomendación aplicada al horario', 'success');
+        showToast('Recomendación aplicada al horario personal', 'success');
     }
 
     // ============================================================
-    // CLEAR & EXPORT
+    // CLEAR
     // ============================================================
     function clearSchedule() {
-        DOM.grid.querySelectorAll('.subject-block').forEach(b => b.remove());
-        highlightConflicts();
-        showToast('Horario limpiado (solo vista)', 'info');
-    }
-
-    function exportSchedule() {
-        const blocks = DOM.grid.querySelectorAll('.subject-block');
-        if (blocks.length === 0) {
-            showToast('No hay nada que exportar', 'warning');
-            return;
-        }
-
-        let text = '=== MI HORARIO UNIVERSITARIO ===\n';
-        text += `Generado: ${new Date().toLocaleString()}\n`;
-        text += `Créditos: ${getTotalCredits()} / ${MAX_CREDITS}\n\n`;
-
-        DAYS.forEach(day => {
-            text += `--- ${day} ---\n`;
-            const dayBlocks = [];
-            DOM.grid.querySelectorAll('.subject-block').forEach(b => {
-                if (parseInt(b.dataset.day) === DAYS.indexOf(day)) {
-                    const sub = subjects.find(s => s.id === b.dataset.id);
-                    if (sub) {
-                        const start = parseInt(b.dataset.startRow) + START_HOUR;
-                        const dur = parseInt(b.dataset.duration);
-                        dayBlocks.push({ name: sub.name, course: sub.course, start, end: start + dur, credits: sub.credits });
-                    }
-                }
-            });
-
-            if (dayBlocks.length === 0) {
-                text += '  (libre)\n';
-            } else {
-                dayBlocks.sort((a, b) => a.start - b.start);
-                dayBlocks.forEach(b => {
-                    text += `  ${getTimeLabel(b.start)} - ${getTimeLabel(b.end)} | ${b.name} (${b.course}) [${b.credits} créd.]\n`;
-                });
-            }
-            text += '\n';
-        });
-
-        const blob = new Blob([text], { type: 'text/plain;charset=utf-8' });
-        const link = document.createElement('a');
-        link.href = URL.createObjectURL(blob);
-        link.download = `horario_${new Date().toISOString().slice(0, 10)}.txt`;
-        link.click();
-        URL.revokeObjectURL(link.href);
-        showToast('Horario exportado', 'success');
+        subjects.forEach(s => { s.personalSchedule = []; });
+        saveData();
+        renderAll();
+        showToast('Horario personal limpiado', 'info');
     }
 
     // ============================================================
-    // FORM SUBMIT HANDLER
+    // EXPORT / IMPORT JSON
+    // ============================================================
+    function exportData() {
+        const data = {
+            version: '3.0',
+            exportedAt: new Date().toISOString(),
+            subjects: subjects
+        };
+        const blob = new Blob([JSON.stringify(data, null, 2)], { type: 'application/json;charset=utf-8' });
+        const link = document.createElement('a');
+        link.href = URL.createObjectURL(blob);
+        link.download = `horario_export_${new Date().toISOString().slice(0,10)}.json`;
+        link.click();
+        URL.revokeObjectURL(link.href);
+        showToast('Datos exportados correctamente', 'success');
+    }
+
+    function importData() {
+        DOM.importFileInput.click();
+    }
+
+    function handleImportFile(e) {
+        const file = e.target.files[0];
+        if (!file) return;
+        const reader = new FileReader();
+        reader.onload = (ev) => {
+            try {
+                const data = JSON.parse(ev.target.result);
+                if (!data.subjects || !Array.isArray(data.subjects)) {
+                    showToast('Archivo JSON inválido', 'error');
+                    return;
+                }
+                // Merge: replace current data
+                if (confirm(`¿Importar ${data.subjects.length} materias? Esto reemplazará todos los datos actuales.`)) {
+                    subjects = data.subjects.map(s => {
+                        if (!s.personalSchedule) s.personalSchedule = [];
+                        return s;
+                    });
+                    saveData();
+                    renderAll();
+                    showToast(`${subjects.length} materias importadas`, 'success');
+                }
+            } catch (err) {
+                showToast('Error al leer el archivo: ' + err.message, 'error');
+            }
+        };
+        reader.readAsText(file);
+        e.target.value = '';
+    }
+
+    // ============================================================
+    // FORM SAVE
     // ============================================================
     function handleSave() {
         const name = DOM.name.value.trim();
-        const course = DOM.course.value.trim();
         const credits = parseInt(DOM.credits.value) || 3;
         const color = DOM.color.value;
-        const schedules = getSchedulesFromForm();
+        const offerings = getOfferingsFromForm();
         const editIdVal = DOM.editId.value;
 
         if (!name) { showToast('El nombre es obligatorio', 'error'); return; }
-        if (!course) { showToast('El código de curso es obligatorio', 'error'); return; }
-        const dayCount = Object.keys(schedules).length;
-        if (dayCount === 0) { showToast('Selecciona al menos un día con horario', 'error'); return; }
-
-        // Validate no start >= end in any schedule
-        for (const d in schedules) {
-            if (schedules[d].start >= schedules[d].end) {
-                showToast(`Horario inválido en ${d}: inicio debe ser menor que fin`, 'error');
-                return;
-            }
+        if (offerings.length === 0) {
+            showToast('Agrega al menos un curso con horarios', 'error');
+            return;
         }
 
-        const data = { name, course, credits, color, schedules };
+        const data = { name, credits, color, offerings };
 
-        let success = false;
         if (editIdVal) {
-            success = updateSubject(editIdVal, data);
+            updateSubject(editIdVal, data);
         } else {
-            success = addSubject(data);
+            addSubject(data);
         }
-
-        if (success) {
-            closeModal();
-            renderAll();
-        }
+        closeModal();
+        renderAll();
     }
 
     // ============================================================
@@ -1032,49 +1105,88 @@ const App = (() => {
     // INIT
     // ============================================================
     function init() {
-        loadSubjects();
+        loadData();
 
-        // Guardar button click
-        $('btnSaveSubject').addEventListener('click', handleSave);
-
-        // Form submit as backup
-        DOM.form.addEventListener('submit', e => {
-            e.preventDefault();
-            handleSave();
+        // Fix: ensure personalSchedule exists
+        subjects.forEach(s => {
+            if (!s.personalSchedule) s.personalSchedule = [];
+            if (!s.offerings) s.offerings = [];
         });
+
+        // Save button
+        $('btnSaveSubject').addEventListener('click', handleSave);
+        DOM.form.addEventListener('submit', e => { e.preventDefault(); handleSave(); });
 
         // Add subject
         $('btnAddSubject').addEventListener('click', () => openModal());
 
-        // Close modal
+        // Add offering inside modal
+        $('btnAddOffering').addEventListener('click', () => {
+            const rows = DOM.offeringsContainer.querySelectorAll('.offering-row');
+            const last = rows[rows.length - 1];
+            const code = last ? last.querySelector('.offering-course-input').value : '';
+            // Duplicate last or create new
+            const existing = [];
+            DOM.offeringsContainer.querySelectorAll('.offering-row').forEach((r, i) => {
+                const c = r.querySelector('.offering-course-input').value.trim();
+                existing.push(c || `curso_${i}`);
+            });
+            renderOfferings([...existing.map((c, i) => {
+                const row = DOM.offeringsContainer.querySelectorAll('.offering-row')[i];
+                const sched = {};
+                if (row) {
+                    row.querySelectorAll('.offering-day-row').forEach(dr => {
+                        const cb = dr.querySelector('.day-cb');
+                        if (!cb.checked) return;
+                        const day = dr.querySelector('.day-lb').textContent;
+                        sched[day] = {
+                            start: parseInt(dr.querySelector('.day-start').value),
+                            end: parseInt(dr.querySelector('.day-end').value)
+                        };
+                    });
+                }
+                return { courseCode: c, schedules: sched };
+            }), { courseCode: '', schedules: {} }]);
+        });
+
+        // Close modals
         $('btnCloseModal').addEventListener('click', closeModal);
         $('btnCancelModal').addEventListener('click', closeModal);
         DOM.modal.addEventListener('click', e => { if (e.target === DOM.modal) closeModal(); });
+
+        // Offering modal
+        $('btnCloseOfferingModal').addEventListener('click', () => DOM.offeringModal.classList.remove('active'));
+        $('btnCancelOffering').addEventListener('click', () => DOM.offeringModal.classList.remove('active'));
+        DOM.offeringModal.addEventListener('click', e => {
+            if (e.target === DOM.offeringModal) DOM.offeringModal.classList.remove('active');
+        });
 
         // Recommendations
         $('btnGenerateSchedules').addEventListener('click', generateRecommendations);
         $('btnCloseRecommendations').addEventListener('click', () => DOM.recModal.classList.remove('active'));
         DOM.recModal.addEventListener('click', e => { if (e.target === DOM.recModal) DOM.recModal.classList.remove('active'); });
 
-        // Clear & Export
-        $('btnClearSchedule').addEventListener('click', clearSchedule);
-        $('btnExport').addEventListener('click', exportSchedule);
-
-        // Auto-fill course code
-        DOM.course.addEventListener('blur', () => {
-            const parsed = parseCourseCode(DOM.course.value.trim());
-            if (!parsed) return;
-            DOM.dayScheduleList.querySelectorAll('.day-sched-row').forEach(row => {
-                const cb = row.querySelector('.day-cb');
-                if (!cb.checked) return;
-                row.querySelector('.day-start').value = parsed.start;
-                row.querySelector('.day-end').value = parsed.end;
+        // Tabs
+        document.querySelectorAll('.tab-btn').forEach(btn => {
+            btn.addEventListener('click', () => {
+                document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
+                btn.classList.add('active');
+                currentTab = btn.dataset.tab;
+                renderSubjectsList();
             });
         });
 
+        // Clear & Print
+        $('btnClearSchedule').addEventListener('click', clearSchedule);
+        $('btnPrintSchedule').addEventListener('click', () => window.print());
+
+        // Export / Import
+        $('btnExportData').addEventListener('click', exportData);
+        $('btnImportData').addEventListener('click', importData);
+        DOM.importFileInput.addEventListener('change', handleImportFile);
+
         renderAll();
-        console.log('📚 Organizador de Horarios v2 iniciado');
-        console.log(`📅 ${subjects.length} materias, ${getTotalCredits()} créditos`);
+        console.log('📚 OH v3 iniciado. Materias:', subjects.length);
     }
 
     return { init };

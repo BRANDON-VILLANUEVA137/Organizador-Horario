@@ -242,8 +242,161 @@ body {
 .btn-icon.delete:hover { color: var(--danger); }
 
 .sidebar-footer {
-    padding: 16px;
+    padding: 12px;
     border-top: 1px solid var(--border);
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+}
+
+.sidebar-footer-row {
+    display: flex;
+    gap: 8px;
+}
+
+.sidebar-footer-row .btn {
+    flex: 1;
+}
+
+/* Sidebar Tabs */
+.sidebar-tabs {
+    display: flex;
+    border-bottom: 1px solid var(--border);
+    background: #f8f9fa;
+}
+
+.tab-btn {
+    flex: 1;
+    padding: 10px 8px;
+    border: none;
+    background: transparent;
+    font-size: 0.78rem;
+    font-weight: 500;
+    cursor: pointer;
+    color: var(--text-muted);
+    transition: var(--transition);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 5px;
+    border-bottom: 2px solid transparent;
+}
+
+.tab-btn:hover {
+    background: #f0f0f0;
+    color: var(--text);
+}
+
+.tab-btn.active {
+    color: var(--primary);
+    border-bottom-color: var(--primary);
+    background: white;
+}
+
+/* Offering Rows */
+#offeringsContainer {
+    max-height: 320px;
+    overflow-y: auto;
+    border: 1px solid var(--border);
+    border-radius: var(--radius-sm);
+    padding: 8px;
+}
+
+.offering-row {
+    background: #f8f9fa;
+    border: 1px solid var(--border);
+    border-radius: 6px;
+    padding: 10px;
+    margin-bottom: 8px;
+}
+
+.offering-row:last-child {
+    margin-bottom: 0;
+}
+
+.offering-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    margin-bottom: 8px;
+}
+
+.offering-header label {
+    font-size: 0.82rem;
+    font-weight: 600 !important;
+    margin-bottom: 0 !important;
+    display: flex !important;
+    align-items: center;
+    gap: 6px;
+}
+
+.offering-delete {
+    background: none;
+    border: none;
+    color: var(--danger);
+    cursor: pointer;
+    font-size: 0.8rem;
+    padding: 2px 6px;
+    border-radius: 4px;
+}
+
+.offering-delete:hover {
+    background: #fff0f0;
+}
+
+.offering-course-input {
+    width: 80px !important;
+    padding: 4px 6px !important;
+    font-size: 0.82rem !important;
+    margin-left: 4px;
+}
+
+.offering-schedules {
+    display: grid;
+    grid-template-columns: 1fr 1fr 1fr;
+    gap: 4px;
+}
+
+@media (max-width: 600px) {
+    .offering-schedules {
+        grid-template-columns: 1fr 1fr;
+    }
+}
+
+.offering-day-row {
+    display: flex;
+    align-items: center;
+    gap: 3px;
+}
+
+.offering-day-row .day-cb {
+    width: auto !important;
+    margin: 0;
+    cursor: pointer;
+}
+
+.offering-day-row .day-lb {
+    font-size: 0.7rem;
+    font-weight: 600;
+    min-width: 26px;
+    cursor: pointer;
+}
+
+.offering-day-row select {
+    width: auto !important;
+    flex: 1;
+    min-width: 0;
+    padding: 2px 3px !important;
+    font-size: 0.65rem !important;
+    border: 1px solid var(--border);
+    border-radius: 3px;
+    background: white;
+    cursor: pointer;
+}
+
+.offering-day-row select:disabled {
+    opacity: 0.3;
+    cursor: not-allowed;
 }
 
 /* Schedule Area */
