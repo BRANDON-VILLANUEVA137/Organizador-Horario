@@ -1,18 +1,24 @@
 // ============================================================
-// Organizador de Horarios Universitarios - App Logic
+// Organizador de Horarios Universitarios v2
+// ============================================================
+// FEATURES:
+// - Per-day custom schedule (each day can have different hours)
+// - Conflict detection per day/time
+// - 18 credit limit
+// - Drag & drop (mouse + touch)
+// - 3 schedule recommendations
+// - Export to text
+// - localStorage persistence
 // ============================================================
 
 const App = (() => {
     // ---- Constants ----
     const DAYS = ['Lun', 'Mar', 'Mié', 'Jue', 'Vie', 'Sáb'];
-    const START_HOUR = 7; // 7:00 AM
-    const END_HOUR = 22; // 10:00 PM
+    const START_HOUR = 7;
+    const END_HOUR = 22;
     const MAX_CREDITS = 18;
-    const HOUR_SLOTS = END_HOUR - START_HOUR; // 15 slots
 
-    // Course code mapping: first digit = period group, last 2 digits determine time
-    // 601: 7-9am, 602: 10am-1pm, 603: 2-4pm, 604: 5-7pm, 605: 8-10pm
-    // 701: 7-9am, 702: 10am-1pm, etc.
+    // Course code mapping: last 2 digits determine default time
     const COURSE_TIMES = {
         '01': { start: 7, end: 9 },
         '02': { start: 10, end: 13 },
@@ -23,112 +29,236 @@ const App = (() => {
 
     // ---- State ----
     let subjects = [];
-    let editId = null;
-    let scheduledSubjects = []; // subjects placed on grid with their positions
 
-    // ---- DOM Refs ----
-    const $ = (sel) => document.querySelector(sel);
-    const $$ = (sel) => document.querySelectorAll(sel);
+    // ---- DOM Shortcuts ----
+    const $ = id => document.getElementById(id);
 
     const DOM = {
-        grid:             $('#scheduleGrid'),
-        subjectsList:     $('#subjectsList'),
-        totalCredits:     $('#totalCredits'),
-        subjectCount:     $('#subjectCount'),
-        modal:            $('#subjectModal'),
-        modalTitle:       $('#modalTitle'),
-        recModal:         $('#recommendationsModal'),
-        recBody:          $('#recommendationsBody'),
-        form:             $('#subjectForm'),
-        name:             $('#subjectName'),
-        course:           $('#subjectCourse'),
-        credits:          $('#subjectCredits'),
-        color:            $('#subjectColor'),
-        editId:           $('#editId'),
-        startTime:        $('#startTime'),
-        endTime:          $('#endTime'),
-        daysSelector:     $('#daysSelector'),
-        toastContainer:   $('#toastContainer'),
+        grid:             $('scheduleGrid'),
+        subjectsList:     $('subjectsList'),
+        totalCredits:     $('totalCredits'),
+        subjectCount:     $('subjectCount'),
+        modal:            $('subjectModal'),
+        modalTitle:       $('modalTitle'),
+        recModal:         $('recommendationsModal'),
+        recBody:          $('recommendationsBody'),
+        form:             $('subjectForm'),
+        name:             $('subjectName'),
+        course:           $('subjectCourse'),
+        credits:          $('subjectCredits'),
+        color:            $('subjectColor'),
+        editId:           $('editId'),
+        dayScheduleList:  $('dayScheduleList'),
+        toastContainer:   $('toastContainer'),
     };
 
-    // ---- Utility Functions ----
-    function generateTimeOptions() {
-        const options = [];
+    // ============================================================
+    // UTILITY
+    // ============================================================
+    function getTimeLabel(h) {
+        if (h < 12) return `${h}:00 AM`;
+        if (h === 12) return `12:00 PM`;
+        return `${h - 12}:00 PM`;
+    }
+
+    function getTimeOptions() {
+        const opts = [];
         for (let h = START_HOUR; h <= END_HOUR; h++) {
-            const val = h;
-            const label = h < 12 ? `${h}:00 AM` : h === 12 ? `12:00 PM` : `${h - 12}:00 PM`;
-            options.push({ val, label });
+            opts.push({ value: h, label: getTimeLabel(h) });
         }
-        return options;
-    }
-
-    function populateTimeSelects() {
-        const opts = generateTimeOptions();
-        DOM.startTime.innerHTML = '';
-        DOM.endTime.innerHTML = '';
-        opts.forEach((o, i) => {
-            if (i < opts.length - 1) {
-                DOM.startTime.innerHTML += `<option value="${o.val}">${o.label}</option>`;
-            }
-            if (i > 0) {
-                DOM.endTime.innerHTML += `<option value="${o.val}">${o.label}</option>`;
-            }
-        });
-        // Default start 7am, end 9am
-        DOM.startTime.value = 7;
-        DOM.endTime.value = 9;
-    }
-
-    function parseCourseCode(code) {
-        // Returns { start, end } or null if unrecognized
-        if (!code || code.length < 3) return null;
-        const suffix = code.slice(-2);
-        const entry = COURSE_TIMES[suffix];
-        if (entry) return { ...entry };
-        return null;
+        return opts;
     }
 
     function generateId() {
         return Date.now().toString(36) + Math.random().toString(36).slice(2, 6);
     }
 
-    function getTimeLabel(hour) {
-        if (hour < 12) return `${hour}:00 AM`;
-        if (hour === 12) return `12:00 PM`;
-        return `${hour - 12}:00 PM`;
-    }
-
-    function hoursToMinutes(h) {
-        return h * 60;
+    function parseCourseCode(code) {
+        if (!code || code.length < 3) return null;
+        const suffix = code.slice(-2);
+        return COURSE_TIMES[suffix] || null;
     }
 
     function timesOverlap(s1, e1, s2, e2) {
-        return hoursToMinutes(s1) < hoursToMinutes(e2) && hoursToMinutes(s2) < hoursToMinutes(e1);
+        return (s1 * 60) < (e2 * 60) && (s2 * 60) < (e1 * 60);
     }
 
-    // ---- Toast ----
-    function showToast(message, type = 'info') {
-        const toast = document.createElement('div');
-        toast.className = `toast toast-${type}`;
+    // ============================================================
+    // TOAST
+    // ============================================================
+    function showToast(msg, type = 'info') {
         const icons = { success: 'fa-check-circle', error: 'fa-times-circle', info: 'fa-info-circle', warning: 'fa-exclamation-triangle' };
-        toast.innerHTML = `<i class="fas ${icons[type] || icons.info}"></i> ${message}`;
-        DOM.toastContainer.appendChild(toast);
+        const t = document.createElement('div');
+        t.className = `toast toast-${type}`;
+        t.innerHTML = `<i class="fas ${icons[type] || icons.info}"></i> ${msg}`;
+        DOM.toastContainer.appendChild(t);
         setTimeout(() => {
-            toast.style.opacity = '0';
-            toast.style.transform = 'translateX(100%)';
-            toast.style.transition = 'all 0.3s ease';
-            setTimeout(() => toast.remove(), 300);
+            t.style.transition = 'all 0.3s ease';
+            t.style.opacity = '0';
+            t.style.transform = 'translateX(100%)';
+            setTimeout(() => t.remove(), 300);
         }, 3000);
     }
 
-    // ---- Modal ----
-    function openModal(subject = null) {
+    // ============================================================
+    // LOCAL STORAGE
+    // ============================================================
+    function loadSubjects() {
+        try {
+            const d = localStorage.getItem('oh_subjects');
+            subjects = d ? JSON.parse(d) : [];
+        } catch (e) { subjects = []; }
+        return subjects;
+    }
+
+    function saveSubjects() {
+        localStorage.setItem('oh_subjects', JSON.stringify(subjects));
+    }
+
+    function getTotalCredits() {
+        return subjects.reduce((sum, s) => sum + s.credits, 0);
+    }
+
+    // ============================================================
+    // CONFLICT DETECTION (per-day)
+    // ============================================================
+    function checkConflict(subject, list) {
+        // subject.schedules = { "Lun": { start, end }, "Mar": { start, end }, ... }
+        const sched = subject.schedules || {};
+        for (const day in sched) {
+            if (!sched[day]) continue;
+            const s1 = sched[day].start;
+            const e1 = sched[day].end;
+            for (const other of list) {
+                if (other.id === subject.id) continue;
+                const oSched = other.schedules || {};
+                const oDay = oSched[day];
+                if (!oDay) continue;
+                if (timesOverlap(s1, e1, oDay.start, oDay.end)) return true;
+            }
+        }
+        return false;
+    }
+
+    // ============================================================
+    // FORM: PER-DAY SCHEDULE ROWS
+    // ============================================================
+    const timeOpts = getTimeOptions();
+
+    function buildStartOpts(selected) {
+        let h = '';
+        for (let i = 0; i < timeOpts.length - 1; i++) {
+            const sel = timeOpts[i].value === selected ? 'selected' : '';
+            h += `<option value="${timeOpts[i].value}" ${sel}>${timeOpts[i].label}</option>`;
+        }
+        return h;
+    }
+
+    function buildEndOpts(selected) {
+        let h = '';
+        for (let i = 1; i < timeOpts.length; i++) {
+            const sel = timeOpts[i].value === selected ? 'selected' : '';
+            h += `<option value="${timeOpts[i].value}" ${sel}>${timeOpts[i].label}</option>`;
+        }
+        return h;
+    }
+
+    function renderDayScheduleRows(schedules) {
+        // schedules = { "Lun": { start: 7, end: 9 }, ... } or null for new
+        const defaultS = { start: 7, end: 9 };
+        let html = '';
+        DAYS.forEach(day => {
+            const sd = schedules ? (schedules[day] || null) : null;
+            const s = sd || defaultS;
+            const checked = sd ? 'checked' : '';
+            html += `
+                <div class="day-sched-row" data-day="${day}">
+                    <label class="day-sched-check">
+                        <input type="checkbox" class="day-cb" value="${day}" ${checked}>
+                        <span class="day-label">${day}</span>
+                    </label>
+                    <div class="day-sched-times">
+                        <select class="day-start" ${sd ? '' : 'disabled'}>
+                            ${buildStartOpts(s.start)}
+                        </select>
+                        <span class="day-sep">a</span>
+                        <select class="day-end" ${sd ? '' : 'disabled'}>
+                            ${buildEndOpts(s.end)}
+                        </select>
+                    </div>
+                    <button type="button" class="btn-icon day-copy" title="Copiar horario a todos los días"><i class="fas fa-copy"></i></button>
+                </div>
+            `;
+        });
+        DOM.dayScheduleList.innerHTML = html;
+
+        // Toggle enable/disable time selects based on checkbox
+        DOM.dayScheduleList.querySelectorAll('.day-cb').forEach(cb => {
+            cb.addEventListener('change', () => {
+                const row = cb.closest('.day-sched-row');
+                const selects = row.querySelectorAll('.day-start, .day-end');
+                selects.forEach(s => s.disabled = !cb.checked);
+                // If newly checked, set default times
+                if (cb.checked) {
+                    const st = row.querySelector('.day-start');
+                    const en = row.querySelector('.day-end');
+                    // Try to parse from course code
+                    const courseVal = DOM.course.value.trim();
+                    const parsed = parseCourseCode(courseVal);
+                    if (parsed) {
+                        st.value = parsed.start;
+                        en.value = parsed.end;
+                    }
+                }
+            });
+        });
+
+        // Copy button
+        DOM.dayScheduleList.querySelectorAll('.day-copy').forEach(btn => {
+            btn.addEventListener('click', () => {
+                const row = btn.closest('.day-sched-row');
+                const cb = row.querySelector('.day-cb');
+                if (!cb.checked) {
+                    showToast('Activa este día primero', 'warning');
+                    return;
+                }
+                const srcStart = row.querySelector('.day-start').value;
+                const srcEnd = row.querySelector('.day-end').value;
+                DOM.dayScheduleList.querySelectorAll('.day-sched-row').forEach(r => {
+                    const rCb = r.querySelector('.day-cb');
+                    rCb.checked = true;
+                    const st = r.querySelector('.day-start');
+                    const en = r.querySelector('.day-end');
+                    st.disabled = false;
+                    en.disabled = false;
+                    st.value = srcStart;
+                    en.value = srcEnd;
+                });
+                showToast('Horario copiado a todos los días', 'info');
+            });
+        });
+    }
+
+    function getSchedulesFromForm() {
+        const sched = {};
+        DOM.dayScheduleList.querySelectorAll('.day-sched-row').forEach(row => {
+            const cb = row.querySelector('.day-cb');
+            if (!cb.checked) return;
+            const day = cb.value;
+            const start = parseInt(row.querySelector('.day-start').value);
+            const end = parseInt(row.querySelector('.day-end').value);
+            if (start >= end) return;
+            sched[day] = { start, end };
+        });
+        return sched;
+    }
+
+    // ============================================================
+    // MODAL
+    // ============================================================
+    function openModal(subject) {
         DOM.form.reset();
         DOM.editId.value = '';
-        editId = null;
-        // Reset days
-        DOM.daysSelector.querySelectorAll('input').forEach(cb => cb.checked = false);
-
         if (subject) {
             DOM.modalTitle.innerHTML = '<i class="fas fa-edit"></i> Editar Materia';
             DOM.name.value = subject.name;
@@ -136,17 +266,10 @@ const App = (() => {
             DOM.credits.value = subject.credits;
             DOM.color.value = subject.color;
             DOM.editId.value = subject.id;
-            editId = subject.id;
-            subject.days.forEach(d => {
-                const cb = DOM.daysSelector.querySelector(`input[value="${d}"]`);
-                if (cb) cb.checked = true;
-            });
-            DOM.startTime.value = subject.start;
-            DOM.endTime.value = subject.end;
+            renderDayScheduleRows(subject.schedules || {});
         } else {
             DOM.modalTitle.innerHTML = '<i class="fas fa-plus-circle"></i> Nueva Materia';
-            DOM.startTime.value = 7;
-            DOM.endTime.value = 9;
+            renderDayScheduleRows(null);
         }
         DOM.modal.classList.add('active');
     }
@@ -155,53 +278,33 @@ const App = (() => {
         DOM.modal.classList.remove('active');
         DOM.form.reset();
         DOM.editId.value = '';
-        editId = null;
     }
 
-    // ---- Subject CRUD ----
-    function getSubjects() {
-        const stored = localStorage.getItem('oh_subjects');
-        if (stored) {
-            try {
-                subjects = JSON.parse(stored);
-            } catch(e) {
-                subjects = [];
-            }
-        } else {
-            subjects = [];
-        }
-        return subjects;
-    }
-
-    function saveSubjects() {
-        localStorage.setItem('oh_subjects', JSON.stringify(subjects));
-    }
-
+    // ============================================================
+    // CRUD
+    // ============================================================
     function addSubject(data) {
         if (getTotalCredits() + data.credits > MAX_CREDITS) {
-            showToast(`No puedes superar los ${MAX_CREDITS} créditos`, 'error');
+            showToast(`Máximo ${MAX_CREDITS} créditos`, 'error');
             return false;
         }
-        // Check conflict with existing scheduled
-        if (hasConflict(data, subjects)) {
-            showToast('Esta materia se cruza con otra materia existente', 'error');
-            return false;
-        }
-        const newSubject = {
+        const sub = {
             id: generateId(),
             name: data.name,
             course: data.course,
             credits: data.credits,
             color: data.color,
-            days: data.days,
-            start: data.start,
-            end: data.end,
+            schedules: data.schedules, // { "Lun": {start, end}, ... }
             createdAt: Date.now()
         };
-        subjects.push(newSubject);
+        if (checkConflict(sub, subjects)) {
+            showToast('Esta materia se cruza con otra existente', 'error');
+            return false;
+        }
+        subjects.push(sub);
         saveSubjects();
         renderAll();
-        showToast(`"${data.name}" registrada exitosamente`, 'success');
+        showToast(`"${data.name}" registrada`, 'success');
         return true;
     }
 
@@ -209,22 +312,20 @@ const App = (() => {
         const idx = subjects.findIndex(s => s.id === id);
         if (idx === -1) return false;
 
-        // Check credit limit excluding this subject
-        const otherCredits = subjects.filter(s => s.id !== id).reduce((sum, s) => sum + s.credits, 0);
-        if (otherCredits + data.credits > MAX_CREDITS) {
-            showToast(`No puedes superar los ${MAX_CREDITS} créditos`, 'error');
-            return false;
-        }
-
-        // Check conflict excluding self
         const others = subjects.filter(s => s.id !== id);
-        const testSubject = { ...data };
-        if (hasConflict(testSubject, others)) {
-            showToast('Esta materia se cruza con otra materia existente', 'error');
+        const otherCredits = others.reduce((sum, s) => sum + s.credits, 0);
+        if (otherCredits + data.credits > MAX_CREDITS) {
+            showToast(`Máximo ${MAX_CREDITS} créditos`, 'error');
             return false;
         }
 
-        subjects[idx] = { ...subjects[idx], ...data };
+        const updated = { ...subjects[idx], ...data };
+        if (checkConflict(updated, others)) {
+            showToast('Esta materia se cruza con otra existente', 'error');
+            return false;
+        }
+
+        subjects[idx] = updated;
         saveSubjects();
         renderAll();
         showToast(`"${data.name}" actualizada`, 'success');
@@ -232,43 +333,26 @@ const App = (() => {
     }
 
     function deleteSubject(id) {
-        if (!confirm('¿Eliminar esta materia?')) return;
+        if (!confirm('¿Eliminar esta materia de todos los registros?')) return;
         subjects = subjects.filter(s => s.id !== id);
         saveSubjects();
         renderAll();
         showToast('Materia eliminada', 'info');
     }
 
-    function getTotalCredits() {
-        return subjects.reduce((sum, s) => sum + s.credits, 0);
-    }
-
-    function hasConflict(subject, subjectList) {
-        const s1 = subject.start;
-        const e1 = subject.end;
-        for (const other of subjectList) {
-            if (other.id === subject.id) continue;
-            const s2 = other.start;
-            const e2 = other.end;
-            // Check day overlap and time overlap
-            const commonDays = subject.days.filter(d => other.days.includes(d));
-            if (commonDays.length > 0 && timesOverlap(s1, e1, s2, e2)) {
-                return true;
-            }
+    function getScheduledDays(subject) {
+        // Returns array of { day, start, end } for scheduling grid
+        const list = [];
+        const sched = subject.schedules || {};
+        for (const day in sched) {
+            if (sched[day]) list.push({ day, start: sched[day].start, end: sched[day].end });
         }
-        return false;
+        return list;
     }
 
-    function applyCourseCode(subject) {
-        const parsed = parseCourseCode(subject.course);
-        if (parsed) {
-            subject.start = parsed.start;
-            subject.end = parsed.end;
-        }
-        return subject;
-    }
-
-    // ---- Render: Subjects List ----
+    // ============================================================
+    // RENDER: SUBJECTS LIST (SIDEBAR)
+    // ============================================================
     function renderSubjectsList() {
         DOM.subjectsList.innerHTML = '';
         if (subjects.length === 0) {
@@ -283,11 +367,15 @@ const App = (() => {
         }
 
         subjects.forEach(sub => {
-            const timeStr = `${getTimeLabel(sub.start)} - ${getTimeLabel(sub.end)}`;
-            const daysStr = sub.days.join(', ');
+            const sched = sub.schedules || {};
+            const dayList = Object.keys(sched).filter(d => sched[d]);
+            let timesStr = dayList.map(d => `${d} ${getTimeLabel(sched[d].start)}-${getTimeLabel(sched[d].end)}`).join(', ');
+            if (!timesStr) timesStr = 'Sin horario';
+
             const card = document.createElement('div');
             card.className = 'subject-card';
             card.dataset.id = sub.id;
+            card.draggable = true;
             card.innerHTML = `
                 <div class="subject-color-bar" style="background:${sub.color}"></div>
                 <div class="subject-card-content">
@@ -295,8 +383,7 @@ const App = (() => {
                     <div class="subject-meta">
                         <span><i class="fas fa-hashtag"></i> ${sub.course}</span>
                         <span><i class="fas fa-star"></i> ${sub.credits} créd.</span>
-                        <span><i class="fas fa-clock"></i> ${timeStr}</span>
-                        <span><i class="fas fa-calendar-day"></i> ${daysStr}</span>
+                        <span><i class="fas fa-clock"></i> ${timesStr}</span>
                     </div>
                     <div class="subject-actions">
                         <button class="btn-icon edit" title="Editar" data-id="${sub.id}"><i class="fas fa-edit"></i></button>
@@ -305,48 +392,43 @@ const App = (() => {
                 </div>
             `;
             DOM.subjectsList.appendChild(card);
-        });
 
-        // Event listeners for edit/delete
-        DOM.subjectsList.querySelectorAll('.btn-icon.edit').forEach(btn => {
-            btn.addEventListener('click', (e) => {
+            // Edit
+            card.querySelector('.edit').addEventListener('click', (e) => {
                 e.stopPropagation();
-                const id = btn.dataset.id;
-                const sub = subjects.find(s => s.id === id);
-                if (sub) openModal(sub);
+                const s = subjects.find(x => x.id === sub.id);
+                if (s) openModal(s);
             });
-        });
-        DOM.subjectsList.querySelectorAll('.btn-icon.delete').forEach(btn => {
-            btn.addEventListener('click', (e) => {
+            // Delete
+            card.querySelector('.delete').addEventListener('click', (e) => {
                 e.stopPropagation();
-                deleteSubject(btn.dataset.id);
+                deleteSubject(sub.id);
             });
         });
 
-        // Enable drag on subject cards (for touch/mobile)
-        makeCardsDraggable();
+        setupDragCards();
     }
 
-    // ---- Drag from Sidebar to Grid ----
-    function makeCardsDraggable() {
-        const cards = DOM.subjectsList.querySelectorAll('.subject-card');
-        cards.forEach(card => {
-            card.draggable = true;
-            card.addEventListener('dragstart', handleDragStart);
-            card.addEventListener('dragend', handleDragEnd);
+    // ============================================================
+    // DRAG & DROP (mouse + touch)
+    // ============================================================
+    function setupDragCards() {
+        document.querySelectorAll('.subject-card').forEach(card => {
+            // HTML5 Drag
+            card.addEventListener('dragstart', e => {
+                card.classList.add('dragging');
+                e.dataTransfer.setData('text/plain', card.dataset.id);
+            });
+            card.addEventListener('dragend', () => {
+                card.classList.remove('dragging');
+                document.querySelectorAll('.slot-cell.drag-over').forEach(c => c.classList.remove('drag-over'));
+            });
 
             // Touch events for mobile
             let touchClone = null;
-            let touchStartY = 0;
-            let touchStartX = 0;
-
-            card.addEventListener('touchstart', (e) => {
-                const touch = e.touches[0];
-                touchStartX = touch.clientX;
-                touchStartY = touch.clientY;
+            card.addEventListener('touchstart', e => {
+                const t = e.touches[0];
                 card.classList.add('dragging');
-
-                // Create clone for visual feedback
                 touchClone = card.cloneNode(true);
                 touchClone.style.position = 'fixed';
                 touchClone.style.width = '150px';
@@ -354,93 +436,66 @@ const App = (() => {
                 touchClone.style.zIndex = '9999';
                 touchClone.style.opacity = '0.7';
                 touchClone.style.transform = 'rotate(3deg)';
-                touchClone.style.left = (touch.clientX - 75) + 'px';
-                touchClone.style.top = (touch.clientY - 30) + 'px';
+                touchClone.style.left = (t.clientX - 75) + 'px';
+                touchClone.style.top = (t.clientY - 30) + 'px';
                 document.body.appendChild(touchClone);
             }, { passive: true });
 
-            card.addEventListener('touchmove', (e) => {
+            card.addEventListener('touchmove', e => {
                 e.preventDefault();
-                const touch = e.touches[0];
+                const t = e.touches[0];
                 if (touchClone) {
-                    touchClone.style.left = (touch.clientX - 75) + 'px';
-                    touchClone.style.top = (touch.clientY - 30) + 'px';
+                    touchClone.style.left = (t.clientX - 75) + 'px';
+                    touchClone.style.top = (t.clientY - 30) + 'px';
                 }
-
-                // Check what grid cell we're over
-                const el = document.elementFromPoint(touch.clientX, touch.clientY);
-                if (el && el.classList.contains('slot-cell')) {
-                    document.querySelectorAll('.slot-cell.drag-over').forEach(c => c.classList.remove('drag-over'));
-                    el.classList.add('drag-over');
-                } else if (el && el.closest('.slot-cell')) {
-                    const cell = el.closest('.slot-cell');
-                    document.querySelectorAll('.slot-cell.drag-over').forEach(c => c.classList.remove('drag-over'));
-                    cell.classList.add('drag-over');
-                }
+                const el = document.elementFromPoint(t.clientX, t.clientY);
+                const cell = el ? (el.classList.contains('slot-cell') ? el : el.closest('.slot-cell')) : null;
+                document.querySelectorAll('.slot-cell.drag-over').forEach(c => c.classList.remove('drag-over'));
+                if (cell) cell.classList.add('drag-over');
             }, { passive: false });
 
-            card.addEventListener('touchend', (e) => {
+            card.addEventListener('touchend', e => {
                 card.classList.remove('dragging');
-                if (touchClone) {
-                    touchClone.remove();
-                    touchClone = null;
-                }
+                if (touchClone) { touchClone.remove(); touchClone = null; }
                 document.querySelectorAll('.slot-cell.drag-over').forEach(c => c.classList.remove('drag-over'));
-
-                const touch = e.changedTouches[0];
-                const el = document.elementFromPoint(touch.clientX, touch.clientY);
-                const cell = el && (el.classList.contains('slot-cell') ? el : el.closest('.slot-cell'));
+                const t = e.changedTouches[0];
+                const el = document.elementFromPoint(t.clientX, t.clientY);
+                const cell = el ? (el.classList.contains('slot-cell') ? el : el.closest('.slot-cell')) : null;
                 if (cell) {
                     const col = parseInt(cell.dataset.col);
                     const row = parseInt(cell.dataset.row);
-                    const subjectId = card.dataset.id;
-                    placeSubjectOnGrid(subjectId, col, row);
+                    placeSubjectOnGrid(card.dataset.id, col, row);
                 }
             }, { passive: true });
         });
     }
 
-    // ---- HTML5 Drag handlers ----
-    let draggedId = null;
-
-    function handleDragStart(e) {
-        draggedId = this.dataset.id;
-        this.classList.add('dragging');
-        e.dataTransfer.effectAllowed = 'move';
-        e.dataTransfer.setData('text/plain', draggedId);
-    }
-
-    function handleDragEnd(e) {
-        this.classList.remove('dragging');
-        document.querySelectorAll('.slot-cell.drag-over').forEach(c => c.classList.remove('drag-over'));
-    }
-
-    // ---- Render: Schedule Grid ----
+    // ============================================================
+    // RENDER: SCHEDULE GRID
+    // ============================================================
     function renderGrid() {
         DOM.grid.innerHTML = '';
 
-        // Header row
-        const emptyHeader = document.createElement('div');
-        emptyHeader.className = 'time-header';
-        emptyHeader.textContent = 'Hora';
-        DOM.grid.appendChild(emptyHeader);
+        // Header
+        const emptyH = document.createElement('div');
+        emptyH.className = 'time-header';
+        emptyH.textContent = 'Hora';
+        DOM.grid.appendChild(emptyH);
 
         DAYS.forEach(day => {
-            const dh = document.createElement('div');
-            dh.className = 'day-header';
-            dh.textContent = day;
-            DOM.grid.appendChild(dh);
+            const h = document.createElement('div');
+            h.className = 'day-header';
+            h.textContent = day;
+            DOM.grid.appendChild(h);
         });
 
-        // Time slots
+        // Cells
         for (let hour = START_HOUR; hour < END_HOUR; hour++) {
-            // Time label
             const tl = document.createElement('div');
             tl.className = 'time-label';
             tl.textContent = getTimeLabel(hour);
             DOM.grid.appendChild(tl);
 
-            // Day cells for this hour
             for (let d = 0; d < 6; d++) {
                 const cell = document.createElement('div');
                 cell.className = 'slot-cell';
@@ -449,118 +504,95 @@ const App = (() => {
                 cell.dataset.col = d;
                 cell.dataset.row = hour - START_HOUR;
 
-                // Drop zone events
-                cell.addEventListener('dragover', (e) => {
-                    e.preventDefault();
-                    e.dataTransfer.dropEffect = 'move';
-                    cell.classList.add('drag-over');
-                });
-                cell.addEventListener('dragleave', () => {
-                    cell.classList.remove('drag-over');
-                });
-                cell.addEventListener('drop', (e) => {
+                // Drop
+                cell.addEventListener('dragover', e => { e.preventDefault(); cell.classList.add('drag-over'); });
+                cell.addEventListener('dragleave', () => cell.classList.remove('drag-over'));
+                cell.addEventListener('drop', e => {
                     e.preventDefault();
                     cell.classList.remove('drag-over');
-                    const id = e.dataTransfer.getData('text/plain') || draggedId;
-                    if (id) {
-                        placeSubjectOnGrid(id, d, hour - START_HOUR);
-                    }
+                    const id = e.dataTransfer.getData('text/plain');
+                    if (id) placeSubjectOnGrid(id, d, hour - START_HOUR);
                 });
 
-                // Click to toggle placement
+                // Click to remove block
                 cell.addEventListener('click', () => {
-                    // If there's already a subject block in this cell, remove it
                     const block = cell.querySelector('.subject-block');
                     if (block) {
-                        removeSubjectFromGrid(block.dataset.id);
-                        return;
+                        block.remove();
+                        highlightConflicts();
+                        showToast('Materia quitada del horario', 'info');
                     }
-                    // Otherwise we'd need to know which subject to place - open modal instead
-                    // For simplicity, clicking empty cell does nothing in this implementation
-                    // The user uses sidebar drag
                 });
 
                 DOM.grid.appendChild(cell);
             }
         }
 
-        // Render existing scheduled subjects
-        renderScheduleBlocks();
+        // Render blocks from per-day schedules
+        renderAllScheduleBlocks();
     }
 
-    function renderScheduleBlocks() {
-        // Clear existing blocks
+    function renderAllScheduleBlocks() {
         DOM.grid.querySelectorAll('.subject-block').forEach(b => b.remove());
 
-        // Group scheduled by (day, startHour)
-        // scheduledSubjects: [{ id, day, row }]
         subjects.forEach(sub => {
-            const duration = sub.end - sub.start;
-            sub.days.forEach(day => {
+            const sched = sub.schedules || {};
+            for (const day in sched) {
+                if (!sched[day]) continue;
                 const dayIndex = DAYS.indexOf(day);
-                if (dayIndex === -1) return;
-                const startRow = sub.start - START_HOUR;
+                if (dayIndex === -1) continue;
+                const { start, end } = sched[day];
+                const duration = end - start;
+                const row = start - START_HOUR;
 
-                // Find the cell at the start position
-                const cells = DOM.grid.querySelectorAll(`.slot-cell[data-day="${dayIndex}"][data-hour="${sub.start}"]`);
-                if (cells.length === 0) return;
+                const cells = DOM.grid.querySelectorAll(`.slot-cell[data-day="${dayIndex}"][data-hour="${start}"]`);
+                if (cells.length === 0) continue;
+                const firstCell = cells[0];
 
-                // Create block
                 const block = document.createElement('div');
                 block.className = 'subject-block';
                 block.dataset.id = sub.id;
                 block.dataset.day = dayIndex;
-                block.dataset.startRow = startRow;
+                block.dataset.startRow = row;
                 block.dataset.duration = duration;
                 block.style.background = sub.color;
-                block.style.top = '0px';
-                block.style.height = `${duration * 60}px`; // Each hour row is --hour-height, but we use absolute
                 block.innerHTML = `
                     <div class="sb-name">${sub.name}</div>
-                    <div class="sb-time">${getTimeLabel(sub.start)} - ${getTimeLabel(sub.end)}</div>
-                    <button class="sb-delete" data-id="${sub.id}" title="Quitar del horario">&times;</button>
+                    <div class="sb-time">${getTimeLabel(start)} - ${getTimeLabel(end)}</div>
+                    <button class="sb-delete" data-id="${sub.id}" title="Quitar">&times;</button>
                 `;
-
-                // Position it over all cells it spans
-                // We'll append to the first cell and make it span using position absolute
-                const firstCell = cells[0];
-                firstCell.style.position = 'relative';
                 block.style.position = 'absolute';
                 block.style.left = '2px';
                 block.style.right = '2px';
                 block.style.top = '2px';
-                block.style.bottom = '2px';
                 block.style.zIndex = '10';
                 block.style.height = `calc(${duration * 60}px - 4px)`;
+                firstCell.style.position = 'relative';
                 firstCell.appendChild(block);
 
-                // Delete button
-                block.querySelector('.sb-delete').addEventListener('click', (e) => {
+                block.querySelector('.sb-delete').addEventListener('click', e => {
                     e.stopPropagation();
                     block.remove();
-                    showToast(`"${sub.name}" quitado del horario`, 'info');
+                    highlightConflicts();
                 });
-            });
+            }
         });
 
-        // Check for conflicts visually
         highlightConflicts();
     }
 
     function highlightConflicts() {
-        // Remove existing conflict highlights
         DOM.grid.querySelectorAll('.conflict-highlight').forEach(c => c.classList.remove('conflict-highlight'));
         DOM.grid.querySelectorAll('.subject-block.conflict').forEach(c => c.classList.remove('conflict'));
 
-        // Find all placed subjects and check overlaps
         const placed = [];
-        DOM.grid.querySelectorAll('.subject-block').forEach(block => {
+        DOM.grid.querySelectorAll('.subject-block').forEach(b => {
             placed.push({
-                el: block,
-                id: block.dataset.id,
-                day: parseInt(block.dataset.day),
-                start: parseInt(block.dataset.startRow) + START_HOUR,
-                duration: parseInt(block.dataset.duration),
+                el: b,
+                id: b.dataset.id,
+                day: parseInt(b.dataset.day),
+                start: parseInt(b.dataset.startRow) + START_HOUR,
+                duration: parseInt(b.dataset.duration),
             });
         });
 
@@ -571,17 +603,18 @@ const App = (() => {
                 if (timesOverlap(a.start, a.start + a.duration, b.start, b.start + b.duration)) {
                     a.el.classList.add('conflict');
                     b.el.classList.add('conflict');
-                    // Also highlight cells as conflict
-                    const cellA = a.el.closest('.slot-cell');
-                    const cellB = b.el.closest('.slot-cell');
-                    if (cellA) cellA.classList.add('conflict-highlight');
-                    if (cellB) cellB.classList.add('conflict-highlight');
+                    const cA = a.el.closest('.slot-cell');
+                    const cB = b.el.closest('.slot-cell');
+                    if (cA) cA.classList.add('conflict-highlight');
+                    if (cB) cB.classList.add('conflict-highlight');
                 }
             }
         }
     }
 
-    // ---- Place subject on grid ----
+    // ============================================================
+    // PLACE SUBJECT ON GRID (drag-drop)
+    // ============================================================
     function placeSubjectOnGrid(subjectId, colIndex, rowIndex) {
         const sub = subjects.find(s => s.id === subjectId);
         if (!sub) {
@@ -590,32 +623,33 @@ const App = (() => {
         }
 
         const day = DAYS[colIndex];
-        if (!sub.days.includes(day)) {
-            showToast(`"${sub.name}" no está registrada para ${day}`, 'warning');
-            return;
-        }
-
+        if (!day) return;
         const newStart = rowIndex + START_HOUR;
-        const duration = sub.end - sub.start;
+        // Use the subject's own duration from any existing schedule entry, or default 2h
+        let duration = 2;
+        const sched = sub.schedules || {};
+        if (sched[day]) {
+            duration = sched[day].end - sched[day].start;
+        } else {
+            // Find first schedule entry to get duration
+            for (const d in sched) {
+                if (sched[d]) { duration = sched[d].end - sched[d].start; break; }
+            }
+        }
         const newEnd = newStart + duration;
-
         if (newEnd > END_HOUR) {
-            showToast('El horario excede el límite de las 10 PM', 'error');
+            showToast('Excede el límite de las 10 PM', 'error');
             return;
         }
 
-        // Check conflicts with already placed subjects
-        const existingBlocks = DOM.grid.querySelectorAll('.subject-block');
+        // Check conflicts with existing blocks
         let hasOverlap = false;
-        existingBlocks.forEach(block => {
+        DOM.grid.querySelectorAll('.subject-block').forEach(block => {
             if (block.dataset.id === subjectId) return;
-            const bDay = parseInt(block.dataset.day);
-            if (bDay !== colIndex) return;
+            if (parseInt(block.dataset.day) !== colIndex) return;
             const bStart = parseInt(block.dataset.startRow) + START_HOUR;
             const bDur = parseInt(block.dataset.duration);
-            if (timesOverlap(newStart, newEnd, bStart, bStart + bDur)) {
-                hasOverlap = true;
-            }
+            if (timesOverlap(newStart, newEnd, bStart, bStart + bDur)) hasOverlap = true;
         });
 
         if (hasOverlap) {
@@ -623,31 +657,15 @@ const App = (() => {
             return;
         }
 
-        // Remove existing block for this subject if it exists on this day
-        existingBlocks.forEach(block => {
-            if (block.dataset.id === subjectId && parseInt(block.dataset.day) === colIndex) {
-                block.remove();
-            }
+        // Remove existing block for this subject on this day
+        DOM.grid.querySelectorAll(`.subject-block[data-id="${subjectId}"]`).forEach(b => {
+            if (parseInt(b.dataset.day) === colIndex) b.remove();
         });
 
-        // Update subject days/schedule to match placement
-        // We actually just update the in-memory representation for the grid
-        // by re-rendering
-        // But for simplicity, we'll just update the sub's start time to match placement
-        // Actually we keep original times but show them at the placed position
-        // Let's re-render after modifying a temporary placement state
-        // For this approach, we just render the block directly
-
+        // Find cell
         const cells = DOM.grid.querySelectorAll(`.slot-cell[data-day="${colIndex}"][data-hour="${newStart}"]`);
-        if (cells.length === 0) {
-            showToast('Celda no disponible', 'error');
-            return;
-        }
+        if (cells.length === 0) return;
         const firstCell = cells[0];
-
-        // Remove existing block for this subject in this day
-        const existing = firstCell.querySelector(`.subject-block[data-id="${subjectId}"]`);
-        if (existing) existing.remove();
 
         const block = document.createElement('div');
         block.className = 'subject-block';
@@ -659,7 +677,7 @@ const App = (() => {
         block.innerHTML = `
             <div class="sb-name">${sub.name}</div>
             <div class="sb-time">${getTimeLabel(newStart)} - ${getTimeLabel(newEnd)}</div>
-            <button class="sb-delete" data-id="${sub.id}" title="Quitar del horario">&times;</button>
+            <button class="sb-delete" data-id="${sub.id}" title="Quitar">&times;</button>
         `;
         block.style.position = 'absolute';
         block.style.left = '2px';
@@ -670,218 +688,200 @@ const App = (() => {
         firstCell.style.position = 'relative';
         firstCell.appendChild(block);
 
-        block.querySelector('.sb-delete').addEventListener('click', (e) => {
+        block.querySelector('.sb-delete').addEventListener('click', e => {
             e.stopPropagation();
             block.remove();
             highlightConflicts();
-            showToast(`"${sub.name}" quitado del horario`, 'info');
         });
 
+        // Update subject's schedule for this day
+        if (!sub.schedules) sub.schedules = {};
+        sub.schedules[day] = { start: newStart, end: newEnd };
+        saveSubjects();
+
         highlightConflicts();
-        showToast(`"${sub.name}" colocado en ${day} ${getTimeLabel(newStart)}`, 'success');
+        showToast(`${sub.name} en ${day} ${getTimeLabel(newStart)}`, 'success');
     }
 
-    function removeSubjectFromGrid(id) {
-        DOM.grid.querySelectorAll(`.subject-block[data-id="${id}"]`).forEach(b => b.remove());
-        highlightConflicts();
-        showToast('Materia quitada del horario', 'info');
-    }
-
-    // ---- Header Updates ----
+    // ============================================================
+    // HEADER UPDATE
+    // ============================================================
     function updateHeader() {
         const total = getTotalCredits();
         DOM.totalCredits.innerHTML = `<i class="fas fa-star"></i> Créditos: ${total} / ${MAX_CREDITS}`;
-        if (total >= MAX_CREDITS) {
-            DOM.totalCredits.style.background = 'rgba(255,200,0,0.25)';
-        } else {
-            DOM.totalCredits.style.background = 'rgba(255,255,255,0.15)';
-        }
+        DOM.totalCredits.style.background = total >= MAX_CREDITS ? 'rgba(255,200,0,0.25)' : 'rgba(255,255,255,0.15)';
         DOM.subjectCount.innerHTML = `<i class="fas fa-book"></i> Materias: ${subjects.length}`;
     }
 
-    // ---- Recommendations Engine ----
+    // ============================================================
+    // RECOMMENDATIONS ENGINE
+    // ============================================================
     function generateRecommendations() {
         if (subjects.length === 0) {
             showToast('Registra materias primero', 'warning');
             return;
         }
 
-        const totalCredits = getTotalCredits();
-        if (totalCredits > MAX_CREDITS) {
-            showToast(`Excedes el límite de ${MAX_CREDITS} créditos (${totalCredits})`, 'error');
+        const total = getTotalCredits();
+        if (total > MAX_CREDITS) {
+            showToast(`Excedes el límite de ${MAX_CREDITS} créditos (${total})`, 'error');
             return;
         }
 
-        // Strategy: generate 3 different schedules
+        // Ensure each subject has a base schedule from course code or defaults
+        subjects.forEach(sub => {
+            if (!sub.schedules || Object.keys(sub.schedules).length === 0) {
+                // Assign default schedule
+                const parsed = parseCourseCode(sub.course);
+                const start = parsed ? parsed.start : 7;
+                const end = parsed ? parsed.end : 9;
+                sub.schedules = {};
+                // Assign to all weekdays (Lun-Vie) by default for recommendation
+                ['Lun', 'Mar', 'Mié', 'Jue', 'Vie'].forEach(d => {
+                    sub.schedules[d] = { start, end };
+                });
+            }
+        });
+        saveSubjects();
+
         const recommendations = [];
 
-        // 1. Balanced schedule: spread classes evenly across days
-        const rec1 = buildBalancedSchedule();
+        const rec1 = buildBalanced();
         if (rec1) recommendations.push(rec1);
-
-        // 2. Compact schedule: pack classes into fewer days
-        const rec2 = buildCompactSchedule();
+        const rec2 = buildCompact();
         if (rec2) recommendations.push(rec2);
-
-        // 3. Morning-focused schedule: prefer morning hours
-        const rec3 = buildMorningSchedule();
+        const rec3 = buildMorning();
         if (rec3) recommendations.push(rec3);
 
         if (recommendations.length === 0) {
-            showToast('No se pudieron generar recomendaciones con las materias actuales', 'error');
+            showToast('No se pudieron generar recomendaciones', 'error');
             return;
         }
 
         showRecommendationsModal(recommendations);
     }
 
-    function buildBalancedSchedule() {
-        // Try to spread subjects across days, avoiding overlaps
-        const sorted = [...subjects].sort((a, b) => a.start - b.start);
-        const schedule = [];
-        const usedDays = {};
-
-        for (const sub of sorted) {
-            const availableDays = sub.days.filter(d => {
-                if (!usedDays[d]) usedDays[d] = [];
-                return !usedDays[d].some(existing =>
-                    timesOverlap(existing.start, existing.end, sub.start, sub.end)
-                );
-            });
-
-            if (availableDays.length === 0) continue;
-
-            // Pick day with least subjects scheduled so far
-            const dayCounts = availableDays.map(d => ({
-                day: d,
-                count: usedDays[d] ? usedDays[d].length : 0
-            }));
-            dayCounts.sort((a, b) => a.count - b.count);
-            const chosenDay = dayCounts[0].day;
-
-            if (!usedDays[chosenDay]) usedDays[chosenDay] = [];
-            usedDays[chosenDay].push({ id: sub.id, start: sub.start, end: sub.end });
-            schedule.push({ id: sub.id, day: chosenDay, subject: sub });
-        }
-
-        if (schedule.length === 0) return null;
-
-        return {
-            type: 'balanced',
-            name: 'Balanceado',
-            icon: 'fa-scale-balanced',
-            badge: 'balanced',
-            description: 'Distribuye las materias uniformemente entre los días disponibles',
-            schedule,
-            daysUsed: Object.keys(usedDays).length,
-            totalHours: schedule.reduce((sum, s) => sum + (s.subject.end - s.subject.start), 0),
-        };
-    }
-
-    function buildCompactSchedule() {
-        // Try to pack into as few days as possible
-        const sorted = [...subjects].sort((a, b) => (a.end - a.start) - (b.end - b.start));
-        const schedule = [];
-        const usedDays = {};
-
-        for (const sub of sorted) {
-            const availableDays = sub.days.filter(d => {
-                if (!usedDays[d]) usedDays[d] = [];
-                // Check if we can fit this subject in this day without overlap
-                return !usedDays[d].some(existing =>
-                    timesOverlap(existing.start, existing.end, sub.start, sub.end)
-                );
-            });
-
-            if (availableDays.length === 0) continue;
-
-            // Pick day with most classes already (to pack)
-            const dayCounts = availableDays.map(d => ({
-                day: d,
-                count: usedDays[d] ? usedDays[d].length : 0
-            }));
-            dayCounts.sort((a, b) => b.count - a.count);
-            const chosenDay = dayCounts[0].day;
-
-            if (!usedDays[chosenDay]) usedDays[chosenDay] = [];
-            usedDays[chosenDay].push({ id: sub.id, start: sub.start, end: sub.end });
-            schedule.push({ id: sub.id, day: chosenDay, subject: sub });
-        }
-
-        if (schedule.length === 0) return null;
-
-        return {
-            type: 'compact',
-            name: 'Compacto',
-            icon: 'fa-compress',
-            badge: 'compact',
-            description: 'Concentra las materias en la menor cantidad de días posible',
-            schedule,
-            daysUsed: Object.keys(usedDays).length,
-            totalHours: schedule.reduce((sum, s) => sum + (s.subject.end - s.subject.start), 0),
-        };
-    }
-
-    function buildMorningSchedule() {
-        // Prefer morning hours (before 2pm)
+    function buildBalanced() {
+        // Spread across days evenly
         const sorted = [...subjects].sort((a, b) => {
-            // Morning subjects first
-            const aMorning = a.start < 14 ? 0 : 1;
-            const bMorning = b.start < 14 ? 0 : 1;
-            if (aMorning !== bMorning) return aMorning - bMorning;
-            return a.start - b.start;
+            const aStart = getFirstStart(a);
+            const bStart = getFirstStart(b);
+            return aStart - bStart;
         });
-
+        const assigned = {};
         const schedule = [];
-        const usedDays = {};
 
         for (const sub of sorted) {
-            const availableDays = sub.days.filter(d => {
-                if (!usedDays[d]) usedDays[d] = [];
-                return !usedDays[d].some(existing =>
-                    timesOverlap(existing.start, existing.end, sub.start, sub.end)
-                );
-            });
-
-            if (availableDays.length === 0) continue;
-
-            const chosenDay = availableDays[0]; // Just take first available
-
-            if (!usedDays[chosenDay]) usedDays[chosenDay] = [];
-            usedDays[chosenDay].push({ id: sub.id, start: sub.start, end: sub.end });
-            schedule.push({ id: sub.id, day: chosenDay, subject: sub });
+            const baseSched = sub.schedules || {};
+            const days = Object.keys(baseSched).filter(d => baseSched[d]);
+            // Pick day with least subjects
+            const counts = days.map(d => ({ day: d, count: (assigned[d] || []).length }));
+            counts.sort((a, b) => a.count - b.count);
+            if (counts.length === 0) continue;
+            const chosen = counts[0].day;
+            if (!assigned[chosen]) assigned[chosen] = [];
+            assigned[chosen].push(sub.id);
+            schedule.push({ id: sub.id, day: chosen, subject: sub, start: baseSched[chosen].start, end: baseSched[chosen].end });
         }
 
         if (schedule.length === 0) return null;
-
         return {
-            type: 'morning',
-            name: 'Matutino',
-            icon: 'fa-sun',
-            badge: 'spread',
-            description: 'Prioriza horarios de la mañana (antes de 2 PM)',
-            schedule,
-            daysUsed: Object.keys(usedDays).length,
-            totalHours: schedule.reduce((sum, s) => sum + (s.subject.end - s.subject.start), 0),
+            type: 'balanced', name: 'Balanceado', icon: 'fa-scale-balanced', badge: 'balanced',
+            description: 'Distribuye las materias uniformemente entre los días',
+            schedule, daysUsed: Object.keys(assigned).length,
+            totalHours: schedule.reduce((s, item) => s + (item.end - item.start), 0),
         };
+    }
+
+    function buildCompact() {
+        // Pack into fewest days
+        const sorted = [...subjects].sort((a, b) => {
+            const aDur = getAvgDuration(a);
+            const bDur = getAvgDuration(b);
+            return aDur - bDur; // shorter first to pack more
+        });
+        const assigned = {};
+        const schedule = [];
+
+        for (const sub of sorted) {
+            const baseSched = sub.schedules || {};
+            const days = Object.keys(baseSched).filter(d => baseSched[d]);
+            const counts = days.map(d => ({ day: d, count: (assigned[d] || []).length }));
+            counts.sort((a, b) => b.count - a.count); // most packed first
+            if (counts.length === 0) continue;
+            const chosen = counts[0].day;
+            if (!assigned[chosen]) assigned[chosen] = [];
+            assigned[chosen].push(sub.id);
+            schedule.push({ id: sub.id, day: chosen, subject: sub, start: baseSched[chosen].start, end: baseSched[chosen].end });
+        }
+
+        if (schedule.length === 0) return null;
+        return {
+            type: 'compact', name: 'Compacto', icon: 'fa-compress', badge: 'compact',
+            description: 'Concentra en la menor cantidad de días',
+            schedule, daysUsed: Object.keys(assigned).length,
+            totalHours: schedule.reduce((s, item) => s + (item.end - item.start), 0),
+        };
+    }
+
+    function buildMorning() {
+        // Prefer morning hours
+        const sorted = [...subjects].sort((a, b) => {
+            const aStart = getFirstStart(a);
+            const bStart = getFirstStart(b);
+            const aM = aStart < 14 ? 0 : 1;
+            const bM = bStart < 14 ? 0 : 1;
+            return aM - bM || aStart - bStart;
+        });
+        const assigned = {};
+        const schedule = [];
+
+        for (const sub of sorted) {
+            const baseSched = sub.schedules || {};
+            const days = Object.keys(baseSched).filter(d => baseSched[d]);
+            if (days.length === 0) continue;
+            const chosen = days[0];
+            if (!assigned[chosen]) assigned[chosen] = [];
+            assigned[chosen].push(sub.id);
+            schedule.push({ id: sub.id, day: chosen, subject: sub, start: baseSched[chosen].start, end: baseSched[chosen].end });
+        }
+
+        if (schedule.length === 0) return null;
+        return {
+            type: 'morning', name: 'Matutino', icon: 'fa-sun', badge: 'spread',
+            description: 'Prioriza horarios de la mañana (antes de 2 PM)',
+            schedule, daysUsed: Object.keys(assigned).length,
+            totalHours: schedule.reduce((s, item) => s + (item.end - item.start), 0),
+        };
+    }
+
+    function getFirstStart(sub) {
+        const s = sub.schedules || {};
+        for (const d in s) { if (s[d]) return s[d].start; }
+        return 7;
+    }
+
+    function getAvgDuration(sub) {
+        const s = sub.schedules || {};
+        let total = 0, count = 0;
+        for (const d in s) { if (s[d]) { total += (s[d].end - s[d].start); count++; } }
+        return count ? total / count : 2;
     }
 
     function showRecommendationsModal(recommendations) {
         DOM.recBody.innerHTML = '';
-
         const list = document.createElement('div');
         list.className = 'recommendations-list';
 
-        recommendations.forEach((rec, idx) => {
+        recommendations.forEach(rec => {
             const card = document.createElement('div');
             card.className = 'rec-card';
-            card.dataset.index = idx;
 
             let subjectsHtml = '';
             rec.schedule.forEach(item => {
                 const sub = item.subject;
                 subjectsHtml += `<span class="rec-subject" style="background:${sub.color}">
-                    ${sub.name} (${item.day} ${getTimeLabel(sub.start)}-${getTimeLabel(sub.end)})
+                    ${sub.name} (${item.day} ${getTimeLabel(item.start)}-${getTimeLabel(item.end)})
                 </span> `;
             });
 
@@ -898,10 +898,9 @@ const App = (() => {
             `;
 
             card.addEventListener('click', () => {
-                // Deselect others
                 list.querySelectorAll('.rec-card').forEach(c => c.classList.remove('selected'));
                 card.classList.add('selected');
-                applyRecommendation(rec);
+                applyRec(rec);
             });
 
             list.appendChild(card);
@@ -911,70 +910,31 @@ const App = (() => {
         DOM.recModal.classList.add('active');
     }
 
-    function applyRecommendation(rec) {
-        // Remove all existing blocks from grid
+    function applyRec(rec) {
         DOM.grid.querySelectorAll('.subject-block').forEach(b => b.remove());
 
-        // Place each subject per the recommendation
+        // Update subject schedules per recommendation
         rec.schedule.forEach(item => {
-            const sub = item.subject;
-            const dayIndex = DAYS.indexOf(item.day);
-            if (dayIndex === -1) return;
-            const row = sub.start - START_HOUR;
-            const duration = sub.end - sub.start;
-
-            const cells = DOM.grid.querySelectorAll(`.slot-cell[data-day="${dayIndex}"][data-hour="${sub.start}"]`);
-            if (cells.length === 0) return;
-            const firstCell = cells[0];
-
-            const block = document.createElement('div');
-            block.className = 'subject-block';
-            block.dataset.id = sub.id;
-            block.dataset.day = dayIndex;
-            block.dataset.startRow = row;
-            block.dataset.duration = duration;
-            block.style.background = sub.color;
-            block.innerHTML = `
-                <div class="sb-name">${sub.name}</div>
-                <div class="sb-time">${getTimeLabel(sub.start)} - ${getTimeLabel(sub.end)}</div>
-                <button class="sb-delete" data-id="${sub.id}" title="Quitar del horario">&times;</button>
-            `;
-            block.style.position = 'absolute';
-            block.style.left = '2px';
-            block.style.right = '2px';
-            block.style.top = '2px';
-            block.style.zIndex = '10';
-            block.style.height = `calc(${duration * 60}px - 4px)`;
-            firstCell.style.position = 'relative';
-            firstCell.appendChild(block);
-
-            block.querySelector('.sb-delete').addEventListener('click', (e) => {
-                e.stopPropagation();
-                block.remove();
-                highlightConflicts();
-            });
+            const sub = subjects.find(s => s.id === item.id);
+            if (!sub) return;
+            if (!sub.schedules) sub.schedules = {};
+            sub.schedules[item.day] = { start: item.start, end: item.end };
         });
-
-        highlightConflicts();
+        saveSubjects();
+        renderAllScheduleBlocks();
         DOM.recModal.classList.remove('active');
         showToast('Recomendación aplicada al horario', 'success');
     }
 
-    // ---- Render All ----
-    function renderAll() {
-        renderGrid();
-        renderSubjectsList();
-        updateHeader();
-    }
-
-    // ---- Clear Schedule ----
+    // ============================================================
+    // CLEAR & EXPORT
+    // ============================================================
     function clearSchedule() {
         DOM.grid.querySelectorAll('.subject-block').forEach(b => b.remove());
         highlightConflicts();
-        showToast('Horario limpiado', 'info');
+        showToast('Horario limpiado (solo vista)', 'info');
     }
 
-    // ---- Export ----
     function exportSchedule() {
         const blocks = DOM.grid.querySelectorAll('.subject-block');
         if (blocks.length === 0) {
@@ -982,11 +942,11 @@ const App = (() => {
             return;
         }
 
-        let text = '=== MI HORARIO UNIVERSITARIO ===\n\n';
+        let text = '=== MI HORARIO UNIVERSITARIO ===\n';
         text += `Generado: ${new Date().toLocaleString()}\n`;
         text += `Créditos: ${getTotalCredits()} / ${MAX_CREDITS}\n\n`;
 
-        for (const day of DAYS) {
+        DAYS.forEach(day => {
             text += `--- ${day} ---\n`;
             const dayBlocks = [];
             DOM.grid.querySelectorAll('.subject-block').forEach(b => {
@@ -995,13 +955,7 @@ const App = (() => {
                     if (sub) {
                         const start = parseInt(b.dataset.startRow) + START_HOUR;
                         const dur = parseInt(b.dataset.duration);
-                        dayBlocks.push({
-                            name: sub.name,
-                            course: sub.course,
-                            start,
-                            end: start + dur,
-                            credits: sub.credits
-                        });
+                        dayBlocks.push({ name: sub.name, course: sub.course, start, end: start + dur, credits: sub.credits });
                     }
                 }
             });
@@ -1015,62 +969,43 @@ const App = (() => {
                 });
             }
             text += '\n';
-        }
+        });
 
         const blob = new Blob([text], { type: 'text/plain;charset=utf-8' });
         const link = document.createElement('a');
         link.href = URL.createObjectURL(blob);
-        link.download = `horario_${new Date().toISOString().slice(0,10)}.txt`;
+        link.download = `horario_${new Date().toISOString().slice(0, 10)}.txt`;
         link.click();
         URL.revokeObjectURL(link.href);
         showToast('Horario exportado', 'success');
     }
 
-    // ---- Form Submission ----
-    function handleFormSubmit(e) {
-        e.preventDefault();
-
-        const data = {
-            name: DOM.name.value.trim(),
-            course: DOM.course.value.trim(),
-            credits: parseInt(DOM.credits.value) || 3,
-            color: DOM.color.value,
-            days: [],
-            start: parseInt(DOM.startTime.value),
-            end: parseInt(DOM.endTime.value),
-        };
-
-        if (!data.name) {
-            showToast('El nombre es obligatorio', 'error');
-            return;
-        }
-        if (!data.course) {
-            showToast('El código de curso es obligatorio', 'error');
-            return;
-        }
-
-        // Try auto-fill from course code
-        const parsed = parseCourseCode(data.course);
-        if (parsed) {
-            data.start = parsed.start;
-            data.end = parsed.end;
-        }
-
-        if (data.start >= data.end) {
-            showToast('La hora de inicio debe ser menor a la de fin', 'error');
-            return;
-        }
-
-        DOM.daysSelector.querySelectorAll('input:checked').forEach(cb => {
-            data.days.push(cb.value);
-        });
-
-        if (data.days.length === 0) {
-            showToast('Selecciona al menos un día', 'error');
-            return;
-        }
-
+    // ============================================================
+    // FORM SUBMIT HANDLER
+    // ============================================================
+    function handleSave() {
+        const name = DOM.name.value.trim();
+        const course = DOM.course.value.trim();
+        const credits = parseInt(DOM.credits.value) || 3;
+        const color = DOM.color.value;
+        const schedules = getSchedulesFromForm();
         const editIdVal = DOM.editId.value;
+
+        if (!name) { showToast('El nombre es obligatorio', 'error'); return; }
+        if (!course) { showToast('El código de curso es obligatorio', 'error'); return; }
+        const dayCount = Object.keys(schedules).length;
+        if (dayCount === 0) { showToast('Selecciona al menos un día con horario', 'error'); return; }
+
+        // Validate no start >= end in any schedule
+        for (const d in schedules) {
+            if (schedules[d].start >= schedules[d].end) {
+                showToast(`Horario inválido en ${d}: inicio debe ser menor que fin`, 'error');
+                return;
+            }
+        }
+
+        const data = { name, course, credits, color, schedules };
+
         let success = false;
         if (editIdVal) {
             success = updateSubject(editIdVal, data);
@@ -1084,60 +1019,65 @@ const App = (() => {
         }
     }
 
-    // ---- Init ----
+    // ============================================================
+    // RENDER ALL
+    // ============================================================
+    function renderAll() {
+        renderGrid();
+        renderSubjectsList();
+        updateHeader();
+    }
+
+    // ============================================================
+    // INIT
+    // ============================================================
     function init() {
-        // Load subjects
-        getSubjects();
+        loadSubjects();
 
-        // Populate time selects
-        populateTimeSelects();
+        // Guardar button click
+        $('btnSaveSubject').addEventListener('click', handleSave);
 
-        // Set up event listeners
-        DOM.form.addEventListener('submit', handleFormSubmit);
+        // Form submit as backup
+        DOM.form.addEventListener('submit', e => {
+            e.preventDefault();
+            handleSave();
+        });
 
-        // Add Subject button
-        $('#btnAddSubject').addEventListener('click', () => openModal());
+        // Add subject
+        $('btnAddSubject').addEventListener('click', () => openModal());
 
         // Close modal
-        $('#btnCloseModal').addEventListener('click', closeModal);
-        $('#btnCancelModal').addEventListener('click', closeModal);
-        DOM.modal.addEventListener('click', (e) => {
-            if (e.target === DOM.modal) closeModal();
-        });
+        $('btnCloseModal').addEventListener('click', closeModal);
+        $('btnCancelModal').addEventListener('click', closeModal);
+        DOM.modal.addEventListener('click', e => { if (e.target === DOM.modal) closeModal(); });
 
         // Recommendations
-        $('#btnGenerateSchedules').addEventListener('click', generateRecommendations);
-        $('#btnCloseRecommendations').addEventListener('click', () => {
-            DOM.recModal.classList.remove('active');
-        });
-        DOM.recModal.addEventListener('click', (e) => {
-            if (e.target === DOM.recModal) DOM.recModal.classList.remove('active');
-        });
+        $('btnGenerateSchedules').addEventListener('click', generateRecommendations);
+        $('btnCloseRecommendations').addEventListener('click', () => DOM.recModal.classList.remove('active'));
+        DOM.recModal.addEventListener('click', e => { if (e.target === DOM.recModal) DOM.recModal.classList.remove('active'); });
 
-        // Clear schedule
-        $('#btnClearSchedule').addEventListener('click', clearSchedule);
-
-        // Export
-        $('#btnExport').addEventListener('click', exportSchedule);
+        // Clear & Export
+        $('btnClearSchedule').addEventListener('click', clearSchedule);
+        $('btnExport').addEventListener('click', exportSchedule);
 
         // Auto-fill course code
         DOM.course.addEventListener('blur', () => {
             const parsed = parseCourseCode(DOM.course.value.trim());
-            if (parsed) {
-                DOM.startTime.value = parsed.start;
-                DOM.endTime.value = parsed.end;
-            }
+            if (!parsed) return;
+            DOM.dayScheduleList.querySelectorAll('.day-sched-row').forEach(row => {
+                const cb = row.querySelector('.day-cb');
+                if (!cb.checked) return;
+                row.querySelector('.day-start').value = parsed.start;
+                row.querySelector('.day-end').value = parsed.end;
+            });
         });
 
-        // Render
         renderAll();
-
-        console.log('📚 Organizador de Horarios inicializado');
-        console.log(`📅 ${subjects.length} materias cargadas, ${getTotalCredits()} créditos`);
+        console.log('📚 Organizador de Horarios v2 iniciado');
+        console.log(`📅 ${subjects.length} materias, ${getTotalCredits()} créditos`);
     }
 
     return { init };
 })();
 
-// Start app when DOM is ready
 document.addEventListener('DOMContentLoaded', () => App.init());

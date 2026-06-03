@@ -673,6 +673,89 @@ body {
     cursor: pointer;
 }
 
+/* Per-Day Schedule Rows */
+#dayScheduleList {
+    max-height: 300px;
+    overflow-y: auto;
+    border: 1px solid var(--border);
+    border-radius: var(--radius-sm);
+    padding: 8px;
+}
+
+.day-sched-row {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    padding: 6px 4px;
+    border-bottom: 1px solid #f0f0f0;
+}
+
+.day-sched-row:last-child {
+    border-bottom: none;
+}
+
+.day-sched-check {
+    display: flex;
+    align-items: center;
+    gap: 4px;
+    cursor: pointer;
+    min-width: 50px;
+}
+
+.day-sched-check input[type="checkbox"] {
+    display: inline-block;
+    width: auto;
+    margin: 0;
+    cursor: pointer;
+}
+
+.day-label {
+    font-size: 0.82rem;
+    font-weight: 600;
+    min-width: 30px;
+}
+
+.day-sched-times {
+    display: flex;
+    align-items: center;
+    gap: 4px;
+    flex: 1;
+}
+
+.day-sched-times select {
+    padding: 4px 6px;
+    border: 1px solid var(--border);
+    border-radius: 4px;
+    font-size: 0.75rem;
+    background: white;
+    flex: 1;
+    min-width: 0;
+    cursor: pointer;
+}
+
+.day-sched-times select:disabled {
+    opacity: 0.4;
+    cursor: not-allowed;
+    background: #f5f5f5;
+}
+
+.day-sep {
+    font-size: 0.78rem;
+    color: var(--text-muted);
+    padding: 0 2px;
+}
+
+.day-copy {
+    flex-shrink: 0;
+    font-size: 0.7rem;
+    width: 24px;
+    height: 24px;
+}
+
+.day-copy:hover {
+    color: var(--primary) !important;
+}
+
 /* Recommendation Cards */
 .recommendations-list {
     display: grid;
