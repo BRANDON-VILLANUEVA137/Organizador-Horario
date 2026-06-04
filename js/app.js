@@ -8,6 +8,8 @@
 // 4. Register subjects without adding to personal schedule
 // 5. Smart recommendations using all offerings
 // 6. JSON export/import
+// 7. Same-subject mutex: only one course per subject in personal schedule
+// 8. Course replacement with confirmation dialog
 // ============================================================
 
 const App = (() => {
@@ -36,6 +38,8 @@ const App = (() => {
         offeringModalBody:  $('offeringModalBody'),
         recModal:           $('recommendationsModal'),
         recBody:            $('recommendationsBody'),
+        replaceModal:       $('replaceModal'),
+        replaceModalBody:   $('replaceModalBody'),
         form:               $('subjectForm'),
         name:               $('subjectName'),
         credits:            $('subjectCredits'),
@@ -72,6 +76,104 @@ const App = (() => {
     }
 
     function clone(obj) { return JSON.parse(JSON.stringify(obj)); }
+
+    // ============================================================
+    // SAME-SUBJECT MUTEX HELPERS
+    // ============================================================
+    /**
+     * Find the offering index currently selected in the personal schedule for a subject.
+     * Returns -1 if the subject has no personal schedule entries.
+     */
+    function getSelectedOfferingIndex(subject) {
+        if (!subject.personalSchedule || subject.personalSchedule.length === 0) return -1;
+        // All entries should reference the same offeringIndex, take the first one
+        return subject.personalSchedule[0].offeringIndex;
+    }
+
+    /**
+     * Check if a subject already has personal schedule entries.
+     */
+    function isSubjectInSchedule(subject) {
+        return subject.personalSchedule && subject.personalSchedule.length > 0;
+    }
+
+    /**
+     * Remove all personal schedule entries for a subject.
+     */
+    function clearSubjectSchedule(subject) {
+        subject.personalSchedule = [];
+    }
+
+    /**
+     * Show a confirmation modal asking the user to replace or keep the current course.
+     * Returns a promise that resolves to true (replace) or false (keep).
+     */
+    function showReplaceDialog(subject, newOffering) {
+        return new Promise((resolve) => {
+            DOM.replaceModalBody.innerHTML = '';
+
+            const msg = document.createElement('div');
+            msg.style.marginBottom = '16px';
+            msg.innerHTML = `
+                <p><i class="fas fa-info-circle" style="color:var(--primary)"></i> 
+                Ya tienes <strong>${subject.name}</strong> en tu horario personal con el curso actual.</p>
+                <p style="margin-top:12px;">Al seleccionar un curso diferente, ¿qué deseas hacer?</p>
+            `;
+            DOM.replaceModalBody.appendChild(msg);
+
+            const currentInfo = document.createElement('div');
+            currentInfo.style.cssText = 'background:#f8f9fa;border-radius:8px;padding:12px;margin-bottom:12px;';
+            const curOff = subject.offerings[getSelectedOfferingIndex(subject)];
+            let curHtml = `<strong style="color:var(--text)">Curso actual:</strong> ${curOff ? curOff.courseCode : 'N/A'}`;
+            if (subject.personalSchedule) {
+                const daysStr = subject.personalSchedule.map(e =>
+                    `${e.day} ${getTimeLabel(e.start)}-${getTimeLabel(e.end)}`
+                ).join(', ');
+                curHtml += `<br><span style="font-size:0.8rem;color:var(--text-muted)">${daysStr}</span>`;
+            }
+            currentInfo.innerHTML = curHtml;
+            DOM.replaceModalBody.appendChild(currentInfo);
+
+            const newInfo = document.createElement('div');
+            newInfo.style.cssText = 'background:#e8f5e9;border-radius:8px;padding:12px;margin-bottom:16px;';
+            let daysHtml = '';
+            Object.keys(newOffering.schedules).forEach(day => {
+                const s = newOffering.schedules[day];
+                daysHtml += `<span class="rec-subject" style="background:#4A90D9;font-size:0.7rem;padding:2px 6px;margin:2px;display:inline-block;border-radius:4px;color:white">${day} ${getTimeLabel(s.start)}-${getTimeLabel(s.end)}</span> `;
+            });
+            newInfo.innerHTML = `
+                <strong style="color:#2e7d32">Nuevo curso:</strong> ${newOffering.courseCode}<br>
+                <span style="font-size:0.8rem">${daysHtml}</span>
+            `;
+            DOM.replaceModalBody.appendChild(newInfo);
+
+            const btnContainer = document.createElement('div');
+            btnContainer.style.cssText = 'display:flex;gap:10px;justify-content:flex-end;';
+
+            const keepBtn = document.createElement('button');
+            keepBtn.className = 'btn btn-secondary';
+            keepBtn.innerHTML = '<i class="fas fa-times"></i> Mantener curso actual';
+            keepBtn.addEventListener('click', () => {
+                DOM.replaceModal.classList.remove('active');
+                resolve(false);
+            });
+
+            const replaceBtn = document.createElement('button');
+            replaceBtn.className = 'btn btn-primary';
+            replaceBtn.style.background = '#e67e22';
+            replaceBtn.innerHTML = '<i class="fas fa-exchange-alt"></i> Reemplazar por nuevo curso';
+            replaceBtn.addEventListener('click', () => {
+                DOM.replaceModal.classList.remove('active');
+                resolve(true);
+            });
+
+            btnContainer.appendChild(keepBtn);
+            btnContainer.appendChild(replaceBtn);
+            DOM.replaceModalBody.appendChild(btnContainer);
+
+            DOM.replaceModal.classList.add('active');
+        });
+    }
 
     // ============================================================
     // TOAST
@@ -162,16 +264,22 @@ const App = (() => {
     }
 
     // ============================================================
-    // OFFERING SELECTOR MODAL
+    // OFFERING SELECTOR MODAL (with mutex support)
     // ============================================================
     function showOfferingSelector(subjectId, dayIndex, rowIndex) {
         const sub = subjects.find(s => s.id === subjectId);
         if (!sub) return;
 
+        const alreadyInSchedule = isSubjectInSchedule(sub);
+        const selectedOffIdx = getSelectedOfferingIndex(sub);
+
         DOM.offeringModalBody.innerHTML = '';
         const p = document.createElement('p');
         p.style.marginBottom = '12px';
-        p.innerHTML = `<strong>${sub.name}</strong> - Selecciona el curso y horario:`;
+        const statusMsg = alreadyInSchedule
+            ? `<span style="color:var(--success)"><i class="fas fa-check-circle"></i></span> Ya en horario`
+            : `Selecciona el curso y horario:`;
+        p.innerHTML = `<strong>${sub.name}</strong> - ${statusMsg}`;
         DOM.offeringModalBody.appendChild(p);
 
         if (!sub.offerings || sub.offerings.length === 0) {
@@ -184,6 +292,9 @@ const App = (() => {
             const days = Object.keys(off.schedules || {}).filter(d => off.schedules[d]);
             if (days.length === 0) return;
 
+            const isSelectedOffering = alreadyInSchedule && selectedOffIdx === idx;
+            const isDifferentOffering = alreadyInSchedule && selectedOffIdx !== idx;
+
             const btn = document.createElement('button');
             btn.className = 'btn btn-outline';
             btn.style.width = '100%';
@@ -195,18 +306,53 @@ const App = (() => {
             btn.style.flexWrap = 'wrap';
             btn.style.gap = '6px';
 
-            let html = `<strong style="width:100%">Curso ${off.courseCode}</strong>`;
+            // Style based on state
+            if (isSelectedOffering) {
+                btn.style.borderColor = 'var(--success)';
+                btn.style.background = '#e8f5e9';
+                btn.style.cursor = 'default';
+                btn.style.opacity = '0.85';
+            } else if (isDifferentOffering) {
+                btn.style.borderStyle = 'dashed';
+                btn.style.borderColor = '#e67e22';
+            }
+
+            let html = '';
+            if (isSelectedOffering) {
+                html += `<strong style="width:100%"><i class="fas fa-check-circle" style="color:var(--success)"></i> Curso ${off.courseCode} (Seleccionado actualmente)</strong>`;
+            } else if (isDifferentOffering) {
+                html += `<strong style="width:100%"><i class="fas fa-exchange-alt" style="color:#e67e22"></i> Curso ${off.courseCode} (Reemplazar)</strong>`;
+            } else {
+                html += `<strong style="width:100%">Curso ${off.courseCode}</strong>`;
+            }
+
             days.forEach(day => {
                 const s = off.schedules[day];
                 html += `<span class="rec-subject" style="background:${sub.color};font-size:0.7rem;padding:2px 6px;margin:0">${day} ${getTimeLabel(s.start)}-${getTimeLabel(s.end)}</span>`;
             });
             btn.innerHTML = html;
 
-            btn.addEventListener('click', () => {
+            btn.addEventListener('click', async () => {
+                // If this is the already selected offering, do nothing
+                if (isSelectedOffering) {
+                    showToast('Este curso ya está en tu horario', 'info');
+                    return;
+                }
+
+                // If same subject is already in schedule with a different offering, ask to replace
+                if (isDifferentOffering) {
+                    const shouldReplace = await showReplaceDialog(sub, off);
+                    if (!shouldReplace) {
+                        return;
+                    }
+                    // Clear existing schedule for this subject
+                    clearSubjectSchedule(sub);
+                }
+
                 DOM.offeringModal.classList.remove('active');
+
                 // Place on grid using first day of this offering
                 const targetDay = DAYS[dayIndex];
-                // Check if this offering has the target day
                 if (off.schedules[targetDay]) {
                     const s = off.schedules[targetDay];
                     const newStart = rowIndex + START_HOUR;
@@ -224,12 +370,12 @@ const App = (() => {
                     }
                     // Add to personal schedule
                     if (!sub.personalSchedule) sub.personalSchedule = [];
-                    // Remove existing entries for this subject on this day
                     sub.personalSchedule = sub.personalSchedule.filter(e => e.day !== targetDay);
                     sub.personalSchedule.push({ offeringIndex: idx, day: targetDay, start: newStart, end: newEnd });
                     saveData();
                     renderAll();
-                    showToast(`${sub.name} agregado a ${targetDay} ${getTimeLabel(newStart)}`, 'success');
+                    const action = isDifferentOffering ? 'reemplazado' : 'agregado';
+                    showToast(`${sub.name} ${action} en ${targetDay} ${getTimeLabel(newStart)}`, 'success');
                 } else {
                     // Place on first available day of the offering
                     const availDay = days[0];
@@ -238,7 +384,8 @@ const App = (() => {
                     sub.personalSchedule.push({ offeringIndex: idx, day: availDay, start: s.start, end: s.end });
                     saveData();
                     renderAll();
-                    showToast(`${sub.name} agregado en ${availDay} (${getTimeLabel(s.start)}-${getTimeLabel(s.end)})`, 'success');
+                    const action = isDifferentOffering ? 'reemplazado' : 'agregado';
+                    showToast(`${sub.name} ${action} en ${availDay} (${getTimeLabel(s.start)}-${getTimeLabel(s.end)})`, 'success');
                 }
             });
 
@@ -481,6 +628,13 @@ const App = (() => {
             const offerings = sub.offerings || [];
             const coursesStr = offerings.map(o => o.courseCode).filter(c => c).join(', ') || 'Sin curso';
             const inSchedule = hasPersonalEntries(sub);
+            const selectedOffIdx = getSelectedOfferingIndex(sub);
+
+            // In the "personal" tab, show which course is selected
+            let selectedCourseStr = '';
+            if (inSchedule && selectedOffIdx >= 0 && offerings[selectedOffIdx]) {
+                selectedCourseStr = `<span><i class="fas fa-graduation-cap"></i> Curso: ${offerings[selectedOffIdx].courseCode}</span>`;
+            }
 
             const card = document.createElement('div');
             card.className = 'subject-card';
@@ -506,6 +660,7 @@ const App = (() => {
                     <div class="subject-meta">
                         <span><i class="fas fa-star"></i> ${sub.credits} créd.</span>
                         <span><i class="fas fa-graduation-cap"></i> ${coursesStr}</span>
+                        ${selectedCourseStr}
                         ${scheduleStr}
                     </div>
                     <div class="subject-actions">
@@ -527,18 +682,45 @@ const App = (() => {
                 e.stopPropagation();
                 deleteSubject(sub.id);
             });
+
+            // Add to schedule button
             const addSched = card.querySelector('.add-sched');
             if (addSched) {
-                addSched.addEventListener('click', e => {
+                addSched.addEventListener('click', async e => {
                     e.stopPropagation();
-                    // Open offering selector to add to personal schedule
                     if (!sub.offerings || sub.offerings.length === 0) {
                         showToast('Esta materia no tiene cursos configurados', 'warning');
                         return;
                     }
-                    // Add all days from first offering to personal schedule
+
+                    // Check if already in personal schedule (shouldn't happen, but defensive)
+                    if (isSubjectInSchedule(sub)) {
+                        showToast('Esta materia ya está en tu horario personal', 'info');
+                        return;
+                    }
+
+                    // If any offering of this subject is already scheduled (another offering),
+                    // ask to replace. This can happen if we had a bug, but handle gracefully.
+                    // For now, just add the first offering.
                     const off = sub.offerings[0];
                     if (!sub.personalSchedule) sub.personalSchedule = [];
+
+                    // Build entries for conflict check
+                    const newEntries = [];
+                    Object.keys(off.schedules).forEach(day => {
+                        newEntries.push({
+                            subjectId: sub.id,
+                            day,
+                            start: off.schedules[day].start,
+                            end: off.schedules[day].end
+                        });
+                    });
+
+                    if (hasConflictWithPersonal(newEntries)) {
+                        showToast(`"${sub.name}" se cruza con otra materia`, 'error');
+                        return;
+                    }
+
                     Object.keys(off.schedules).forEach(day => {
                         const existing = sub.personalSchedule.find(e => e.day === day);
                         if (!existing) {
@@ -555,6 +737,8 @@ const App = (() => {
                     showToast(`"${sub.name}" agregado al horario personal`, 'success');
                 });
             }
+
+            // Remove from schedule button
             const removeSched = card.querySelector('.remove-sched');
             if (removeSched) {
                 removeSched.addEventListener('click', e => {
@@ -647,7 +831,7 @@ const App = (() => {
             return;
         }
 
-        // Show offering selector
+        // Show offering selector (which will handle mutex and replacement)
         showOfferingSelector(subjectId, colIndex, rowIndex);
     }
 
@@ -863,6 +1047,7 @@ const App = (() => {
     function buildRec(unscheduled, baseEntries, type, name, icon, badge, desc) {
         const schedule = [];
         const usedDays = {};
+        const usedSubjects = new Set();
 
         // Build a list of all possible placements from offerings
         const candidates = [];
@@ -901,8 +1086,8 @@ const App = (() => {
             });
         }
 
-        const usedSubjects = new Set();
         for (const cand of candidates) {
+            // Skip if this subject already has a selected offering in the schedule
             if (usedSubjects.has(cand.subjectId)) continue;
 
             // Check if this day has capacity constraints
@@ -989,8 +1174,11 @@ const App = (() => {
             const sub = subjects.find(s => s.id === item.subjectId);
             if (!sub) return;
             if (!sub.personalSchedule) sub.personalSchedule = [];
-            // Remove existing entry for this day
-            sub.personalSchedule = sub.personalSchedule.filter(e => e.day !== item.day);
+            // Remove existing entry for this day (but keep other days of same subject - 
+            // though with mutex, we should clear all existing entries for this subject)
+            // Clear all existing personal schedule entries for this subject
+            // to ensure the recommendation fully replaces any previous selection
+            sub.personalSchedule = [];
             sub.personalSchedule.push({
                 offeringIndex: item.offeringIndex,
                 day: item.day,
@@ -1184,6 +1372,19 @@ const App = (() => {
         $('btnExportData').addEventListener('click', exportData);
         $('btnImportData').addEventListener('click', importData);
         DOM.importFileInput.addEventListener('change', handleImportFile);
+
+        // Replace modal close handlers
+        const closeReplaceModal = () => DOM.replaceModal.classList.remove('active');
+        const replaceModal = DOM.replaceModal;
+        const btnCloseReplace = document.getElementById('btnCloseReplaceModal');
+        const btnCancelReplace = document.getElementById('btnCancelReplace');
+        if (btnCloseReplace) btnCloseReplace.addEventListener('click', closeReplaceModal);
+        if (btnCancelReplace) btnCancelReplace.addEventListener('click', closeReplaceModal);
+        if (replaceModal) {
+            replaceModal.addEventListener('click', e => {
+                if (e.target === replaceModal) closeReplaceModal();
+            });
+        }
 
         renderAll();
         console.log('📚 OH v3 iniciado. Materias:', subjects.length);
