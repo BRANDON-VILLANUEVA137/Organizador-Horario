@@ -1,7 +1,7 @@
 from datetime import time
 from enum import IntEnum
 
-from pydantic import BaseModel, Field
+from pydantic import BaseModel, Field, model_validator
 
 
 class Weekday(IntEnum):
@@ -19,14 +19,66 @@ class TimeBlock(BaseModel):
     starts_at: time
     ends_at: time
 
+    @model_validator(mode="after")
+    def validate_interval(self) -> "TimeBlock":
+        if self.ends_at <= self.starts_at:
+            raise ValueError("ends_at must be later than starts_at")
+        return self
+
+
+class University(BaseModel):
+    code: str = Field(min_length=2)
+    name: str = Field(min_length=2)
+    portal_url: str
+
+
+class Campus(BaseModel):
+    code: str = Field(min_length=1)
+    name: str = Field(min_length=2)
+    university_code: str
+
+
+class AcademicProgram(BaseModel):
+    code: str = Field(min_length=1)
+    name: str = Field(min_length=2)
+    campus_code: str
+
+
+class AcademicTerm(BaseModel):
+    code: str = Field(min_length=1)
+    name: str = Field(min_length=2)
+    program_code: str
+
+
+class Subject(BaseModel):
+    code: str = Field(min_length=1)
+    name: str = Field(min_length=2)
+    credits: int = Field(default=0, ge=0)
+    program_code: str
+
 
 class CourseGroup(BaseModel):
     code: str
-    subject: str
+    subject_code: str
+    subject_name: str
     teacher: str | None = None
     classroom: str | None = None
     credits: int = Field(default=0, ge=0)
     blocks: list[TimeBlock] = Field(default_factory=list)
+
+
+class SchedulePreferences(BaseModel):
+    avoid_fridays: bool = False
+    prefer_morning: bool = False
+    prefer_afternoon: bool = False
+    maximize_free_days: bool = False
+    max_daily_hours: int | None = Field(default=None, ge=1, le=24)
+
+
+class GeneratedSchedule(BaseModel):
+    groups: list[CourseGroup] = Field(default_factory=list)
+    score: float = 0
+    preferences: SchedulePreferences = Field(default_factory=SchedulePreferences)
 
 
 class HealthResponse(BaseModel):
