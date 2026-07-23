@@ -1,7 +1,7 @@
 from datetime import time
 from enum import IntEnum
 
-from pydantic import BaseModel, Field, model_validator
+from pydantic import AnyHttpUrl, BaseModel, Field, model_validator
 
 
 class Weekday(IntEnum):
@@ -79,6 +79,19 @@ class GeneratedSchedule(BaseModel):
     groups: list[CourseGroup] = Field(default_factory=list)
     score: float = 0
     preferences: SchedulePreferences = Field(default_factory=SchedulePreferences)
+
+
+class ExtractionRequest(BaseModel):
+    portal_url: AnyHttpUrl
+    university: str | None = None
+
+
+class ExtractionResponse(BaseModel):
+    extraction_id: str
+    portal_url: AnyHttpUrl
+    university: str | None = None
+    groups: list[CourseGroup] = Field(default_factory=list)
+    source: str = "demo"
 
 
 class HealthResponse(BaseModel):
