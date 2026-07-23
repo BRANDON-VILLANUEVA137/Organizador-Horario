@@ -107,8 +107,12 @@ def normalize_table(headers: list[str], rows: list[list[str]]) -> list[CourseGro
     current_group = ""
     current_semester = ""
 
-    for row in rows:
+    rows_processed = 0
+    rows_skipped = 0
+
+    for row_idx, row in enumerate(rows):
         if len(row) <= max(col.values()):
+            rows_skipped += 1
             continue  # Fila mal formada, saltar
 
         # Leer valores de la fila actual
@@ -125,11 +129,38 @@ def normalize_table(headers: list[str], rows: list[list[str]]) -> list[CourseGro
             current_group = group_cell
 
         if not current_code or not current_subject or not current_group:
+            rows_skipped += 1
+            if row_idx < 20:  # Log primeras 20 filas
+                print(f"[DEBUG] Fila {row_idx}: SKIP - code='{current_code}', subject='{current_subject}', group='{current_group}'")
             continue
 
-        day = _parse_weekday(_clean_cell(row[col["day"]]))
-        start = _parse_time(_clean_cell(row[col["start"]]))
-        end = _parse_time(_clean_cell(row[col["end"]]))
+        rows_processed += 1
+        if row_idx < 20:  # Log primeras 20 filas
+            print(f"[DEBUG] Fila {row_idx}: OK - code='{code_cell}', subject='{subject_cell}', group='{group_cell}'")
+
+        # Validar que la fila tenga datos de horario válidos
+        day_raw = _clean_cell(row[col["day"]])
+        start_raw = _clean_cell(row[col["start"]])
+        end_raw = _clean_cell(row[col["end"]])
+        
+        # Si el día no es un día de semana válido, saltar esta fila
+        try:
+            day = _parse_weekday(day_raw)
+        except ValueError:
+            rows_skipped += 1
+            if row_idx < 20:
+                print(f"[DEBUG] Fila {row_idx}: SKIP - día inválido: '{day_raw}'")
+            continue
+        
+        # Validar horas
+        try:
+            start = _parse_time(start_raw)
+            end = _parse_time(end_raw)
+        except ValueError:
+            rows_skipped += 1
+            if row_idx < 20:
+                print(f"[DEBUG] Fila {row_idx}: SKIP - hora inválida: '{start_raw}' - '{end_raw}'")
+            continue
 
         # Datos opcionales
         classroom = (

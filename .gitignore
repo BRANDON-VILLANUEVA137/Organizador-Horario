@@ -1,5 +1,6 @@
 hoja_de_ruta.txt
 hoja_de_actualizaciones.txt
+muestra_de_horario.txt
 
 # Local configuration
 .env

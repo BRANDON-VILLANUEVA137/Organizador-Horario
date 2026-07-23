@@ -128,6 +128,8 @@ class CundinamarcaExtractor:
                     return frame
             except Exception:
                 continue
+        # Logging de diagnóstico
+        print(f"[DEBUG] Frames disponibles: {[f.url for f in page.frames]}")
         raise RuntimeError("The schedule form frame was not found")
 
     @staticmethod

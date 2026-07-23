@@ -27,10 +27,39 @@ class PlaywrightPortalExtractor:
         tables: list[ExtractedTable] = []
         for table in page.locator("table").all():
             headers = [cell.strip() for cell in table.locator("thead th").all_text_contents()]
-            rows = [
-                [cell.strip() for cell in row.locator("th, td").all_text_contents()]
-                for row in table.locator("tbody tr").all()
-            ]
+            
+            # Leer filas con manejo de rowspan
+            rows = []
+            for row in table.locator("tbody tr").all():
+                cells = row.locator("th, td").all()
+                row_data = []
+                for cell in cells:
+                    row_data.append(cell.inner_text().strip())
+                rows.append(row_data)
+            
+            # Normalizar filas con rowspan: expandir celdas faltantes
+            if rows:
+                max_cols = len(headers)
+                normalized_rows = []
+                for row in rows:
+                    if len(row) < max_cols:
+                        # Esta fila tiene menos columnas que los headers
+                        # Probablemente es un rowspan, agregar celdas vacías al inicio
+                        row = [''] * (max_cols - len(row)) + row
+                    normalized_rows.append(row)
+                rows = normalized_rows
+            
             if rows:
                 tables.append(ExtractedTable(headers=headers, rows=rows))
+        
+        # Logging de diagnóstico
+        print(f"[DEBUG] Tablas encontradas: {len(tables)}")
+        for idx, table in enumerate(tables):
+            print(f"[DEBUG]   Tabla {idx}: {len(table.headers)} columnas, {len(table.rows)} filas")
+            print(f"[DEBUG]     Headers: {table.headers}")
+            if idx == 0 and table.rows:
+                print(f"[DEBUG]     Primeras 3 filas:")
+                for row_idx, row in enumerate(table.rows[:3]):
+                    print(f"[DEBUG]       Fila {row_idx}: {row[:8]}")  # Primeras 8 columnas
+        
         return tables
