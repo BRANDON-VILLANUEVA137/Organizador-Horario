@@ -2,6 +2,8 @@ hoja_de_ruta.txt
 hoja_de_actualizaciones.txt
 muestra_de_horario.txt
 
+/data/extractions
+
 # Local configuration
 .env
 !.env.example
