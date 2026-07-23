@@ -94,11 +94,9 @@ function normalizePortalUrl(value) {
 async function showCampusSelection(portalUrl, university) {
   const heading = connectionPanel.querySelector('.connection-heading')
 
-  // Remove existing controls if any
   const existingControls = connectionPanel.querySelector('.catalog-controls')
   if (existingControls) existingControls.remove()
 
-  // Create fresh controls
   const controls = document.createElement('div')
   controls.className = 'catalog-controls'
   controls.innerHTML = `
@@ -120,7 +118,6 @@ async function showCampusSelection(portalUrl, university) {
   const programSelect = document.querySelector('#program-select')
   const startBtn = document.querySelector('#start-extraction')
 
-  // ── Event: campus change → load programs ──
   campusSelect.addEventListener('change', () => {
     const selectedCampus = campusSelect.value
     if (!selectedCampus) {
@@ -138,12 +135,10 @@ async function showCampusSelection(portalUrl, university) {
     startBtn.disabled = true
   })
 
-  // ── Event: program change → enable button ──
   programSelect.addEventListener('change', () => {
     startBtn.disabled = !(campusSelect.value && programSelect.value)
   })
 
-  // ── Event: start extraction ──
   startBtn.addEventListener('click', () => {
     const campusCode = campusSelect.value
     const programCode = programSelect.value
@@ -158,7 +153,6 @@ async function showCampusSelection(portalUrl, university) {
     })
   })
 
-  // ── Fetch catalog ──
   try {
     const response = await fetch(catalogUrl)
     if (!response.ok) throw new Error('No se pudo obtener el catálogo')
@@ -196,6 +190,12 @@ async function runExtraction(payload) {
     extractionData = await response.json()
     const groups = extractionData.groups
 
+    console.log('Extracción completada:', {
+      totalGroups: groups.length,
+      subjects: [...new Set(groups.map(g => g.subject_code))].length,
+      semesters: [...new Set(groups.map(g => g.semester).filter(Boolean))].sort()
+    })
+
     formMessage.textContent = `${groups.length} grupos encontrados. Ya puedes escoger tus materias.`
     document.querySelector('#to-subjects').hidden = false
 
@@ -210,18 +210,44 @@ async function runExtraction(payload) {
 // ── Subjects rendering ────────────────────────────────────────────
 function renderSubjects(groups) {
   const container = document.querySelector('#subject-list')
+  const semesterFilter = document.querySelector('#semester-filter')
 
   const subjectsMap = new Map()
+  const semestersSet = new Set()
+
   for (const group of groups) {
     if (!subjectsMap.has(group.subject_code)) {
       subjectsMap.set(group.subject_code, {
         code: group.subject_code,
         name: group.subject_name,
         credits: group.credits,
+        semester: group.semester || null,
         groups: [],
       })
     }
     subjectsMap.get(group.subject_code).groups.push(group)
+
+    if (group.semester) {
+      semestersSet.add(group.semester)
+    }
+  }
+
+  const sortedSemesters = Array.from(semestersSet).sort()
+  semesterFilter.innerHTML =
+    '<option value="">Todos los semestres</option>' +
+    sortedSemesters.map((s) => `<option value="${s}">${s}</option>`).join('')
+
+  semesterFilter.onchange = () => {
+    const selectedSemester = semesterFilter.value
+    const allOptions = container.querySelectorAll('.subject-option')
+    allOptions.forEach((option) => {
+      const subjectSemester = option.dataset.semester || null
+      if (!selectedSemester || subjectSemester === selectedSemester) {
+        option.hidden = false
+      } else {
+        option.hidden = true
+      }
+    })
   }
 
   const subjects = Array.from(subjectsMap.values())
@@ -235,11 +261,11 @@ function renderSubjects(groups) {
   container.innerHTML = subjects
     .map(
       (subj) => `
-    <label class="subject-option">
+    <label class="subject-option" data-semester="${subj.semester || ''}">
       <input type="checkbox" checked value="${subj.code}" />
       <span>
         <strong>${subj.name}</strong>
-        <small>${subj.code} · ${subj.credits} créditos · ${subj.groups.length} grupo(s)</small>
+        <small>${subj.code} · ${subj.credits} créditos · ${subj.groups.length} grupo(s)${subj.semester ? ' · ' + subj.semester : ''}</small>
       </span>
     </label>
   `
@@ -308,10 +334,12 @@ async function generateSchedules() {
 
   summary.textContent = `${topResults.length} horario(s) válido(s) ordenados según tus preferencias.`
 
+  window._scoredResults = topResults
+
   resultList.innerHTML = topResults
     .map(
       (item, i) => `
-    <article class="result-card ${i === 0 ? 'featured' : ''}">
+    <article class="result-card ${i === 0 ? 'featured' : ''}" data-index="${i}">
       <span class="result-rank">${String(i + 1).padStart(2, '0')}</span>
       <div>
         <strong>${item.days.join(' · ')}</strong>
@@ -322,6 +350,103 @@ async function generateSchedules() {
   `
     )
     .join('')
+
+  document.querySelectorAll('.result-card').forEach((card) => {
+    card.addEventListener('click', () => {
+      const index = parseInt(card.dataset.index)
+      const result = window._scoredResults[index]
+      if (result) renderCalendar(result.groups)
+    })
+  })
+
+  if (topResults.length > 0) {
+    renderCalendar(topResults[0].groups)
+  }
+}
+
+// ── Calendar rendering ────────────────────────────────────────────
+const DAY_NAMES = ['LUNES', 'MARTES', 'MIÉRCOLES', 'JUEVES', 'VIERNES']
+const DAY_COLORS = [
+  '#c05640',
+  '#3b8069',
+  '#2c7a9e',
+  '#b07a2e',
+  '#7b4f9e',
+]
+
+function renderCalendar(groups) {
+  const panel = document.querySelector('#calendar-panel')
+  const grid = document.querySelector('#calendar-grid')
+  panel.hidden = false
+
+  const startHour = 6
+  const endHour = 22
+  const hours = []
+  for (let h = startHour; h < endHour; h++) {
+    hours.push(h)
+  }
+
+  const blocksByDay = {}
+  for (const group of groups) {
+    for (const block of group.blocks) {
+      const dayIndex = block.weekday
+      if (dayIndex > 4) continue
+
+      if (!blocksByDay[dayIndex]) blocksByDay[dayIndex] = []
+      blocksByDay[dayIndex].push({
+        subject: group.subject_name,
+        code: group.subject_code,
+        group: group.code,
+        starts_at: block.starts_at,
+        ends_at: block.ends_at,
+      })
+    }
+  }
+
+  let html = ''
+  html += '<div class="calendar-header"></div>'
+  for (let d = 0; d < 5; d++) {
+    html += `<div class="calendar-header">${DAY_NAMES[d]}</div>`
+  }
+
+  for (const hour of hours) {
+    const label = `${String(hour).padStart(2, '0')}:00`
+    html += `<div class="calendar-hour">${label}</div>`
+
+    for (let d = 0; d < 5; d++) {
+      const cellId = `cell-${d}-${hour}`
+      html += `<div class="calendar-cell" id="${cellId}"></div>`
+    }
+  }
+
+  grid.innerHTML = html
+
+  for (let d = 0; d < 5; d++) {
+    const dayBlocks = blocksByDay[d] || []
+    for (const block of dayBlocks) {
+      const sHour = block.starts_at.hour || 0
+      const sMin = block.starts_at.minute || 0
+      const eHour = block.ends_at.hour || 0
+      const eMin = block.ends_at.minute || 0
+
+      const topOffset = sMin / 60
+      const height = (eHour - sHour) + (eMin - sMin) / 60
+
+      const cell = document.querySelector(`#cell-${d}-${sHour}`)
+      if (!cell) continue
+
+      const color = DAY_COLORS[d % DAY_COLORS.length]
+
+      const blockEl = document.createElement('div')
+      blockEl.className = 'calendar-block'
+      blockEl.style.top = `${topOffset * 100}%`
+      blockEl.style.height = `${height * 100}%`
+      blockEl.style.background = color
+      blockEl.innerHTML = `<strong>${block.subject}</strong>`
+      blockEl.title = `${block.subject} (${block.group})\n${String(sHour).padStart(2,'0')}:${String(sMin).padStart(2,'0')} - ${String(eHour).padStart(2,'0')}:${String(eMin).padStart(2,'0')}`
+      cell.appendChild(blockEl)
+    }
+  }
 }
 
 // ── Combinatorics ─────────────────────────────────────────────────

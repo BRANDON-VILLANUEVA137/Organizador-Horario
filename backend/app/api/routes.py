@@ -75,6 +75,8 @@ def create_extraction(request: ExtractionRequest) -> ExtractionResponse:
                 portal_url=str(request.portal_url),
             )
         except Exception as exc:
+            import traceback
+            traceback.print_exc()
             raise HTTPException(
                 status_code=502,
                 detail=f"Error al ejecutar el extractor web: {exc}",
@@ -86,21 +88,28 @@ def create_extraction(request: ExtractionRequest) -> ExtractionResponse:
                 detail="No se encontraron tablas de horarios en el portal.",
             )
 
-        # Usar la primera tabla que tenga datos
-        table = tables[0]
-        try:
-            groups = normalize_table(table.headers, table.rows)
-        except ValueError as exc:
+        # Procesar TODAS las tablas para obtener todas las materias
+        all_groups: list[CourseGroup] = []
+        for idx, table in enumerate(tables):
+            try:
+                groups = normalize_table(table.headers, table.rows)
+                print(f"[DEBUG] Tabla {idx}: {len(table.rows)} filas, {len(groups)} grupos normalizados")
+                all_groups.extend(groups)
+            except ValueError as exc:
+                print(f"[DEBUG] Tabla {idx} falló: {exc}")
+                continue
+
+        if not all_groups:
             raise HTTPException(
                 status_code=422,
-                detail=f"Error al normalizar la tabla extraída: {exc}",
+                detail="No se pudo normalizar ninguna tabla de horarios.",
             )
 
         return ExtractionResponse(
             extraction_id=str(uuid4()),
             portal_url=request.portal_url,
             university=request.university,
-            groups=groups,
+            groups=all_groups,
             source="cundinamarca",
         )
 

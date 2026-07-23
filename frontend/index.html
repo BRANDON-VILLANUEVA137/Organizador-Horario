@@ -57,6 +57,10 @@
         <div class="eyebrow">PASO 03 / MATERIAS</div>
         <h2 id="subjects-title">Escoge las materias<br /><em>de este semestre.</em></h2>
         <p class="section-copy">Selecciona las asignaturas que quieres cursar. SmartSchedule buscará los grupos disponibles.</p>
+        <div class="subject-filters">
+          <label for="semester-filter">Filtrar por semestre</label>
+          <select id="semester-filter"><option value="">Todos los semestres</option></select>
+        </div>
         <div class="subject-list" id="subject-list">
           <!-- Las materias se cargan dinámicamente desde la API -->
         </div>
@@ -79,8 +83,16 @@
         <div class="eyebrow">PASO 05 / RESULTADOS</div>
         <h2 id="results-title">Estas son tus mejores<br /><em>opciones.</em></h2>
         <p class="section-copy" id="results-summary">Cargando horarios...</p>
-        <div class="result-list" id="result-list">
-          <!-- Los resultados se cargan dinámicamente -->
+        <div class="results-layout">
+          <div class="result-list" id="result-list">
+            <!-- Los resultados se cargan dinámicamente -->
+          </div>
+          <div class="calendar-panel" id="calendar-panel" hidden>
+            <div class="eyebrow">VISTA SEMANAL</div>
+            <div class="calendar-grid" id="calendar-grid">
+              <!-- La grilla se renderiza dinámicamente -->
+            </div>
+          </div>
         </div>
         <button class="primary-action next-action" id="to-export" type="button">Exportar horario <span aria-hidden="true">→</span></button>
       </section>

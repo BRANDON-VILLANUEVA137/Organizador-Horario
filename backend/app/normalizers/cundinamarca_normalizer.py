@@ -75,6 +75,8 @@ def _infer_headers(headers: list[str]) -> dict[str, int]:
             mapping["teacher"] = i
         elif "CREDITO" in h or "CRÉDITO" in h or "CRED" in h:
             mapping["credits"] = i
+        elif "SEMESTRE" in h:
+            mapping["semester"] = i
     return mapping
 
 
@@ -103,6 +105,7 @@ def normalize_table(headers: list[str], rows: list[list[str]]) -> list[CourseGro
     current_code = ""
     current_subject = ""
     current_group = ""
+    current_semester = ""
 
     for row in rows:
         if len(row) <= max(col.values()):
@@ -144,6 +147,13 @@ def normalize_table(headers: list[str], rows: list[list[str]]) -> list[CourseGro
             if "credits" in col and len(row) > col["credits"]
             else "0"
         )
+        semester_str = (
+            _clean_cell(row[col["semester"]])
+            if "semester" in col and len(row) > col["semester"]
+            else ""
+        )
+        if semester_str:
+            current_semester = semester_str
 
         key = (current_code, current_group)
         if key not in raw_groups:
@@ -154,6 +164,7 @@ def normalize_table(headers: list[str], rows: list[list[str]]) -> list[CourseGro
                 "classroom": classroom,
                 "teacher": teacher,
                 "credits": credits_str,
+                "semester": current_semester,
                 "blocks": [],
             }
 
@@ -164,6 +175,8 @@ def normalize_table(headers: list[str], rows: list[list[str]]) -> list[CourseGro
             raw_groups[key]["classroom"] = classroom
         if teacher:
             raw_groups[key]["teacher"] = teacher
+        if semester_str:
+            raw_groups[key]["semester"] = semester_str
 
     # Convertir a CourseGroup
     course_groups: list[CourseGroup] = []
@@ -193,8 +206,14 @@ def normalize_table(headers: list[str], rows: list[list[str]]) -> list[CourseGro
                 teacher=data["teacher"] or None,
                 classroom=data["classroom"] or None,
                 credits=credits,
+                semester=data.get("semester") or None,
                 blocks=time_blocks,
             )
         )
+
+    # Logging de diagnóstico
+    print(f"[DEBUG] Grupos únicos creados: {len(course_groups)}")
+    for cg in course_groups[:10]:  # Mostrar primeros 10
+        print(f"[DEBUG]   - {cg.subject_code}: {cg.subject_name} (semestre: {cg.semester}, bloques: {len(cg.blocks)})")
 
     return course_groups

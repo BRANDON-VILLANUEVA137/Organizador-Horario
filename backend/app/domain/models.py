@@ -64,6 +64,7 @@ class CourseGroup(BaseModel):
     teacher: str | None = None
     classroom: str | None = None
     credits: int = Field(default=0, ge=0)
+    semester: str | None = None
     blocks: list[TimeBlock] = Field(default_factory=list)
 
 

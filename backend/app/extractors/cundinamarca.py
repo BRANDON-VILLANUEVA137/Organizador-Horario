@@ -73,7 +73,19 @@ class CundinamarcaExtractor:
                 page = browser.new_page()
                 page.goto(portal_url, wait_until="domcontentloaded", timeout=30_000)
                 page.wait_for_timeout(1_500)
-                frame = self._schedule_frame(page)
+
+                # Intentar encontrar el frame del formulario
+                frame = None
+                for attempt in range(3):
+                    try:
+                        frame = self._schedule_frame(page)
+                        break
+                    except RuntimeError:
+                        if attempt < 2:
+                            page.wait_for_timeout(1_000)
+                        else:
+                            raise
+
                 frame.locator("#sede_sel").select_option(campus_value)
                 frame.wait_for_function(
                     """() => document.querySelectorAll('#programa_sel option').length > 1""",
@@ -87,20 +99,35 @@ class CundinamarcaExtractor:
                         form.submit();
                     }"""
                 )
-                page.wait_for_timeout(2_000)
+                page.wait_for_timeout(3_000)
+
+                # Buscar tablas en todos los frames disponibles
+                all_tables: list[ExtractedTable] = []
                 for current_frame in page.frames:
-                    tables = PlaywrightPortalExtractor._read_tables(current_frame)
-                    if tables:
-                        return tables
-                return []
+                    try:
+                        tables = PlaywrightPortalExtractor._read_tables(current_frame)
+                        if tables:
+                            all_tables.extend(tables)
+                    except Exception:
+                        continue
+
+                return all_tables
             finally:
                 browser.close()
 
     @staticmethod
     def _schedule_frame(page) -> Frame:
+        # Buscar el frame del formulario con mayor tolerancia
         for frame in page.frames:
             if frame.url.endswith("/pub_rep_val.jsp"):
                 return frame
+        # Fallback: buscar cualquier frame que contenga el select de sede
+        for frame in page.frames:
+            try:
+                if frame.locator("#sede_sel").count() > 0:
+                    return frame
+            except Exception:
+                continue
         raise RuntimeError("The schedule form frame was not found")
 
     @staticmethod
