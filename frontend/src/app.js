@@ -19,8 +19,8 @@ const panels = [
   'export-panel',
 ].map((id) => document.querySelector(`#${id}`))
 
-let extractionData = null // { groups, extraction_id, portal_url, university }
-let catalogData = null // { campuses, programs_by_campus }
+let extractionData = null
+let catalogData = null
 
 // ── API status check ──────────────────────────────────────────────
 function updateApiStatus(state, label) {
@@ -53,7 +53,7 @@ document.querySelector('#to-export').addEventListener('click', () =>
   showPanel(document.querySelector('#export-panel'))
 )
 
-// ── Form submission: campus/program UI then extraction ───────────
+// ── Form submission ───────────────────────────────────────────────
 connectForm.addEventListener('submit', async (event) => {
   event.preventDefault()
   const portalUrl = normalizePortalUrl(
@@ -70,7 +70,6 @@ connectForm.addEventListener('submit', async (event) => {
   if (university === 'Universidad de Cundinamarca') {
     await showCampusSelection(portalUrl, university)
   } else {
-    // Extracción directa (demo) para otras universidades
     await runExtraction({ portal_url: portalUrl, university })
   }
 })
@@ -91,15 +90,15 @@ function normalizePortalUrl(value) {
   }
 }
 
-// ── Campus / Program Selection UI ─────────────────────────────────
+// ── Campus / Program Selection ────────────────────────────────────
 async function showCampusSelection(portalUrl, university) {
-  // Add campus & program selectors to the connection panel
   const heading = connectionPanel.querySelector('.connection-heading')
 
-  // Remove existing campus/program controls if any
+  // Remove existing controls if any
   const existingControls = connectionPanel.querySelector('.catalog-controls')
   if (existingControls) existingControls.remove()
 
+  // Create fresh controls
   const controls = document.createElement('div')
   controls.className = 'catalog-controls'
   controls.innerHTML = `
@@ -117,77 +116,67 @@ async function showCampusSelection(portalUrl, university) {
   `
   heading.after(controls)
 
-  // Fetch catalog
+  const campusSelect = document.querySelector('#campus-select')
+  const programSelect = document.querySelector('#program-select')
+  const startBtn = document.querySelector('#start-extraction')
+
+  // ── Event: campus change → load programs ──
+  campusSelect.addEventListener('change', () => {
+    const selectedCampus = campusSelect.value
+    if (!selectedCampus) {
+      programSelect.innerHTML = '<option value="">Primero selecciona una sede</option>'
+      programSelect.disabled = true
+      startBtn.disabled = true
+      return
+    }
+
+    const programs = catalogData?.programs_by_campus[selectedCampus] || []
+    programSelect.innerHTML =
+      '<option value="">Selecciona un programa</option>' +
+      programs.map((p) => `<option value="${p.value}">${p.label}</option>`).join('')
+    programSelect.disabled = false
+    startBtn.disabled = true
+  })
+
+  // ── Event: program change → enable button ──
+  programSelect.addEventListener('change', () => {
+    startBtn.disabled = !(campusSelect.value && programSelect.value)
+  })
+
+  // ── Event: start extraction ──
+  startBtn.addEventListener('click', () => {
+    const campusCode = campusSelect.value
+    const programCode = programSelect.value
+    if (!campusCode || !programCode) return
+
+    controls.hidden = true
+    runExtraction({
+      portal_url: portalUrl,
+      university,
+      campus_code: campusCode,
+      program_code: programCode,
+    })
+  })
+
+  // ── Fetch catalog ──
   try {
     const response = await fetch(catalogUrl)
     if (!response.ok) throw new Error('No se pudo obtener el catálogo')
     catalogData = await response.json()
 
-    const campusSelect = document.querySelector('#campus-select')
     campusSelect.innerHTML =
       '<option value="">Selecciona una sede</option>' +
-      catalogData.campuses
-        .map((c) => `<option value="${c.value}">${c.label}</option>`)
-        .join('')
-
-    campusSelect.addEventListener('change', onCampusChange)
+      catalogData.campuses.map((c) => `<option value="${c.value}">${c.label}</option>`).join('')
   } catch (error) {
     formMessage.textContent =
       'No se pudieron cargar las sedes. Verifica que el backend esté ejecutándose.'
   }
 }
 
-function onCampusChange() {
-  const campusSelect = document.querySelector('#campus-select')
-  const programSelect = document.querySelector('#program-select')
-  const startBtn = document.querySelector('#start-extraction')
-
-  const selectedCampus = campusSelect.value
-  if (!selectedCampus) {
-    programSelect.innerHTML =
-      '<option value="">Primero selecciona una sede</option>'
-    programSelect.disabled = true
-    startBtn.disabled = true
-    return
-  }
-
-  const programs = catalogData.programs_by_campus[selectedCampus] || []
-  programSelect.innerHTML =
-    '<option value="">Selecciona un programa</option>' +
-    programs.map((p) => `<option value="${p.value}">${p.label}</option>`).join('')
-  programSelect.disabled = false
-  startBtn.disabled = true
-
-  programSelect.addEventListener('change', () => {
-    const portalUrl = normalizePortalUrl(
-      document.querySelector('#portal-url').value
-    )
-    const university = document.querySelector('#university').value
-    const campusCode = campusSelect.value
-    const programCode = programSelect.value
-
-    startBtn.disabled = !campusCode || !programCode
-
-    // Re-bind start button (remove previous listener)
-    const newBtn = startBtn.cloneNode(true)
-    startBtn.parentNode.replaceChild(newBtn, startBtn)
-    newBtn.addEventListener('click', () => {
-      document.querySelector('.catalog-controls').hidden = true
-      runExtraction({
-        portal_url: portalUrl,
-        university,
-        campus_code: campusCode,
-        program_code: programCode,
-      })
-    })
-  })
-}
-
 // ── Extraction ────────────────────────────────────────────────────
 async function runExtraction(payload) {
   const steps = [...document.querySelectorAll('[data-step]')]
   try {
-    // Animar pasos
     for (const step of steps) {
       await new Promise((resolve) => setTimeout(resolve, 350))
       step.classList.add('done')
@@ -207,10 +196,9 @@ async function runExtraction(payload) {
     extractionData = await response.json()
     const groups = extractionData.groups
 
-    formMessage.textContent = `${groups.length} grupos encontrados en ${groups.length > 0 ? groups[0].subject_name.split(' ')[0] + '...' : ''} Ya puedes escoger tus materias.`
+    formMessage.textContent = `${groups.length} grupos encontrados. Ya puedes escoger tus materias.`
     document.querySelector('#to-subjects').hidden = false
 
-    // Render subjects dynamically
     renderSubjects(groups)
   } catch (error) {
     formMessage.textContent =
@@ -223,7 +211,6 @@ async function runExtraction(payload) {
 function renderSubjects(groups) {
   const container = document.querySelector('#subject-list')
 
-  // Agrupar por subject_code para mostrar una vez cada materia
   const subjectsMap = new Map()
   for (const group of groups) {
     if (!subjectsMap.has(group.subject_code)) {
@@ -276,7 +263,6 @@ async function generateSchedules() {
     return
   }
 
-  // Obtener materias seleccionadas
   const selectedSubjects = [
     ...document.querySelectorAll('#subject-list input:checked'),
   ].map((input) => input.value)
@@ -287,16 +273,13 @@ async function generateSchedules() {
     return
   }
 
-  // Preferencias
   const preferMorning = document.querySelector('#pref-morning').checked
   const avoidFridays = document.querySelector('#pref-fridays').checked
 
-  // Construir payload para el motor de eventos (simulado localmente)
   const selectedGroups = extractionData.groups.filter((g) =>
     selectedSubjects.includes(g.subject_code)
   )
 
-  // Agrupar por materia
   const bySubject = new Map()
   for (const group of selectedGroups) {
     if (!bySubject.has(group.subject_code)) {
@@ -305,7 +288,6 @@ async function generateSchedules() {
     bySubject.get(group.subject_code).push(group)
   }
 
-  // Generar combinaciones (algoritmo local)
   const combinations = generateCombinations(Array.from(bySubject.values()))
   const scored = combinations.map((combo) => ({
     groups: combo,
@@ -314,10 +296,7 @@ async function generateSchedules() {
     credits: combo.reduce((sum, g) => sum + (g.credits || 0), 0),
   }))
 
-  // Ordenar por puntuación descendente
   scored.sort((a, b) => b.score - a.score)
-
-  // Mostrar top 10
   const topResults = scored.slice(0, 10)
 
   if (topResults.length === 0) {
@@ -349,7 +328,6 @@ async function generateSchedules() {
 function generateCombinations(groupsBySubject) {
   if (groupsBySubject.length === 0) return []
 
-  // Producto cartesiano: un grupo por materia
   function cartesian(arrays) {
     if (arrays.length === 0) return [[]]
     const [first, ...rest] = arrays
@@ -358,8 +336,6 @@ function generateCombinations(groupsBySubject) {
   }
 
   const allCombos = cartesian(groupsBySubject)
-
-  // Filtrar conflictos
   return allCombos.filter((combo) => !hasConflicts(combo))
 }
 
@@ -388,9 +364,8 @@ function blocksOverlap(a, b) {
 
 // ── Scoring ───────────────────────────────────────────────────────
 function calculateScore(combo, { preferMorning, avoidFridays }) {
-  let score = 50 // base
+  let score = 50
 
-  // Bonus por preferir mañana
   if (preferMorning) {
     const morningCount = combo.filter((g) =>
       g.blocks.some((b) => {
@@ -401,15 +376,13 @@ function calculateScore(combo, { preferMorning, avoidFridays }) {
     score += (morningCount / combo.length) * 25
   }
 
-  // Penalización por viernes
   if (avoidFridays) {
     const fridayCount = combo.filter((g) =>
-      g.blocks.some((b) => b.weekday === 4) // FRIDAY = 4
+      g.blocks.some((b) => b.weekday === 4)
     ).length
     score -= (fridayCount / combo.length) * 30
   }
 
-  // Bonus por concentrar clases (menos días distintos)
   const allDays = new Set()
   for (const g of combo) {
     for (const b of g.blocks) {
@@ -430,7 +403,5 @@ function extractDays(combo) {
       days.add(b.weekday)
     }
   }
-  return Array.from(days)
-    .sort()
-    .map((d) => dayNames[d])
+  return Array.from(days).sort().map((d) => dayNames[d])
 }

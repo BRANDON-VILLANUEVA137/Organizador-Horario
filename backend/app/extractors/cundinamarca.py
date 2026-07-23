@@ -35,13 +35,28 @@ class CundinamarcaExtractor:
                 page.wait_for_timeout(1_500)
                 frame = self._schedule_frame(page)
                 campuses = self._read_options(frame, "#sede_sel")
+
+                # Para cada sede, abrimos una página NUEVA para evitar
+                # que el portal entremezcle programas de distintas sedes.
                 programs_by_campus: dict[str, list[PortalOption]] = {}
                 for campus in campuses:
-                    frame.locator("#sede_sel").select_option(campus.value)
-                    frame.wait_for_function(
-                        """() => document.querySelectorAll('#programa_sel option').length > 1"""
-                    )
-                    programs_by_campus[campus.value] = self._read_options(frame, "#programa_sel")
+                    campus_page = browser.new_page()
+                    try:
+                        campus_page.goto(portal_url, wait_until="domcontentloaded", timeout=30_000)
+                        campus_page.wait_for_timeout(1_500)
+                        campus_frame = self._schedule_frame(campus_page)
+                        campus_frame.locator("#sede_sel").select_option(campus.value)
+                        campus_frame.wait_for_function(
+                            """() => document.querySelectorAll('#programa_sel option').length > 1""",
+                            timeout=15_000,
+                        )
+                        campus_page.wait_for_timeout(500)
+                        programs_by_campus[campus.value] = self._read_options(
+                            campus_frame, "#programa_sel"
+                        )
+                    finally:
+                        campus_page.close()
+
                 return CundinamarcaCatalog(campuses, programs_by_campus)
             finally:
                 browser.close()
@@ -61,8 +76,10 @@ class CundinamarcaExtractor:
                 frame = self._schedule_frame(page)
                 frame.locator("#sede_sel").select_option(campus_value)
                 frame.wait_for_function(
-                    """() => document.querySelectorAll('#programa_sel option').length > 1"""
+                    """() => document.querySelectorAll('#programa_sel option').length > 1""",
+                    timeout=15_000,
                 )
+                page.wait_for_timeout(500)
                 frame.locator("#programa_sel").select_option(program_value)
                 frame.locator("#formHorarios").evaluate(
                     """(form) => {

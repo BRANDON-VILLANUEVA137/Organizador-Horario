@@ -59,7 +59,7 @@ def _infer_headers(headers: list[str]) -> dict[str, int]:
     for i, h in enumerate(h_lower):
         if "CODIGO" in h or "CÓDIGO" in h or "COD" in h:
             mapping["code"] = i
-        elif "MATERIA" in h or "ASIGNATURA" in h or "NOMBRE" in h:
+        elif "MATERIA" in h or "ASIGNATURA" in h or "NOMBRE" in h or "CAMPO" in h or "NUCLEO" in h or "NÚCLEO" in h:
             mapping["subject"] = i
         elif "GRUPO" in h:
             mapping["group"] = i
