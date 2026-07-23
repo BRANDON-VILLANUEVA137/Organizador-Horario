@@ -1,0 +1,4172 @@
+{
+  "extraction_id": "9cc7e5f5-43bc-437f-9269-be2e0399696e",
+  "portal_url": "https://plataforma.ucundinamarca.edu.co/aplicacionesB/condicionales/apl_gen_public.jsp?id=ConsultaHorario",
+  "university": "Universidad de Cundinamarca",
+  "groups": [
+    {
+      "code": "CAD612021101-SIS 101",
+      "subject_code": "CAD612021101",
+      "subject_name": "ÁLGEBRA LINEAL",
+      "teacher": null,
+      "classroom": null,
+      "credits": 0,
+      "semester": "1",
+      "blocks": [
+        {
+          "weekday": 3,
+          "starts_at": "07:00:00",
+          "ends_at": "09:59:00"
+        }
+      ]
+    },
+    {
+      "code": "CAD612021101-SIS 102",
+      "subject_code": "CAD612021101",
+      "subject_name": "ÁLGEBRA LINEAL",
+      "teacher": null,
+      "classroom": null,
+      "credits": 0,
+      "semester": "1",
+      "blocks": [
+        {
+          "weekday": 0,
+          "starts_at": "07:00:00",
+          "ends_at": "09:59:00"
+        }
+      ]
+    },
+    {
+      "code": "CAD612021101-SIS 103",
+      "subject_code": "CAD612021101",
+      "subject_name": "ÁLGEBRA LINEAL",
+      "teacher": null,
+      "classroom": null,
+      "credits": 0,
+      "semester": "1",
+      "blocks": [
+        {
+          "weekday": 1,
+          "starts_at": "13:00:00",
+          "ends_at": "15:59:00"
+        }
+      ]
+    },
+    {
+      "code": "CAD612021106-SIS 101",
+      "subject_code": "CAD612021106",
+      "subject_name": "FUNDAMENTOS DE ELECTRÓNICA",
+      "teacher": null,
+      "classroom": null,
+      "credits": 0,
+      "semester": "1",
+      "blocks": [
+        {
+          "weekday": 4,
+          "starts_at": "10:00:00",
+          "ends_at": "11:59:00"
+        },
+        {
+          "weekday": 1,
+          "starts_at": "07:00:00",
+          "ends_at": "08:59:00"
+        }
+      ]
+    },
+    {
+      "code": "CAD612021106-SIS 102",
+      "subject_code": "CAD612021106",
+      "subject_name": "FUNDAMENTOS DE ELECTRÓNICA",
+      "teacher": null,
+      "classroom": null,
+      "credits": 0,
+      "semester": "1",
+      "blocks": [
+        {
+          "weekday": 2,
+          "starts_at": "10:00:00",
+          "ends_at": "11:59:00"
+        },
+        {
+          "weekday": 1,
+          "starts_at": "09:00:00",
+          "ends_at": "10:59:00"
+        }
+      ]
+    },
+    {
+      "code": "CAD612021106-SIS 103",
+      "subject_code": "CAD612021106",
+      "subject_name": "FUNDAMENTOS DE ELECTRÓNICA",
+      "teacher": null,
+      "classroom": null,
+      "credits": 0,
+      "semester": "1",
+      "blocks": [
+        {
+          "weekday": 2,
+          "starts_at": "15:00:00",
+          "ends_at": "16:59:00"
+        },
+        {
+          "weekday": 0,
+          "starts_at": "16:00:00",
+          "ends_at": "17:59:00"
+        }
+      ]
+    },
+    {
+      "code": "CAD612021103-SIS 101",
+      "subject_code": "CAD612021103",
+      "subject_name": "FUNDAMENTOS DE INGENIERÍA",
+      "teacher": null,
+      "classroom": null,
+      "credits": 0,
+      "semester": "1",
+      "blocks": [
+        {
+          "weekday": 1,
+          "starts_at": "09:00:00",
+          "ends_at": "10:59:00"
+        }
+      ]
+    },
+    {
+      "code": "CAD612021103-SIS 102",
+      "subject_code": "CAD612021103",
+      "subject_name": "FUNDAMENTOS DE INGENIERÍA",
+      "teacher": null,
+      "classroom": null,
+      "credits": 0,
+      "semester": "1",
+      "blocks": [
+        {
+          "weekday": 3,
+          "starts_at": "09:00:00",
+          "ends_at": "10:59:00"
+        }
+      ]
+    },
+    {
+      "code": "CAD612021103-SIS 103",
+      "subject_code": "CAD612021103",
+      "subject_name": "FUNDAMENTOS DE INGENIERÍA",
+      "teacher": null,
+      "classroom": null,
+      "credits": 0,
+      "semester": "1",
+      "blocks": [
+        {
+          "weekday": 3,
+          "starts_at": "13:00:00",
+          "ends_at": "14:59:00"
+        }
+      ]
+    },
+    {
+      "code": "CAD612021105-SIS 101",
+      "subject_code": "CAD612021105",
+      "subject_name": "MATEMÁTICAS DISCRETAS",
+      "teacher": null,
+      "classroom": null,
+      "credits": 0,
+      "semester": "1",
+      "blocks": [
+        {
+          "weekday": 2,
+          "starts_at": "09:00:00",
+          "ends_at": "10:59:00"
+        },
+        {
+          "weekday": 1,
+          "starts_at": "11:00:00",
+          "ends_at": "12:59:00"
+        }
+      ]
+    },
+    {
+      "code": "CAD612021105-SIS 102",
+      "subject_code": "CAD612021105",
+      "subject_name": "MATEMÁTICAS DISCRETAS",
+      "teacher": null,
+      "classroom": null,
+      "credits": 0,
+      "semester": "1",
+      "blocks": [
+        {
+          "weekday": 1,
+          "starts_at": "07:00:00",
+          "ends_at": "08:59:00"
+        },
+        {
+          "weekday": 4,
+          "starts_at": "07:00:00",
+          "ends_at": "08:59:00"
+        }
+      ]
+    },
+    {
+      "code": "CAD612021105-103 SIS",
+      "subject_code": "CAD612021105",
+      "subject_name": "MATEMÁTICAS DISCRETAS",
+      "teacher": null,
+      "classroom": null,
+      "credits": 0,
+      "semester": "1",
+      "blocks": [
+        {
+          "weekday": 4,
+          "starts_at": "16:00:00",
+          "ends_at": "17:59:00"
+        },
+        {
+          "weekday": 1,
+          "starts_at": "16:00:00",
+          "ends_at": "17:59:00"
+        }
+      ]
+    },
+    {
+      "code": "CAD612021102-101 SIS",
+      "subject_code": "CAD612021102",
+      "subject_name": "PENSAMIENTO ALGORÍTMICO",
+      "teacher": null,
+      "classroom": null,
+      "credits": 0,
+      "semester": "1",
+      "blocks": [
+        {
+          "weekday": 0,
+          "starts_at": "07:00:00",
+          "ends_at": "09:59:00"
+        },
+        {
+          "weekday": 4,
+          "starts_at": "07:00:00",
+          "ends_at": "09:59:00"
+        }
+      ]
+    },
+    {
+      "code": "CAD612021102-102 SIS",
+      "subject_code": "CAD612021102",
+      "subject_name": "PENSAMIENTO ALGORÍTMICO",
+      "teacher": null,
+      "classroom": null,
+      "credits": 0,
+      "semester": "1",
+      "blocks": [
+        {
+          "weekday": 4,
+          "starts_at": "10:00:00",
+          "ends_at": "12:59:00"
+        },
+        {
+          "weekday": 0,
+          "starts_at": "10:00:00",
+          "ends_at": "12:59:00"
+        }
+      ]
+    },
+    {
+      "code": "CAD612021102-103 SIS",
+      "subject_code": "CAD612021102",
+      "subject_name": "PENSAMIENTO ALGORÍTMICO",
+      "teacher": null,
+      "classroom": null,
+      "credits": 0,
+      "semester": "1",
+      "blocks": [
+        {
+          "weekday": 4,
+          "starts_at": "13:00:00",
+          "ends_at": "15:59:00"
+        },
+        {
+          "weekday": 0,
+          "starts_at": "13:00:00",
+          "ends_at": "15:59:00"
+        }
+      ]
+    },
+    {
+      "code": "CAD612021104-SIS 101",
+      "subject_code": "CAD612021104",
+      "subject_name": "PENSAMIENTO SISTÉMICO Y AUTOMATIZACIÓN",
+      "teacher": null,
+      "classroom": null,
+      "credits": 0,
+      "semester": "1",
+      "blocks": [
+        {
+          "weekday": 3,
+          "starts_at": "10:00:00",
+          "ends_at": "11:59:00"
+        }
+      ]
+    },
+    {
+      "code": "CAD612021104-SIS 102",
+      "subject_code": "CAD612021104",
+      "subject_name": "PENSAMIENTO SISTÉMICO Y AUTOMATIZACIÓN",
+      "teacher": null,
+      "classroom": null,
+      "credits": 0,
+      "semester": "1",
+      "blocks": [
+        {
+          "weekday": 2,
+          "starts_at": "07:00:00",
+          "ends_at": "08:59:00"
+        }
+      ]
+    },
+    {
+      "code": "CAD612021104-SIS 103",
+      "subject_code": "CAD612021104",
+      "subject_name": "PENSAMIENTO SISTÉMICO Y AUTOMATIZACIÓN",
+      "teacher": null,
+      "classroom": null,
+      "credits": 0,
+      "semester": "1",
+      "blocks": [
+        {
+          "weekday": 3,
+          "starts_at": "15:00:00",
+          "ends_at": "16:59:00"
+        }
+      ]
+    },
+    {
+      "code": "CAD612021207-201 SIS",
+      "subject_code": "CAD612021207",
+      "subject_name": "CALCULO DIFERENCIAL",
+      "teacher": null,
+      "classroom": null,
+      "credits": 0,
+      "semester": "2",
+      "blocks": [
+        {
+          "weekday": 1,
+          "starts_at": "07:00:00",
+          "ends_at": "08:59:00"
+        },
+        {
+          "weekday": 4,
+          "starts_at": "10:00:00",
+          "ends_at": "11:59:00"
+        }
+      ]
+    },
+    {
+      "code": "CAD612021207-202 SIS",
+      "subject_code": "CAD612021207",
+      "subject_name": "CALCULO DIFERENCIAL",
+      "teacher": null,
+      "classroom": null,
+      "credits": 0,
+      "semester": "2",
+      "blocks": [
+        {
+          "weekday": 1,
+          "starts_at": "09:00:00",
+          "ends_at": "10:59:00"
+        },
+        {
+          "weekday": 2,
+          "starts_at": "07:00:00",
+          "ends_at": "08:59:00"
+        }
+      ]
+    },
+    {
+      "code": "CAD612021207-203 SIS",
+      "subject_code": "CAD612021207",
+      "subject_name": "CALCULO DIFERENCIAL",
+      "teacher": null,
+      "classroom": null,
+      "credits": 0,
+      "semester": "2",
+      "blocks": [
+        {
+          "weekday": 1,
+          "starts_at": "16:00:00",
+          "ends_at": "17:59:00"
+        },
+        {
+          "weekday": 4,
+          "starts_at": "16:00:00",
+          "ends_at": "17:59:00"
+        }
+      ]
+    },
+    {
+      "code": "CAI1002020202-CLC1-M1",
+      "subject_code": "CAI1002020202",
+      "subject_name": "COMUNICACIÓN Y LECTURA CRÍTICA I",
+      "teacher": null,
+      "classroom": null,
+      "credits": 0,
+      "semester": "2",
+      "blocks": [
+        {
+          "weekday": 1,
+          "starts_at": "07:00:00",
+          "ends_at": "08:59:00"
+        }
+      ]
+    },
+    {
+      "code": "CAI1002020202-CLC1-M2",
+      "subject_code": "CAI1002020202",
+      "subject_name": "COMUNICACIÓN Y LECTURA CRÍTICA I",
+      "teacher": null,
+      "classroom": null,
+      "credits": 0,
+      "semester": "2",
+      "blocks": [
+        {
+          "weekday": 2,
+          "starts_at": "09:00:00",
+          "ends_at": "10:59:00"
+        }
+      ]
+    },
+    {
+      "code": "CAI1002020202-CLC1-M3",
+      "subject_code": "CAI1002020202",
+      "subject_name": "COMUNICACIÓN Y LECTURA CRÍTICA I",
+      "teacher": null,
+      "classroom": null,
+      "credits": 0,
+      "semester": "2",
+      "blocks": [
+        {
+          "weekday": 3,
+          "starts_at": "07:00:00",
+          "ends_at": "08:59:00"
+        }
+      ]
+    },
+    {
+      "code": "CAI1002020202-CLC1-M4",
+      "subject_code": "CAI1002020202",
+      "subject_name": "COMUNICACIÓN Y LECTURA CRÍTICA I",
+      "teacher": null,
+      "classroom": null,
+      "credits": 0,
+      "semester": "2",
+      "blocks": [
+        {
+          "weekday": 4,
+          "starts_at": "07:00:00",
+          "ends_at": "08:59:00"
+        }
+      ]
+    },
+    {
+      "code": "CAI1002020202-CLC1-M5",
+      "subject_code": "CAI1002020202",
+      "subject_name": "COMUNICACIÓN Y LECTURA CRÍTICA I",
+      "teacher": null,
+      "classroom": null,
+      "credits": 0,
+      "semester": "2",
+      "blocks": [
+        {
+          "weekday": 5,
+          "starts_at": "07:00:00",
+          "ends_at": "08:59:00"
+        }
+      ]
+    },
+    {
+      "code": "CAI1002020202-CLC1-N1",
+      "subject_code": "CAI1002020202",
+      "subject_name": "COMUNICACIÓN Y LECTURA CRÍTICA I",
+      "teacher": null,
+      "classroom": null,
+      "credits": 0,
+      "semester": "2",
+      "blocks": [
+        {
+          "weekday": 2,
+          "starts_at": "18:00:00",
+          "ends_at": "19:59:00"
+        }
+      ]
+    },
+    {
+      "code": "CAI1002020202-CLC1-N2",
+      "subject_code": "CAI1002020202",
+      "subject_name": "COMUNICACIÓN Y LECTURA CRÍTICA I",
+      "teacher": null,
+      "classroom": null,
+      "credits": 0,
+      "semester": "2",
+      "blocks": [
+        {
+          "weekday": 3,
+          "starts_at": "18:00:00",
+          "ends_at": "19:59:00"
+        }
+      ]
+    },
+    {
+      "code": "CAI1002020202-CLC1-T6",
+      "subject_code": "CAI1002020202",
+      "subject_name": "COMUNICACIÓN Y LECTURA CRÍTICA I",
+      "teacher": null,
+      "classroom": null,
+      "credits": 0,
+      "semester": "2",
+      "blocks": [
+        {
+          "weekday": 1,
+          "starts_at": "14:00:00",
+          "ends_at": "15:59:00"
+        }
+      ]
+    },
+    {
+      "code": "CAI1002020202-CLC1-N3",
+      "subject_code": "CAI1002020202",
+      "subject_name": "COMUNICACIÓN Y LECTURA CRÍTICA I",
+      "teacher": null,
+      "classroom": null,
+      "credits": 0,
+      "semester": "2",
+      "blocks": [
+        {
+          "weekday": 4,
+          "starts_at": "18:00:00",
+          "ends_at": "19:59:00"
+        }
+      ]
+    },
+    {
+      "code": "CAI1002020202-CLC1-T1",
+      "subject_code": "CAI1002020202",
+      "subject_name": "COMUNICACIÓN Y LECTURA CRÍTICA I",
+      "teacher": null,
+      "classroom": null,
+      "credits": 0,
+      "semester": "2",
+      "blocks": [
+        {
+          "weekday": 2,
+          "starts_at": "07:00:00",
+          "ends_at": "08:59:00"
+        }
+      ]
+    },
+    {
+      "code": "CAI1002020202-CLC1-T2",
+      "subject_code": "CAI1002020202",
+      "subject_name": "COMUNICACIÓN Y LECTURA CRÍTICA I",
+      "teacher": null,
+      "classroom": null,
+      "credits": 0,
+      "semester": "2",
+      "blocks": [
+        {
+          "weekday": 1,
+          "starts_at": "09:00:00",
+          "ends_at": "10:59:00"
+        }
+      ]
+    },
+    {
+      "code": "CAI1002020202-CLC1-T3",
+      "subject_code": "CAI1002020202",
+      "subject_name": "COMUNICACIÓN Y LECTURA CRÍTICA I",
+      "teacher": null,
+      "classroom": null,
+      "credits": 0,
+      "semester": "2",
+      "blocks": [
+        {
+          "weekday": 3,
+          "starts_at": "16:00:00",
+          "ends_at": "17:59:00"
+        }
+      ]
+    },
+    {
+      "code": "CAI1002020202-CLC1-T4",
+      "subject_code": "CAI1002020202",
+      "subject_name": "COMUNICACIÓN Y LECTURA CRÍTICA I",
+      "teacher": null,
+      "classroom": null,
+      "credits": 0,
+      "semester": "2",
+      "blocks": [
+        {
+          "weekday": 3,
+          "starts_at": "14:00:00",
+          "ends_at": "15:59:00"
+        }
+      ]
+    },
+    {
+      "code": "CAI1002020202-CLC1-T5",
+      "subject_code": "CAI1002020202",
+      "subject_name": "COMUNICACIÓN Y LECTURA CRÍTICA I",
+      "teacher": null,
+      "classroom": null,
+      "credits": 0,
+      "semester": "2",
+      "blocks": [
+        {
+          "weekday": 2,
+          "starts_at": "16:00:00",
+          "ends_at": "17:59:00"
+        }
+      ]
+    },
+    {
+      "code": "CAD612021210-201 SIS",
+      "subject_code": "CAD612021210",
+      "subject_name": "ESTADÍSTICA,PROBABILIDAD E INFERENCIA",
+      "teacher": null,
+      "classroom": null,
+      "credits": 0,
+      "semester": "2",
+      "blocks": [
+        {
+          "weekday": 0,
+          "starts_at": "14:00:00",
+          "ends_at": "15:59:00"
+        },
+        {
+          "weekday": 5,
+          "starts_at": "07:00:00",
+          "ends_at": "08:59:00"
+        },
+        {
+          "weekday": 3,
+          "starts_at": "14:00:00",
+          "ends_at": "15:59:00"
+        }
+      ]
+    },
+    {
+      "code": "CAD612021210-202 SIS",
+      "subject_code": "CAD612021210",
+      "subject_name": "ESTADÍSTICA,PROBABILIDAD E INFERENCIA",
+      "teacher": null,
+      "classroom": null,
+      "credits": 0,
+      "semester": "2",
+      "blocks": [
+        {
+          "weekday": 3,
+          "starts_at": "07:00:00",
+          "ends_at": "09:59:00"
+        },
+        {
+          "weekday": 4,
+          "starts_at": "10:00:00",
+          "ends_at": "12:59:00"
+        }
+      ]
+    },
+    {
+      "code": "CAD612021210-203 SIS",
+      "subject_code": "CAD612021210",
+      "subject_name": "ESTADÍSTICA,PROBABILIDAD E INFERENCIA",
+      "teacher": null,
+      "classroom": null,
+      "credits": 0,
+      "semester": "2",
+      "blocks": [
+        {
+          "weekday": 2,
+          "starts_at": "15:00:00",
+          "ends_at": "16:59:00"
+        },
+        {
+          "weekday": 3,
+          "starts_at": "16:00:00",
+          "ends_at": "17:59:00"
+        },
+        {
+          "weekday": 0,
+          "starts_at": "13:00:00",
+          "ends_at": "14:59:00"
+        }
+      ]
+    },
+    {
+      "code": "CAD612021208-201 SIS",
+      "subject_code": "CAD612021208",
+      "subject_name": "FISICA I",
+      "teacher": null,
+      "classroom": null,
+      "credits": 0,
+      "semester": "2",
+      "blocks": [
+        {
+          "weekday": 3,
+          "starts_at": "10:00:00",
+          "ends_at": "11:59:00"
+        },
+        {
+          "weekday": 0,
+          "starts_at": "07:00:00",
+          "ends_at": "08:59:00"
+        }
+      ]
+    },
+    {
+      "code": "CAD612021208-202 SIS",
+      "subject_code": "CAD612021208",
+      "subject_name": "FISICA I",
+      "teacher": null,
+      "classroom": null,
+      "credits": 0,
+      "semester": "2",
+      "blocks": [
+        {
+          "weekday": 2,
+          "starts_at": "09:00:00",
+          "ends_at": "10:59:00"
+        },
+        {
+          "weekday": 5,
+          "starts_at": "09:00:00",
+          "ends_at": "10:59:00"
+        }
+      ]
+    },
+    {
+      "code": "CAD612021208-203 SIS",
+      "subject_code": "CAD612021208",
+      "subject_name": "FISICA I",
+      "teacher": null,
+      "classroom": null,
+      "credits": 0,
+      "semester": "2",
+      "blocks": [
+        {
+          "weekday": 0,
+          "starts_at": "15:00:00",
+          "ends_at": "16:59:00"
+        },
+        {
+          "weekday": 4,
+          "starts_at": "13:00:00",
+          "ends_at": "14:59:00"
+        }
+      ]
+    },
+    {
+      "code": "CAD612021209-201 SIS",
+      "subject_code": "CAD612021209",
+      "subject_name": "PROGRAMACIÓN I",
+      "teacher": null,
+      "classroom": null,
+      "credits": 0,
+      "semester": "2",
+      "blocks": [
+        {
+          "weekday": 0,
+          "starts_at": "10:00:00",
+          "ends_at": "12:59:00"
+        },
+        {
+          "weekday": 4,
+          "starts_at": "07:00:00",
+          "ends_at": "09:59:00"
+        }
+      ]
+    },
+    {
+      "code": "CAD612021209-202 SIS",
+      "subject_code": "CAD612021209",
+      "subject_name": "PROGRAMACIÓN I",
+      "teacher": null,
+      "classroom": null,
+      "credits": 0,
+      "semester": "2",
+      "blocks": [
+        {
+          "weekday": 3,
+          "starts_at": "10:00:00",
+          "ends_at": "12:59:00"
+        },
+        {
+          "weekday": 4,
+          "starts_at": "07:00:00",
+          "ends_at": "09:59:00"
+        }
+      ]
+    },
+    {
+      "code": "CAD612021209-203 SIS",
+      "subject_code": "CAD612021209",
+      "subject_name": "PROGRAMACIÓN I",
+      "teacher": null,
+      "classroom": null,
+      "credits": 0,
+      "semester": "2",
+      "blocks": [
+        {
+          "weekday": 3,
+          "starts_at": "13:00:00",
+          "ends_at": "15:59:00"
+        },
+        {
+          "weekday": 1,
+          "starts_at": "13:00:00",
+          "ends_at": "15:59:00"
+        }
+      ]
+    },
+    {
+      "code": "CAI1002020201-RLC-M1",
+      "subject_code": "CAI1002020201",
+      "subject_name": "RAZONAMIENTO LÓGICO Y CUANTITATIVO",
+      "teacher": null,
+      "classroom": null,
+      "credits": 0,
+      "semester": "2",
+      "blocks": [
+        {
+          "weekday": 1,
+          "starts_at": "09:00:00",
+          "ends_at": "10:59:00"
+        }
+      ]
+    },
+    {
+      "code": "CAI1002020201-RLC-M2",
+      "subject_code": "CAI1002020201",
+      "subject_name": "RAZONAMIENTO LÓGICO Y CUANTITATIVO",
+      "teacher": null,
+      "classroom": null,
+      "credits": 0,
+      "semester": "2",
+      "blocks": [
+        {
+          "weekday": 3,
+          "starts_at": "09:00:00",
+          "ends_at": "10:59:00"
+        }
+      ]
+    },
+    {
+      "code": "CAI1002020201-RLC-M3",
+      "subject_code": "CAI1002020201",
+      "subject_name": "RAZONAMIENTO LÓGICO Y CUANTITATIVO",
+      "teacher": null,
+      "classroom": null,
+      "credits": 0,
+      "semester": "2",
+      "blocks": [
+        {
+          "weekday": 2,
+          "starts_at": "07:00:00",
+          "ends_at": "08:59:00"
+        }
+      ]
+    },
+    {
+      "code": "CAI1002020201-RLC-M4",
+      "subject_code": "CAI1002020201",
+      "subject_name": "RAZONAMIENTO LÓGICO Y CUANTITATIVO",
+      "teacher": null,
+      "classroom": null,
+      "credits": 0,
+      "semester": "2",
+      "blocks": [
+        {
+          "weekday": 4,
+          "starts_at": "09:00:00",
+          "ends_at": "10:59:00"
+        }
+      ]
+    },
+    {
+      "code": "CAI1002020201-RLC-M5",
+      "subject_code": "CAI1002020201",
+      "subject_name": "RAZONAMIENTO LÓGICO Y CUANTITATIVO",
+      "teacher": null,
+      "classroom": null,
+      "credits": 0,
+      "semester": "2",
+      "blocks": [
+        {
+          "weekday": 5,
+          "starts_at": "07:00:00",
+          "ends_at": "08:59:00"
+        }
+      ]
+    },
+    {
+      "code": "CAI1002020201-RLC-N1",
+      "subject_code": "CAI1002020201",
+      "subject_name": "RAZONAMIENTO LÓGICO Y CUANTITATIVO",
+      "teacher": null,
+      "classroom": null,
+      "credits": 0,
+      "semester": "2",
+      "blocks": [
+        {
+          "weekday": 1,
+          "starts_at": "20:00:00",
+          "ends_at": "21:59:00"
+        }
+      ]
+    },
+    {
+      "code": "CAI1002020201-RLC-N2",
+      "subject_code": "CAI1002020201",
+      "subject_name": "RAZONAMIENTO LÓGICO Y CUANTITATIVO",
+      "teacher": null,
+      "classroom": null,
+      "credits": 0,
+      "semester": "2",
+      "blocks": [
+        {
+          "weekday": 3,
+          "starts_at": "18:00:00",
+          "ends_at": "19:59:00"
+        }
+      ]
+    },
+    {
+      "code": "CAI1002020201-RLC-N3",
+      "subject_code": "CAI1002020201",
+      "subject_name": "RAZONAMIENTO LÓGICO Y CUANTITATIVO",
+      "teacher": null,
+      "classroom": null,
+      "credits": 0,
+      "semester": "2",
+      "blocks": [
+        {
+          "weekday": 3,
+          "starts_at": "20:00:00",
+          "ends_at": "21:59:00"
+        }
+      ]
+    },
+    {
+      "code": "CAI1002020201-RLC-N4",
+      "subject_code": "CAI1002020201",
+      "subject_name": "RAZONAMIENTO LÓGICO Y CUANTITATIVO",
+      "teacher": null,
+      "classroom": null,
+      "credits": 0,
+      "semester": "2",
+      "blocks": [
+        {
+          "weekday": 4,
+          "starts_at": "20:00:00",
+          "ends_at": "21:59:00"
+        }
+      ]
+    },
+    {
+      "code": "CAI1002020201-RLC-T1",
+      "subject_code": "CAI1002020201",
+      "subject_name": "RAZONAMIENTO LÓGICO Y CUANTITATIVO",
+      "teacher": null,
+      "classroom": null,
+      "credits": 0,
+      "semester": "2",
+      "blocks": [
+        {
+          "weekday": 4,
+          "starts_at": "16:00:00",
+          "ends_at": "17:59:00"
+        }
+      ]
+    },
+    {
+      "code": "CAI1002020201-RLC-T2",
+      "subject_code": "CAI1002020201",
+      "subject_name": "RAZONAMIENTO LÓGICO Y CUANTITATIVO",
+      "teacher": null,
+      "classroom": null,
+      "credits": 0,
+      "semester": "2",
+      "blocks": [
+        {
+          "weekday": 2,
+          "starts_at": "14:00:00",
+          "ends_at": "15:59:00"
+        }
+      ]
+    },
+    {
+      "code": "CAI1002020201-RLC-T3",
+      "subject_code": "CAI1002020201",
+      "subject_name": "RAZONAMIENTO LÓGICO Y CUANTITATIVO",
+      "teacher": null,
+      "classroom": null,
+      "credits": 0,
+      "semester": "2",
+      "blocks": [
+        {
+          "weekday": 1,
+          "starts_at": "14:00:00",
+          "ends_at": "15:59:00"
+        }
+      ]
+    },
+    {
+      "code": "CAI1002020201-RLC-T4",
+      "subject_code": "CAI1002020201",
+      "subject_name": "RAZONAMIENTO LÓGICO Y CUANTITATIVO",
+      "teacher": null,
+      "classroom": null,
+      "credits": 0,
+      "semester": "2",
+      "blocks": [
+        {
+          "weekday": 3,
+          "starts_at": "12:00:00",
+          "ends_at": "13:59:00"
+        }
+      ]
+    },
+    {
+      "code": "CAI1002020201-RLC-T5",
+      "subject_code": "CAI1002020201",
+      "subject_name": "RAZONAMIENTO LÓGICO Y CUANTITATIVO",
+      "teacher": null,
+      "classroom": null,
+      "credits": 0,
+      "semester": "2",
+      "blocks": [
+        {
+          "weekday": 2,
+          "starts_at": "16:00:00",
+          "ends_at": "17:59:00"
+        }
+      ]
+    },
+    {
+      "code": "CAI1002020201-RLC-T6",
+      "subject_code": "CAI1002020201",
+      "subject_name": "RAZONAMIENTO LÓGICO Y CUANTITATIVO",
+      "teacher": null,
+      "classroom": null,
+      "credits": 0,
+      "semester": "2",
+      "blocks": [
+        {
+          "weekday": 3,
+          "starts_at": "14:00:00",
+          "ends_at": "15:59:00"
+        }
+      ]
+    },
+    {
+      "code": "CAI1002020201-RLC-T7",
+      "subject_code": "CAI1002020201",
+      "subject_name": "RAZONAMIENTO LÓGICO Y CUANTITATIVO",
+      "teacher": null,
+      "classroom": null,
+      "credits": 0,
+      "semester": "2",
+      "blocks": [
+        {
+          "weekday": 5,
+          "starts_at": "12:00:00",
+          "ends_at": "13:59:00"
+        }
+      ]
+    },
+    {
+      "code": "CAD612021311-301 SIS",
+      "subject_code": "CAD612021311",
+      "subject_name": "CALCULO INTEGRAL",
+      "teacher": null,
+      "classroom": null,
+      "credits": 0,
+      "semester": "3",
+      "blocks": [
+        {
+          "weekday": 1,
+          "starts_at": "11:00:00",
+          "ends_at": "12:59:00"
+        },
+        {
+          "weekday": 4,
+          "starts_at": "07:00:00",
+          "ends_at": "08:59:00"
+        }
+      ]
+    },
+    {
+      "code": "CAD612021311-302 SIS",
+      "subject_code": "CAD612021311",
+      "subject_name": "CALCULO INTEGRAL",
+      "teacher": null,
+      "classroom": null,
+      "credits": 0,
+      "semester": "3",
+      "blocks": [
+        {
+          "weekday": 2,
+          "starts_at": "11:00:00",
+          "ends_at": "12:59:00"
+        },
+        {
+          "weekday": 4,
+          "starts_at": "09:00:00",
+          "ends_at": "10:59:00"
+        }
+      ]
+    },
+    {
+      "code": "CAD612021311-303 SIS",
+      "subject_code": "CAD612021311",
+      "subject_name": "CALCULO INTEGRAL",
+      "teacher": null,
+      "classroom": null,
+      "credits": 0,
+      "semester": "3",
+      "blocks": [
+        {
+          "weekday": 3,
+          "starts_at": "15:00:00",
+          "ends_at": "16:59:00"
+        },
+        {
+          "weekday": 2,
+          "starts_at": "15:00:00",
+          "ends_at": "16:59:00"
+        }
+      ]
+    },
+    {
+      "code": "CAI1002020303-CS21-M1",
+      "subject_code": "CAI1002020303",
+      "subject_name": "CIUDADANIA DEL SIGLO 21",
+      "teacher": null,
+      "classroom": null,
+      "credits": 0,
+      "semester": "3",
+      "blocks": [
+        {
+          "weekday": 1,
+          "starts_at": "07:00:00",
+          "ends_at": "08:59:00"
+        }
+      ]
+    },
+    {
+      "code": "CAI1002020303-CS21-M2",
+      "subject_code": "CAI1002020303",
+      "subject_name": "CIUDADANIA DEL SIGLO 21",
+      "teacher": null,
+      "classroom": null,
+      "credits": 0,
+      "semester": "3",
+      "blocks": [
+        {
+          "weekday": 2,
+          "starts_at": "09:00:00",
+          "ends_at": "10:59:00"
+        }
+      ]
+    },
+    {
+      "code": "CAI1002020303-CS21-M3",
+      "subject_code": "CAI1002020303",
+      "subject_name": "CIUDADANIA DEL SIGLO 21",
+      "teacher": null,
+      "classroom": null,
+      "credits": 0,
+      "semester": "3",
+      "blocks": [
+        {
+          "weekday": 5,
+          "starts_at": "09:00:00",
+          "ends_at": "10:59:00"
+        }
+      ]
+    },
+    {
+      "code": "CAI1002020303-CS21-M4",
+      "subject_code": "CAI1002020303",
+      "subject_name": "CIUDADANIA DEL SIGLO 21",
+      "teacher": null,
+      "classroom": null,
+      "credits": 0,
+      "semester": "3",
+      "blocks": [
+        {
+          "weekday": 3,
+          "starts_at": "07:00:00",
+          "ends_at": "08:59:00"
+        }
+      ]
+    },
+    {
+      "code": "CAI1002020303-CS21-N1",
+      "subject_code": "CAI1002020303",
+      "subject_name": "CIUDADANIA DEL SIGLO 21",
+      "teacher": null,
+      "classroom": null,
+      "credits": 0,
+      "semester": "3",
+      "blocks": [
+        {
+          "weekday": 4,
+          "starts_at": "20:00:00",
+          "ends_at": "21:59:00"
+        }
+      ]
+    },
+    {
+      "code": "CAI1002020303-CS21-N2",
+      "subject_code": "CAI1002020303",
+      "subject_name": "CIUDADANIA DEL SIGLO 21",
+      "teacher": null,
+      "classroom": null,
+      "credits": 0,
+      "semester": "3",
+      "blocks": [
+        {
+          "weekday": 4,
+          "starts_at": "18:00:00",
+          "ends_at": "19:59:00"
+        }
+      ]
+    },
+    {
+      "code": "CAI1002020303-CS21-N3",
+      "subject_code": "CAI1002020303",
+      "subject_name": "CIUDADANIA DEL SIGLO 21",
+      "teacher": null,
+      "classroom": null,
+      "credits": 0,
+      "semester": "3",
+      "blocks": [
+        {
+          "weekday": 2,
+          "starts_at": "18:00:00",
+          "ends_at": "19:59:00"
+        }
+      ]
+    },
+    {
+      "code": "CAI1002020303-CS21-T1",
+      "subject_code": "CAI1002020303",
+      "subject_name": "CIUDADANIA DEL SIGLO 21",
+      "teacher": null,
+      "classroom": null,
+      "credits": 0,
+      "semester": "3",
+      "blocks": [
+        {
+          "weekday": 3,
+          "starts_at": "12:00:00",
+          "ends_at": "13:59:00"
+        }
+      ]
+    },
+    {
+      "code": "CAI1002020303-CS21-T2",
+      "subject_code": "CAI1002020303",
+      "subject_name": "CIUDADANIA DEL SIGLO 21",
+      "teacher": null,
+      "classroom": null,
+      "credits": 0,
+      "semester": "3",
+      "blocks": [
+        {
+          "weekday": 5,
+          "starts_at": "16:00:00",
+          "ends_at": "17:59:00"
+        }
+      ]
+    },
+    {
+      "code": "CAI1002020303-CS21-T3",
+      "subject_code": "CAI1002020303",
+      "subject_name": "CIUDADANIA DEL SIGLO 21",
+      "teacher": null,
+      "classroom": null,
+      "credits": 0,
+      "semester": "3",
+      "blocks": [
+        {
+          "weekday": 5,
+          "starts_at": "14:00:00",
+          "ends_at": "15:59:00"
+        }
+      ]
+    },
+    {
+      "code": "CAI1002020303-CS21-T4",
+      "subject_code": "CAI1002020303",
+      "subject_name": "CIUDADANIA DEL SIGLO 21",
+      "teacher": null,
+      "classroom": null,
+      "credits": 0,
+      "semester": "3",
+      "blocks": [
+        {
+          "weekday": 2,
+          "starts_at": "16:00:00",
+          "ends_at": "17:59:00"
+        }
+      ]
+    },
+    {
+      "code": "CAI1002020303-CS21-T5",
+      "subject_code": "CAI1002020303",
+      "subject_name": "CIUDADANIA DEL SIGLO 21",
+      "teacher": null,
+      "classroom": null,
+      "credits": 0,
+      "semester": "3",
+      "blocks": [
+        {
+          "weekday": 3,
+          "starts_at": "16:00:00",
+          "ends_at": "17:59:00"
+        }
+      ]
+    },
+    {
+      "code": "CAI1002020303-CS21-T6",
+      "subject_code": "CAI1002020303",
+      "subject_name": "CIUDADANIA DEL SIGLO 21",
+      "teacher": null,
+      "classroom": null,
+      "credits": 0,
+      "semester": "3",
+      "blocks": [
+        {
+          "weekday": 4,
+          "starts_at": "16:00:00",
+          "ends_at": "17:59:00"
+        }
+      ]
+    },
+    {
+      "code": "CAI1002020303-CS21-T7",
+      "subject_code": "CAI1002020303",
+      "subject_name": "CIUDADANIA DEL SIGLO 21",
+      "teacher": null,
+      "classroom": null,
+      "credits": 0,
+      "semester": "3",
+      "blocks": [
+        {
+          "weekday": 2,
+          "starts_at": "13:00:00",
+          "ends_at": "14:59:00"
+        }
+      ]
+    },
+    {
+      "code": "CAI1002020303-CS21-N4",
+      "subject_code": "CAI1002020303",
+      "subject_name": "CIUDADANIA DEL SIGLO 21",
+      "teacher": null,
+      "classroom": null,
+      "credits": 0,
+      "semester": "3",
+      "blocks": [
+        {
+          "weekday": 1,
+          "starts_at": "18:00:00",
+          "ends_at": "19:59:00"
+        }
+      ]
+    },
+    {
+      "code": "CAI1002020305-CLC2-M1",
+      "subject_code": "CAI1002020305",
+      "subject_name": "COMUNICACIÓN Y LECTURA CRÍTICA II",
+      "teacher": null,
+      "classroom": null,
+      "credits": 0,
+      "semester": "3",
+      "blocks": [
+        {
+          "weekday": 4,
+          "starts_at": "09:00:00",
+          "ends_at": "10:59:00"
+        }
+      ]
+    },
+    {
+      "code": "CAI1002020305-CLC2-N1",
+      "subject_code": "CAI1002020305",
+      "subject_name": "COMUNICACIÓN Y LECTURA CRÍTICA II",
+      "teacher": null,
+      "classroom": null,
+      "credits": 0,
+      "semester": "3",
+      "blocks": [
+        {
+          "weekday": 1,
+          "starts_at": "18:00:00",
+          "ends_at": "19:59:00"
+        }
+      ]
+    },
+    {
+      "code": "CAI1002020305-CLC2-N2",
+      "subject_code": "CAI1002020305",
+      "subject_name": "COMUNICACIÓN Y LECTURA CRÍTICA II",
+      "teacher": null,
+      "classroom": null,
+      "credits": 0,
+      "semester": "3",
+      "blocks": [
+        {
+          "weekday": 2,
+          "starts_at": "20:00:00",
+          "ends_at": "21:59:00"
+        }
+      ]
+    },
+    {
+      "code": "CAI1002020305-CLC2-N3",
+      "subject_code": "CAI1002020305",
+      "subject_name": "COMUNICACIÓN Y LECTURA CRÍTICA II",
+      "teacher": null,
+      "classroom": null,
+      "credits": 0,
+      "semester": "3",
+      "blocks": [
+        {
+          "weekday": 4,
+          "starts_at": "20:00:00",
+          "ends_at": "21:59:00"
+        }
+      ]
+    },
+    {
+      "code": "CAI1002020305-CLC2-T1",
+      "subject_code": "CAI1002020305",
+      "subject_name": "COMUNICACIÓN Y LECTURA CRÍTICA II",
+      "teacher": null,
+      "classroom": null,
+      "credits": 0,
+      "semester": "3",
+      "blocks": [
+        {
+          "weekday": 1,
+          "starts_at": "12:00:00",
+          "ends_at": "13:59:00"
+        }
+      ]
+    },
+    {
+      "code": "CAI1002020305-CLC2-T2",
+      "subject_code": "CAI1002020305",
+      "subject_name": "COMUNICACIÓN Y LECTURA CRÍTICA II",
+      "teacher": null,
+      "classroom": null,
+      "credits": 0,
+      "semester": "3",
+      "blocks": [
+        {
+          "weekday": 1,
+          "starts_at": "16:00:00",
+          "ends_at": "17:59:00"
+        }
+      ]
+    },
+    {
+      "code": "CAI1002020305-CLC2-T3",
+      "subject_code": "CAI1002020305",
+      "subject_name": "COMUNICACIÓN Y LECTURA CRÍTICA II",
+      "teacher": null,
+      "classroom": null,
+      "credits": 0,
+      "semester": "3",
+      "blocks": [
+        {
+          "weekday": 4,
+          "starts_at": "12:00:00",
+          "ends_at": "13:59:00"
+        }
+      ]
+    },
+    {
+      "code": "CAI1002020305-CLC2-T4",
+      "subject_code": "CAI1002020305",
+      "subject_name": "COMUNICACIÓN Y LECTURA CRÍTICA II",
+      "teacher": null,
+      "classroom": null,
+      "credits": 0,
+      "semester": "3",
+      "blocks": [
+        {
+          "weekday": 4,
+          "starts_at": "14:00:00",
+          "ends_at": "15:59:00"
+        }
+      ]
+    },
+    {
+      "code": "CAI1002020305-CLC2-T5",
+      "subject_code": "CAI1002020305",
+      "subject_name": "COMUNICACIÓN Y LECTURA CRÍTICA II",
+      "teacher": null,
+      "classroom": null,
+      "credits": 0,
+      "semester": "3",
+      "blocks": [
+        {
+          "weekday": 2,
+          "starts_at": "12:00:00",
+          "ends_at": "13:59:00"
+        }
+      ]
+    },
+    {
+      "code": "CAI1002020305-CLC2-T6",
+      "subject_code": "CAI1002020305",
+      "subject_name": "COMUNICACIÓN Y LECTURA CRÍTICA II",
+      "teacher": null,
+      "classroom": null,
+      "credits": 0,
+      "semester": "3",
+      "blocks": [
+        {
+          "weekday": 4,
+          "starts_at": "16:00:00",
+          "ends_at": "17:59:00"
+        }
+      ]
+    },
+    {
+      "code": "CAI1002020305-CLC2-M2",
+      "subject_code": "CAI1002020305",
+      "subject_name": "COMUNICACIÓN Y LECTURA CRÍTICA II",
+      "teacher": null,
+      "classroom": null,
+      "credits": 0,
+      "semester": "3",
+      "blocks": [
+        {
+          "weekday": 5,
+          "starts_at": "09:00:00",
+          "ends_at": "10:59:00"
+        }
+      ]
+    },
+    {
+      "code": "CAD612021312-301 SIS",
+      "subject_code": "CAD612021312",
+      "subject_name": "FISICA II",
+      "teacher": null,
+      "classroom": null,
+      "credits": 0,
+      "semester": "3",
+      "blocks": [
+        {
+          "weekday": 0,
+          "starts_at": "10:00:00",
+          "ends_at": "11:59:00"
+        },
+        {
+          "weekday": 1,
+          "starts_at": "09:00:00",
+          "ends_at": "10:59:00"
+        }
+      ]
+    },
+    {
+      "code": "CAD612021312-302 SIS",
+      "subject_code": "CAD612021312",
+      "subject_name": "FISICA II",
+      "teacher": null,
+      "classroom": null,
+      "credits": 0,
+      "semester": "3",
+      "blocks": [
+        {
+          "weekday": 0,
+          "starts_at": "07:00:00",
+          "ends_at": "08:59:00"
+        },
+        {
+          "weekday": 4,
+          "starts_at": "07:00:00",
+          "ends_at": "08:59:00"
+        }
+      ]
+    },
+    {
+      "code": "CAD612021312-303 SIS",
+      "subject_code": "CAD612021312",
+      "subject_name": "FISICA II",
+      "teacher": null,
+      "classroom": null,
+      "credits": 0,
+      "semester": "3",
+      "blocks": [
+        {
+          "weekday": 3,
+          "starts_at": "13:00:00",
+          "ends_at": "14:59:00"
+        },
+        {
+          "weekday": 1,
+          "starts_at": "13:00:00",
+          "ends_at": "14:59:00"
+        }
+      ]
+    },
+    {
+      "code": "CAI1002020304-LE1-M1",
+      "subject_code": "CAI1002020304",
+      "subject_name": "LENGUA EXTRANJERA I",
+      "teacher": null,
+      "classroom": null,
+      "credits": 0,
+      "semester": "3",
+      "blocks": [
+        {
+          "weekday": 5,
+          "starts_at": "07:00:00",
+          "ends_at": "08:59:00"
+        }
+      ]
+    },
+    {
+      "code": "CAI1002020304-LE1-M2",
+      "subject_code": "CAI1002020304",
+      "subject_name": "LENGUA EXTRANJERA I",
+      "teacher": null,
+      "classroom": null,
+      "credits": 0,
+      "semester": "3",
+      "blocks": [
+        {
+          "weekday": 2,
+          "starts_at": "07:00:00",
+          "ends_at": "08:59:00"
+        }
+      ]
+    },
+    {
+      "code": "CAI1002020304-LE1-M3",
+      "subject_code": "CAI1002020304",
+      "subject_name": "LENGUA EXTRANJERA I",
+      "teacher": null,
+      "classroom": null,
+      "credits": 0,
+      "semester": "3",
+      "blocks": [
+        {
+          "weekday": 5,
+          "starts_at": "11:00:00",
+          "ends_at": "12:59:00"
+        }
+      ]
+    },
+    {
+      "code": "CAI1002020304-LE1-M4",
+      "subject_code": "CAI1002020304",
+      "subject_name": "LENGUA EXTRANJERA I",
+      "teacher": null,
+      "classroom": null,
+      "credits": 0,
+      "semester": "3",
+      "blocks": [
+        {
+          "weekday": 4,
+          "starts_at": "09:00:00",
+          "ends_at": "10:59:00"
+        }
+      ]
+    },
+    {
+      "code": "CAI1002020304-LE1-M5",
+      "subject_code": "CAI1002020304",
+      "subject_name": "LENGUA EXTRANJERA I",
+      "teacher": null,
+      "classroom": null,
+      "credits": 0,
+      "semester": "3",
+      "blocks": [
+        {
+          "weekday": 3,
+          "starts_at": "09:00:00",
+          "ends_at": "10:59:00"
+        }
+      ]
+    },
+    {
+      "code": "CAI1002020304-LE1-M6",
+      "subject_code": "CAI1002020304",
+      "subject_name": "LENGUA EXTRANJERA I",
+      "teacher": null,
+      "classroom": null,
+      "credits": 0,
+      "semester": "3",
+      "blocks": [
+        {
+          "weekday": 2,
+          "starts_at": "09:00:00",
+          "ends_at": "10:59:00"
+        }
+      ]
+    },
+    {
+      "code": "CAI1002020304-LE1-N1",
+      "subject_code": "CAI1002020304",
+      "subject_name": "LENGUA EXTRANJERA I",
+      "teacher": null,
+      "classroom": null,
+      "credits": 0,
+      "semester": "3",
+      "blocks": [
+        {
+          "weekday": 2,
+          "starts_at": "18:00:00",
+          "ends_at": "19:59:00"
+        }
+      ]
+    },
+    {
+      "code": "CAI1002020304-LE1-N2",
+      "subject_code": "CAI1002020304",
+      "subject_name": "LENGUA EXTRANJERA I",
+      "teacher": null,
+      "classroom": null,
+      "credits": 0,
+      "semester": "3",
+      "blocks": [
+        {
+          "weekday": 3,
+          "starts_at": "20:00:00",
+          "ends_at": "21:59:00"
+        }
+      ]
+    },
+    {
+      "code": "CAI1002020304-LE1-T1",
+      "subject_code": "CAI1002020304",
+      "subject_name": "LENGUA EXTRANJERA I",
+      "teacher": null,
+      "classroom": null,
+      "credits": 0,
+      "semester": "3",
+      "blocks": [
+        {
+          "weekday": 2,
+          "starts_at": "14:00:00",
+          "ends_at": "15:59:00"
+        }
+      ]
+    },
+    {
+      "code": "CAI1002020304-LE1-T2",
+      "subject_code": "CAI1002020304",
+      "subject_name": "LENGUA EXTRANJERA I",
+      "teacher": null,
+      "classroom": null,
+      "credits": 0,
+      "semester": "3",
+      "blocks": [
+        {
+          "weekday": 2,
+          "starts_at": "16:00:00",
+          "ends_at": "17:59:00"
+        }
+      ]
+    },
+    {
+      "code": "CAI1002020304-LE1-T3",
+      "subject_code": "CAI1002020304",
+      "subject_name": "LENGUA EXTRANJERA I",
+      "teacher": null,
+      "classroom": null,
+      "credits": 0,
+      "semester": "3",
+      "blocks": [
+        {
+          "weekday": 3,
+          "starts_at": "12:00:00",
+          "ends_at": "13:59:00"
+        }
+      ]
+    },
+    {
+      "code": "CAI1002020304-LE1-M7",
+      "subject_code": "CAI1002020304",
+      "subject_name": "LENGUA EXTRANJERA I",
+      "teacher": null,
+      "classroom": null,
+      "credits": 0,
+      "semester": "3",
+      "blocks": [
+        {
+          "weekday": 5,
+          "starts_at": "13:00:00",
+          "ends_at": "14:59:00"
+        }
+      ]
+    },
+    {
+      "code": "CAD612021313-301 SIS",
+      "subject_code": "CAD612021313",
+      "subject_name": "PROGRAMACIÓN II",
+      "teacher": null,
+      "classroom": null,
+      "credits": 0,
+      "semester": "3",
+      "blocks": [
+        {
+          "weekday": 0,
+          "starts_at": "07:00:00",
+          "ends_at": "09:59:00"
+        },
+        {
+          "weekday": 4,
+          "starts_at": "10:00:00",
+          "ends_at": "12:59:00"
+        }
+      ]
+    },
+    {
+      "code": "CAD612021313-302 SIS",
+      "subject_code": "CAD612021313",
+      "subject_name": "PROGRAMACIÓN II",
+      "teacher": null,
+      "classroom": null,
+      "credits": 0,
+      "semester": "3",
+      "blocks": [
+        {
+          "weekday": 2,
+          "starts_at": "07:00:00",
+          "ends_at": "09:59:00"
+        },
+        {
+          "weekday": 1,
+          "starts_at": "07:00:00",
+          "ends_at": "09:59:00"
+        }
+      ]
+    },
+    {
+      "code": "CAD612021417-401 SIS",
+      "subject_code": "CAD612021417",
+      "subject_name": "ARQUITECTURA DE COMPUTADORES",
+      "teacher": null,
+      "classroom": null,
+      "credits": 0,
+      "semester": "4",
+      "blocks": [
+        {
+          "weekday": 3,
+          "starts_at": "07:00:00",
+          "ends_at": "09:59:00"
+        },
+        {
+          "weekday": 0,
+          "starts_at": "10:00:00",
+          "ends_at": "12:59:00"
+        }
+      ]
+    },
+    {
+      "code": "CAD612021417-402 SIS",
+      "subject_code": "CAD612021417",
+      "subject_name": "ARQUITECTURA DE COMPUTADORES",
+      "teacher": null,
+      "classroom": null,
+      "credits": 0,
+      "semester": "4",
+      "blocks": [
+        {
+          "weekday": 0,
+          "starts_at": "07:00:00",
+          "ends_at": "09:59:00"
+        },
+        {
+          "weekday": 2,
+          "starts_at": "09:00:00",
+          "ends_at": "11:59:00"
+        }
+      ]
+    },
+    {
+      "code": "CAD612021414-401 SIS",
+      "subject_code": "CAD612021414",
+      "subject_name": "CALCULO MULTIVARIADO",
+      "teacher": null,
+      "classroom": null,
+      "credits": 0,
+      "semester": "4",
+      "blocks": [
+        {
+          "weekday": 3,
+          "starts_at": "10:00:00",
+          "ends_at": "11:59:00"
+        },
+        {
+          "weekday": 4,
+          "starts_at": "10:00:00",
+          "ends_at": "11:59:00"
+        }
+      ]
+    },
+    {
+      "code": "CAD612021414-402 SIS",
+      "subject_code": "CAD612021414",
+      "subject_name": "CALCULO MULTIVARIADO",
+      "teacher": null,
+      "classroom": null,
+      "credits": 0,
+      "semester": "4",
+      "blocks": [
+        {
+          "weekday": 1,
+          "starts_at": "07:00:00",
+          "ends_at": "08:59:00"
+        },
+        {
+          "weekday": 2,
+          "starts_at": "07:00:00",
+          "ends_at": "08:59:00"
+        }
+      ]
+    },
+    {
+      "code": "CAD612021416-401 SIS",
+      "subject_code": "CAD612021416",
+      "subject_name": "ESTRUCTURAS DE INFORMACIÓN",
+      "teacher": null,
+      "classroom": null,
+      "credits": 0,
+      "semester": "4",
+      "blocks": [
+        {
+          "weekday": 2,
+          "starts_at": "07:00:00",
+          "ends_at": "08:59:00"
+        },
+        {
+          "weekday": 1,
+          "starts_at": "09:00:00",
+          "ends_at": "10:59:00"
+        }
+      ]
+    },
+    {
+      "code": "CAD612021416-402 SIS",
+      "subject_code": "CAD612021416",
+      "subject_name": "ESTRUCTURAS DE INFORMACIÓN",
+      "teacher": null,
+      "classroom": null,
+      "credits": 0,
+      "semester": "4",
+      "blocks": [
+        {
+          "weekday": 4,
+          "starts_at": "10:00:00",
+          "ends_at": "11:59:00"
+        },
+        {
+          "weekday": 1,
+          "starts_at": "11:00:00",
+          "ends_at": "12:59:00"
+        }
+      ]
+    },
+    {
+      "code": "CAD612021415-401 SIS",
+      "subject_code": "CAD612021415",
+      "subject_name": "FISICA III",
+      "teacher": null,
+      "classroom": null,
+      "credits": 0,
+      "semester": "4",
+      "blocks": [
+        {
+          "weekday": 1,
+          "starts_at": "07:00:00",
+          "ends_at": "08:59:00"
+        },
+        {
+          "weekday": 4,
+          "starts_at": "07:00:00",
+          "ends_at": "08:59:00"
+        },
+        {
+          "weekday": 2,
+          "starts_at": "09:00:00",
+          "ends_at": "10:59:00"
+        }
+      ]
+    },
+    {
+      "code": "CAD612021415-402 SIS",
+      "subject_code": "CAD612021415",
+      "subject_name": "FISICA III",
+      "teacher": null,
+      "classroom": null,
+      "credits": 0,
+      "semester": "4",
+      "blocks": [
+        {
+          "weekday": 5,
+          "starts_at": "09:00:00",
+          "ends_at": "10:59:00"
+        },
+        {
+          "weekday": 1,
+          "starts_at": "14:00:00",
+          "ends_at": "15:59:00"
+        },
+        {
+          "weekday": 4,
+          "starts_at": "14:00:00",
+          "ends_at": "15:59:00"
+        }
+      ]
+    },
+    {
+      "code": "CAD612021418-401 SIS",
+      "subject_code": "CAD612021418",
+      "subject_name": "FUNDAMENTOS ADMINISTRATIVOS",
+      "teacher": null,
+      "classroom": null,
+      "credits": 0,
+      "semester": "4",
+      "blocks": [
+        {
+          "weekday": 0,
+          "starts_at": "07:00:00",
+          "ends_at": "08:59:00"
+        }
+      ]
+    },
+    {
+      "code": "CAD612021418-402 SIS",
+      "subject_code": "CAD612021418",
+      "subject_name": "FUNDAMENTOS ADMINISTRATIVOS",
+      "teacher": null,
+      "classroom": null,
+      "credits": 0,
+      "semester": "4",
+      "blocks": [
+        {
+          "weekday": 3,
+          "starts_at": "07:00:00",
+          "ends_at": "08:59:00"
+        }
+      ]
+    },
+    {
+      "code": "CAI1002020406-LE2-M1",
+      "subject_code": "CAI1002020406",
+      "subject_name": "LENGUA EXTRANJERA II",
+      "teacher": null,
+      "classroom": null,
+      "credits": 0,
+      "semester": "4",
+      "blocks": [
+        {
+          "weekday": 1,
+          "starts_at": "09:00:00",
+          "ends_at": "10:59:00"
+        }
+      ]
+    },
+    {
+      "code": "CAI1002020406-LE2-M2",
+      "subject_code": "CAI1002020406",
+      "subject_name": "LENGUA EXTRANJERA II",
+      "teacher": null,
+      "classroom": null,
+      "credits": 0,
+      "semester": "4",
+      "blocks": [
+        {
+          "weekday": 4,
+          "starts_at": "07:00:00",
+          "ends_at": "08:59:00"
+        }
+      ]
+    },
+    {
+      "code": "CAI1002020406-LE2-M3",
+      "subject_code": "CAI1002020406",
+      "subject_name": "LENGUA EXTRANJERA II",
+      "teacher": null,
+      "classroom": null,
+      "credits": 0,
+      "semester": "4",
+      "blocks": [
+        {
+          "weekday": 5,
+          "starts_at": "09:00:00",
+          "ends_at": "10:59:00"
+        }
+      ]
+    },
+    {
+      "code": "CAI1002020406-LE2-M4",
+      "subject_code": "CAI1002020406",
+      "subject_name": "LENGUA EXTRANJERA II",
+      "teacher": null,
+      "classroom": null,
+      "credits": 0,
+      "semester": "4",
+      "blocks": [
+        {
+          "weekday": 4,
+          "starts_at": "07:00:00",
+          "ends_at": "08:59:00"
+        }
+      ]
+    },
+    {
+      "code": "CAI1002020406-LE2-N1",
+      "subject_code": "CAI1002020406",
+      "subject_name": "LENGUA EXTRANJERA II",
+      "teacher": null,
+      "classroom": null,
+      "credits": 0,
+      "semester": "4",
+      "blocks": [
+        {
+          "weekday": 1,
+          "starts_at": "20:00:00",
+          "ends_at": "21:59:00"
+        }
+      ]
+    },
+    {
+      "code": "CAI1002020406-LE2-N2",
+      "subject_code": "CAI1002020406",
+      "subject_name": "LENGUA EXTRANJERA II",
+      "teacher": null,
+      "classroom": null,
+      "credits": 0,
+      "semester": "4",
+      "blocks": [
+        {
+          "weekday": 2,
+          "starts_at": "20:00:00",
+          "ends_at": "21:59:00"
+        }
+      ]
+    },
+    {
+      "code": "CAI1002020406-LE2-T1",
+      "subject_code": "CAI1002020406",
+      "subject_name": "LENGUA EXTRANJERA II",
+      "teacher": null,
+      "classroom": null,
+      "credits": 0,
+      "semester": "4",
+      "blocks": [
+        {
+          "weekday": 5,
+          "starts_at": "13:00:00",
+          "ends_at": "14:59:00"
+        }
+      ]
+    },
+    {
+      "code": "CAI1002020406-LE2-T2",
+      "subject_code": "CAI1002020406",
+      "subject_name": "LENGUA EXTRANJERA II",
+      "teacher": null,
+      "classroom": null,
+      "credits": 0,
+      "semester": "4",
+      "blocks": [
+        {
+          "weekday": 1,
+          "starts_at": "14:00:00",
+          "ends_at": "15:59:00"
+        }
+      ]
+    },
+    {
+      "code": "CAI1002020406-LE2-T3",
+      "subject_code": "CAI1002020406",
+      "subject_name": "LENGUA EXTRANJERA II",
+      "teacher": null,
+      "classroom": null,
+      "credits": 0,
+      "semester": "4",
+      "blocks": [
+        {
+          "weekday": 4,
+          "starts_at": "12:00:00",
+          "ends_at": "13:59:00"
+        }
+      ]
+    },
+    {
+      "code": "CAI1002020406-LE2-T4",
+      "subject_code": "CAI1002020406",
+      "subject_name": "LENGUA EXTRANJERA II",
+      "teacher": null,
+      "classroom": null,
+      "credits": 0,
+      "semester": "4",
+      "blocks": [
+        {
+          "weekday": 4,
+          "starts_at": "14:00:00",
+          "ends_at": "15:59:00"
+        }
+      ]
+    },
+    {
+      "code": "CAI1002020406-LE2-M5",
+      "subject_code": "CAI1002020406",
+      "subject_name": "LENGUA EXTRANJERA II",
+      "teacher": null,
+      "classroom": null,
+      "credits": 0,
+      "semester": "4",
+      "blocks": [
+        {
+          "weekday": 3,
+          "starts_at": "07:00:00",
+          "ends_at": "08:59:00"
+        }
+      ]
+    },
+    {
+      "code": "CAD612021523-501 SIS",
+      "subject_code": "CAD612021523",
+      "subject_name": "BASE DE DATOS",
+      "teacher": null,
+      "classroom": null,
+      "credits": 0,
+      "semester": "5",
+      "blocks": [
+        {
+          "weekday": 1,
+          "starts_at": "11:00:00",
+          "ends_at": "12:59:00"
+        },
+        {
+          "weekday": 0,
+          "starts_at": "11:00:00",
+          "ends_at": "12:59:00"
+        }
+      ]
+    },
+    {
+      "code": "CAD612021523-502 SIS",
+      "subject_code": "CAD612021523",
+      "subject_name": "BASE DE DATOS",
+      "teacher": null,
+      "classroom": null,
+      "credits": 0,
+      "semester": "5",
+      "blocks": [
+        {
+          "weekday": 2,
+          "starts_at": "07:00:00",
+          "ends_at": "08:59:00"
+        },
+        {
+          "weekday": 0,
+          "starts_at": "07:00:00",
+          "ends_at": "08:59:00"
+        }
+      ]
+    },
+    {
+      "code": "CAD612021519-501 SIS",
+      "subject_code": "CAD612021519",
+      "subject_name": "ECUACIONES DIFERENCIALES",
+      "teacher": null,
+      "classroom": null,
+      "credits": 0,
+      "semester": "5",
+      "blocks": [
+        {
+          "weekday": 4,
+          "starts_at": "07:00:00",
+          "ends_at": "08:59:00"
+        },
+        {
+          "weekday": 1,
+          "starts_at": "09:00:00",
+          "ends_at": "10:59:00"
+        }
+      ]
+    },
+    {
+      "code": "CAD612021519-502 SIS",
+      "subject_code": "CAD612021519",
+      "subject_name": "ECUACIONES DIFERENCIALES",
+      "teacher": null,
+      "classroom": null,
+      "credits": 0,
+      "semester": "5",
+      "blocks": [
+        {
+          "weekday": 3,
+          "starts_at": "11:00:00",
+          "ends_at": "12:59:00"
+        },
+        {
+          "weekday": 1,
+          "starts_at": "11:00:00",
+          "ends_at": "12:59:00"
+        }
+      ]
+    },
+    {
+      "code": "CAD612021521-501 SIS",
+      "subject_code": "CAD612021521",
+      "subject_name": "INGENIERIA DE SOFTWARE I",
+      "teacher": null,
+      "classroom": null,
+      "credits": 0,
+      "semester": "5",
+      "blocks": [
+        {
+          "weekday": 3,
+          "starts_at": "07:00:00",
+          "ends_at": "09:59:00"
+        },
+        {
+          "weekday": 2,
+          "starts_at": "09:00:00",
+          "ends_at": "11:59:00"
+        }
+      ]
+    },
+    {
+      "code": "CAD612021521-502 SIS",
+      "subject_code": "CAD612021521",
+      "subject_name": "INGENIERIA DE SOFTWARE I",
+      "teacher": null,
+      "classroom": null,
+      "credits": 0,
+      "semester": "5",
+      "blocks": [
+        {
+          "weekday": 2,
+          "starts_at": "09:00:00",
+          "ends_at": "11:59:00"
+        },
+        {
+          "weekday": 4,
+          "starts_at": "09:00:00",
+          "ends_at": "11:59:00"
+        }
+      ]
+    },
+    {
+      "code": "CAI1002020507-LE3-M1",
+      "subject_code": "CAI1002020507",
+      "subject_name": "LENGUA EXTRANJERA III",
+      "teacher": null,
+      "classroom": null,
+      "credits": 0,
+      "semester": "5",
+      "blocks": [
+        {
+          "weekday": 2,
+          "starts_at": "09:00:00",
+          "ends_at": "10:59:00"
+        }
+      ]
+    },
+    {
+      "code": "CAI1002020507-LE3-M2",
+      "subject_code": "CAI1002020507",
+      "subject_name": "LENGUA EXTRANJERA III",
+      "teacher": null,
+      "classroom": null,
+      "credits": 0,
+      "semester": "5",
+      "blocks": [
+        {
+          "weekday": 5,
+          "starts_at": "11:00:00",
+          "ends_at": "12:59:00"
+        }
+      ]
+    },
+    {
+      "code": "CAI1002020507-LE3-N1",
+      "subject_code": "CAI1002020507",
+      "subject_name": "LENGUA EXTRANJERA III",
+      "teacher": null,
+      "classroom": null,
+      "credits": 0,
+      "semester": "5",
+      "blocks": [
+        {
+          "weekday": 3,
+          "starts_at": "18:00:00",
+          "ends_at": "19:59:00"
+        }
+      ]
+    },
+    {
+      "code": "CAI1002020507-LE3-N2",
+      "subject_code": "CAI1002020507",
+      "subject_name": "LENGUA EXTRANJERA III",
+      "teacher": null,
+      "classroom": null,
+      "credits": 0,
+      "semester": "5",
+      "blocks": [
+        {
+          "weekday": 4,
+          "starts_at": "18:00:00",
+          "ends_at": "19:59:00"
+        }
+      ]
+    },
+    {
+      "code": "CAI1002020507-LE3-N3",
+      "subject_code": "CAI1002020507",
+      "subject_name": "LENGUA EXTRANJERA III",
+      "teacher": null,
+      "classroom": null,
+      "credits": 0,
+      "semester": "5",
+      "blocks": [
+        {
+          "weekday": 1,
+          "starts_at": "18:00:00",
+          "ends_at": "19:59:00"
+        }
+      ]
+    },
+    {
+      "code": "CAI1002020507-LE3-T1",
+      "subject_code": "CAI1002020507",
+      "subject_name": "LENGUA EXTRANJERA III",
+      "teacher": null,
+      "classroom": null,
+      "credits": 0,
+      "semester": "5",
+      "blocks": [
+        {
+          "weekday": 2,
+          "starts_at": "12:00:00",
+          "ends_at": "13:59:00"
+        }
+      ]
+    },
+    {
+      "code": "CAI1002020507-LE3-T2",
+      "subject_code": "CAI1002020507",
+      "subject_name": "LENGUA EXTRANJERA III",
+      "teacher": null,
+      "classroom": null,
+      "credits": 0,
+      "semester": "5",
+      "blocks": [
+        {
+          "weekday": 3,
+          "starts_at": "14:00:00",
+          "ends_at": "15:59:00"
+        }
+      ]
+    },
+    {
+      "code": "CAI1002020507-LE3-T3",
+      "subject_code": "CAI1002020507",
+      "subject_name": "LENGUA EXTRANJERA III",
+      "teacher": null,
+      "classroom": null,
+      "credits": 0,
+      "semester": "5",
+      "blocks": [
+        {
+          "weekday": 3,
+          "starts_at": "16:00:00",
+          "ends_at": "17:59:00"
+        }
+      ]
+    },
+    {
+      "code": "CAI1002020507-LE3-T4",
+      "subject_code": "CAI1002020507",
+      "subject_name": "LENGUA EXTRANJERA III",
+      "teacher": null,
+      "classroom": null,
+      "credits": 0,
+      "semester": "5",
+      "blocks": [
+        {
+          "weekday": 3,
+          "starts_at": "12:00:00",
+          "ends_at": "13:59:00"
+        }
+      ]
+    },
+    {
+      "code": "CAI1002020507-LE3-T5",
+      "subject_code": "CAI1002020507",
+      "subject_name": "LENGUA EXTRANJERA III",
+      "teacher": null,
+      "classroom": null,
+      "credits": 0,
+      "semester": "5",
+      "blocks": [
+        {
+          "weekday": 5,
+          "starts_at": "12:00:00",
+          "ends_at": "13:59:00"
+        }
+      ]
+    },
+    {
+      "code": "CAD612021524-501 SIS",
+      "subject_code": "CAD612021524",
+      "subject_name": "PLANEACION ESTRATEGICA",
+      "teacher": null,
+      "classroom": null,
+      "credits": 0,
+      "semester": "5",
+      "blocks": [
+        {
+          "weekday": 0,
+          "starts_at": "09:00:00",
+          "ends_at": "10:59:00"
+        }
+      ]
+    },
+    {
+      "code": "CAD612021524-502 SIS",
+      "subject_code": "CAD612021524",
+      "subject_name": "PLANEACION ESTRATEGICA",
+      "teacher": null,
+      "classroom": null,
+      "credits": 0,
+      "semester": "5",
+      "blocks": [
+        {
+          "weekday": 3,
+          "starts_at": "09:00:00",
+          "ends_at": "10:59:00"
+        }
+      ]
+    },
+    {
+      "code": "CAD612021522-501 SIS",
+      "subject_code": "CAD612021522",
+      "subject_name": "SISTEMAS DE INFORMACION",
+      "teacher": null,
+      "classroom": null,
+      "credits": 0,
+      "semester": "5",
+      "blocks": [
+        {
+          "weekday": 0,
+          "starts_at": "07:00:00",
+          "ends_at": "08:59:00"
+        },
+        {
+          "weekday": 1,
+          "starts_at": "07:00:00",
+          "ends_at": "08:59:00"
+        }
+      ]
+    },
+    {
+      "code": "CAD612021522-502 SIS",
+      "subject_code": "CAD612021522",
+      "subject_name": "SISTEMAS DE INFORMACION",
+      "teacher": null,
+      "classroom": null,
+      "credits": 0,
+      "semester": "5",
+      "blocks": [
+        {
+          "weekday": 1,
+          "starts_at": "09:00:00",
+          "ends_at": "10:59:00"
+        },
+        {
+          "weekday": 0,
+          "starts_at": "09:00:00",
+          "ends_at": "10:59:00"
+        }
+      ]
+    },
+    {
+      "code": "CAD612021520-501 SIS",
+      "subject_code": "CAD612021520",
+      "subject_name": "SISTEMAS OPERATIVOS",
+      "teacher": null,
+      "classroom": null,
+      "credits": 0,
+      "semester": "5",
+      "blocks": [
+        {
+          "weekday": 4,
+          "starts_at": "09:00:00",
+          "ends_at": "10:59:00"
+        },
+        {
+          "weekday": 2,
+          "starts_at": "07:00:00",
+          "ends_at": "08:59:00"
+        }
+      ]
+    },
+    {
+      "code": "CAD612021520-502 SIS",
+      "subject_code": "CAD612021520",
+      "subject_name": "SISTEMAS OPERATIVOS",
+      "teacher": null,
+      "classroom": null,
+      "credits": 0,
+      "semester": "5",
+      "blocks": [
+        {
+          "weekday": 3,
+          "starts_at": "07:00:00",
+          "ends_at": "08:59:00"
+        },
+        {
+          "weekday": 1,
+          "starts_at": "07:00:00",
+          "ends_at": "08:59:00"
+        }
+      ]
+    },
+    {
+      "code": "CAI1002020613-CTI1-M1",
+      "subject_code": "CAI1002020613",
+      "subject_name": "CIENCIA, TECNOLOGIA E INNOVACION I",
+      "teacher": null,
+      "classroom": null,
+      "credits": 0,
+      "semester": "5",
+      "blocks": [
+        {
+          "weekday": 1,
+          "starts_at": "09:00:00",
+          "ends_at": "10:59:00"
+        }
+      ]
+    },
+    {
+      "code": "CAI1002020613-CTI1-M2",
+      "subject_code": "CAI1002020613",
+      "subject_name": "CIENCIA, TECNOLOGIA E INNOVACION I",
+      "teacher": null,
+      "classroom": null,
+      "credits": 0,
+      "semester": "5",
+      "blocks": [
+        {
+          "weekday": 4,
+          "starts_at": "07:00:00",
+          "ends_at": "08:59:00"
+        }
+      ]
+    },
+    {
+      "code": "CAI1002020613-CTI1-T1",
+      "subject_code": "CAI1002020613",
+      "subject_name": "CIENCIA, TECNOLOGIA E INNOVACION I",
+      "teacher": null,
+      "classroom": null,
+      "credits": 0,
+      "semester": "5",
+      "blocks": [
+        {
+          "weekday": 3,
+          "starts_at": "14:00:00",
+          "ends_at": "15:59:00"
+        }
+      ]
+    },
+    {
+      "code": "CAI1002020613-CTI1-N1",
+      "subject_code": "CAI1002020613",
+      "subject_name": "CIENCIA, TECNOLOGIA E INNOVACION I",
+      "teacher": null,
+      "classroom": null,
+      "credits": 0,
+      "semester": "5",
+      "blocks": [
+        {
+          "weekday": 1,
+          "starts_at": "20:00:00",
+          "ends_at": "21:59:00"
+        }
+      ]
+    },
+    {
+      "code": "CAI1002020613-CTI1-N2",
+      "subject_code": "CAI1002020613",
+      "subject_name": "CIENCIA, TECNOLOGIA E INNOVACION I",
+      "teacher": null,
+      "classroom": null,
+      "credits": 0,
+      "semester": "5",
+      "blocks": [
+        {
+          "weekday": 2,
+          "starts_at": "20:00:00",
+          "ends_at": "21:59:00"
+        }
+      ]
+    },
+    {
+      "code": "CAD612021626-601 SIS",
+      "subject_code": "CAD612021626",
+      "subject_name": "COMUNICACIÓN DE DATOS",
+      "teacher": null,
+      "classroom": null,
+      "credits": 0,
+      "semester": "5",
+      "blocks": [
+        {
+          "weekday": 0,
+          "starts_at": "07:00:00",
+          "ends_at": "09:59:00"
+        },
+        {
+          "weekday": 1,
+          "starts_at": "07:00:00",
+          "ends_at": "09:59:00"
+        }
+      ]
+    },
+    {
+      "code": "CAD612021626-602 SIS",
+      "subject_code": "CAD612021626",
+      "subject_name": "COMUNICACIÓN DE DATOS",
+      "teacher": null,
+      "classroom": null,
+      "credits": 0,
+      "semester": "5",
+      "blocks": [
+        {
+          "weekday": 3,
+          "starts_at": "10:00:00",
+          "ends_at": "12:59:00"
+        },
+        {
+          "weekday": 0,
+          "starts_at": "10:00:00",
+          "ends_at": "12:59:00"
+        }
+      ]
+    },
+    {
+      "code": "CAI1002020612-CE-N1",
+      "subject_code": "CAI1002020612",
+      "subject_name": "EMPRENDIMIENTO E INNOVACION I",
+      "teacher": null,
+      "classroom": null,
+      "credits": 0,
+      "semester": "5",
+      "blocks": [
+        {
+          "weekday": 1,
+          "starts_at": "18:00:00",
+          "ends_at": "19:59:00"
+        }
+      ]
+    },
+    {
+      "code": "CAI1002020612-CE-N2",
+      "subject_code": "CAI1002020612",
+      "subject_name": "EMPRENDIMIENTO E INNOVACION I",
+      "teacher": null,
+      "classroom": null,
+      "credits": 0,
+      "semester": "5",
+      "blocks": [
+        {
+          "weekday": 2,
+          "starts_at": "20:00:00",
+          "ends_at": "21:59:00"
+        }
+      ]
+    },
+    {
+      "code": "CAI1002020612-CE-T1",
+      "subject_code": "CAI1002020612",
+      "subject_name": "EMPRENDIMIENTO E INNOVACION I",
+      "teacher": null,
+      "classroom": null,
+      "credits": 0,
+      "semester": "5",
+      "blocks": [
+        {
+          "weekday": 1,
+          "starts_at": "12:00:00",
+          "ends_at": "13:59:00"
+        }
+      ]
+    },
+    {
+      "code": "CAI1002020612-EI1-M1",
+      "subject_code": "CAI1002020612",
+      "subject_name": "EMPRENDIMIENTO E INNOVACION I",
+      "teacher": null,
+      "classroom": null,
+      "credits": 0,
+      "semester": "5",
+      "blocks": [
+        {
+          "weekday": 1,
+          "starts_at": "07:00:00",
+          "ends_at": "08:59:00"
+        }
+      ]
+    },
+    {
+      "code": "CAI1002020612-EI1-M2",
+      "subject_code": "CAI1002020612",
+      "subject_name": "EMPRENDIMIENTO E INNOVACION I",
+      "teacher": null,
+      "classroom": null,
+      "credits": 0,
+      "semester": "5",
+      "blocks": [
+        {
+          "weekday": 2,
+          "starts_at": "09:00:00",
+          "ends_at": "10:59:00"
+        }
+      ]
+    },
+    {
+      "code": "CAI1002020612-EI1-M3",
+      "subject_code": "CAI1002020612",
+      "subject_name": "EMPRENDIMIENTO E INNOVACION I",
+      "teacher": null,
+      "classroom": null,
+      "credits": 0,
+      "semester": "5",
+      "blocks": [
+        {
+          "weekday": 4,
+          "starts_at": "09:00:00",
+          "ends_at": "10:59:00"
+        }
+      ]
+    },
+    {
+      "code": "CAI1002020612-EI1-N1",
+      "subject_code": "CAI1002020612",
+      "subject_name": "EMPRENDIMIENTO E INNOVACION I",
+      "teacher": null,
+      "classroom": null,
+      "credits": 0,
+      "semester": "5",
+      "blocks": [
+        {
+          "weekday": 2,
+          "starts_at": "18:00:00",
+          "ends_at": "19:59:00"
+        }
+      ]
+    },
+    {
+      "code": "CAI1002020612-EI1-N2",
+      "subject_code": "CAI1002020612",
+      "subject_name": "EMPRENDIMIENTO E INNOVACION I",
+      "teacher": null,
+      "classroom": null,
+      "credits": 0,
+      "semester": "5",
+      "blocks": [
+        {
+          "weekday": 3,
+          "starts_at": "18:00:00",
+          "ends_at": "19:59:00"
+        }
+      ]
+    },
+    {
+      "code": "CAI1002020612-EI1-T1",
+      "subject_code": "CAI1002020612",
+      "subject_name": "EMPRENDIMIENTO E INNOVACION I",
+      "teacher": null,
+      "classroom": null,
+      "credits": 0,
+      "semester": "5",
+      "blocks": [
+        {
+          "weekday": 3,
+          "starts_at": "16:00:00",
+          "ends_at": "17:59:00"
+        }
+      ]
+    },
+    {
+      "code": "CAD612021627-601 SIS",
+      "subject_code": "CAD612021627",
+      "subject_name": "INGENIERIA DE SOFTWARE II",
+      "teacher": null,
+      "classroom": null,
+      "credits": 0,
+      "semester": "5",
+      "blocks": [
+        {
+          "weekday": 0,
+          "starts_at": "10:00:00",
+          "ends_at": "12:59:00"
+        },
+        {
+          "weekday": 1,
+          "starts_at": "10:00:00",
+          "ends_at": "12:59:00"
+        }
+      ]
+    },
+    {
+      "code": "CAD612021627-602 SIS",
+      "subject_code": "CAD612021627",
+      "subject_name": "INGENIERIA DE SOFTWARE II",
+      "teacher": null,
+      "classroom": null,
+      "credits": 0,
+      "semester": "5",
+      "blocks": [
+        {
+          "weekday": 3,
+          "starts_at": "07:00:00",
+          "ends_at": "09:59:00"
+        },
+        {
+          "weekday": 1,
+          "starts_at": "07:00:00",
+          "ends_at": "09:59:00"
+        }
+      ]
+    },
+    {
+      "code": "CAI1002020608-LE4-M1",
+      "subject_code": "CAI1002020608",
+      "subject_name": "LENGUA EXTRANJERA IV",
+      "teacher": null,
+      "classroom": null,
+      "credits": 0,
+      "semester": "5",
+      "blocks": [
+        {
+          "weekday": 3,
+          "starts_at": "07:00:00",
+          "ends_at": "08:59:00"
+        }
+      ]
+    },
+    {
+      "code": "CAI1002020608-LE4-M2",
+      "subject_code": "CAI1002020608",
+      "subject_name": "LENGUA EXTRANJERA IV",
+      "teacher": null,
+      "classroom": null,
+      "credits": 0,
+      "semester": "5",
+      "blocks": [
+        {
+          "weekday": 3,
+          "starts_at": "09:00:00",
+          "ends_at": "10:59:00"
+        }
+      ]
+    },
+    {
+      "code": "CAI1002020608-LE4-M3",
+      "subject_code": "CAI1002020608",
+      "subject_name": "LENGUA EXTRANJERA IV",
+      "teacher": null,
+      "classroom": null,
+      "credits": 0,
+      "semester": "5",
+      "blocks": [
+        {
+          "weekday": 1,
+          "starts_at": "07:00:00",
+          "ends_at": "08:59:00"
+        }
+      ]
+    },
+    {
+      "code": "CAI1002020608-LE4-N1",
+      "subject_code": "CAI1002020608",
+      "subject_name": "LENGUA EXTRANJERA IV",
+      "teacher": null,
+      "classroom": null,
+      "credits": 0,
+      "semester": "5",
+      "blocks": [
+        {
+          "weekday": 4,
+          "starts_at": "18:00:00",
+          "ends_at": "19:59:00"
+        }
+      ]
+    },
+    {
+      "code": "CAI1002020608-LE4-N2",
+      "subject_code": "CAI1002020608",
+      "subject_name": "LENGUA EXTRANJERA IV",
+      "teacher": null,
+      "classroom": null,
+      "credits": 0,
+      "semester": "5",
+      "blocks": [
+        {
+          "weekday": 4,
+          "starts_at": "20:00:00",
+          "ends_at": "21:59:00"
+        }
+      ]
+    },
+    {
+      "code": "CAI1002020608-LE4-N3",
+      "subject_code": "CAI1002020608",
+      "subject_name": "LENGUA EXTRANJERA IV",
+      "teacher": null,
+      "classroom": null,
+      "credits": 0,
+      "semester": "5",
+      "blocks": [
+        {
+          "weekday": 2,
+          "starts_at": "18:00:00",
+          "ends_at": "19:59:00"
+        }
+      ]
+    },
+    {
+      "code": "CAI1002020608-LE4-T1",
+      "subject_code": "CAI1002020608",
+      "subject_name": "LENGUA EXTRANJERA IV",
+      "teacher": null,
+      "classroom": null,
+      "credits": 0,
+      "semester": "5",
+      "blocks": [
+        {
+          "weekday": 3,
+          "starts_at": "14:00:00",
+          "ends_at": "15:59:00"
+        }
+      ]
+    },
+    {
+      "code": "CAI1002020608-LE4-T2",
+      "subject_code": "CAI1002020608",
+      "subject_name": "LENGUA EXTRANJERA IV",
+      "teacher": null,
+      "classroom": null,
+      "credits": 0,
+      "semester": "5",
+      "blocks": [
+        {
+          "weekday": 4,
+          "starts_at": "16:00:00",
+          "ends_at": "17:59:00"
+        }
+      ]
+    },
+    {
+      "code": "CAI1002020608-LE4-T3",
+      "subject_code": "CAI1002020608",
+      "subject_name": "LENGUA EXTRANJERA IV",
+      "teacher": null,
+      "classroom": null,
+      "credits": 0,
+      "semester": "5",
+      "blocks": [
+        {
+          "weekday": 1,
+          "starts_at": "12:00:00",
+          "ends_at": "13:59:00"
+        }
+      ]
+    },
+    {
+      "code": "CAD612021625-SIS 601",
+      "subject_code": "CAD612021625",
+      "subject_name": "MATEMATICAS ESPECIALES",
+      "teacher": null,
+      "classroom": null,
+      "credits": 0,
+      "semester": "5",
+      "blocks": [
+        {
+          "weekday": 5,
+          "starts_at": "07:00:00",
+          "ends_at": "09:59:00"
+        }
+      ]
+    },
+    {
+      "code": "CAD612021625-SIS 602",
+      "subject_code": "CAD612021625",
+      "subject_name": "MATEMATICAS ESPECIALES",
+      "teacher": null,
+      "classroom": null,
+      "credits": 0,
+      "semester": "5",
+      "blocks": [
+        {
+          "weekday": 5,
+          "starts_at": "10:00:00",
+          "ends_at": "12:59:00"
+        }
+      ]
+    },
+    {
+      "code": "CAD612021628-601 SIS",
+      "subject_code": "CAD612021628",
+      "subject_name": "NETWORKING",
+      "teacher": null,
+      "classroom": null,
+      "credits": 0,
+      "semester": "5",
+      "blocks": [
+        {
+          "weekday": 2,
+          "starts_at": "11:00:00",
+          "ends_at": "12:59:00"
+        },
+        {
+          "weekday": 3,
+          "starts_at": "07:00:00",
+          "ends_at": "08:59:00"
+        }
+      ]
+    },
+    {
+      "code": "CAD612021628-602 SIS",
+      "subject_code": "CAD612021628",
+      "subject_name": "NETWORKING",
+      "teacher": null,
+      "classroom": null,
+      "credits": 0,
+      "semester": "5",
+      "blocks": [
+        {
+          "weekday": 4,
+          "starts_at": "07:00:00",
+          "ends_at": "08:59:00"
+        },
+        {
+          "weekday": 2,
+          "starts_at": "09:00:00",
+          "ends_at": "10:59:00"
+        }
+      ]
+    },
+    {
+      "code": "CAD612021729-701 SIS",
+      "subject_code": "CAD612021729",
+      "subject_name": "ANÁLISIS NUMÉRICO",
+      "teacher": null,
+      "classroom": null,
+      "credits": 0,
+      "semester": "7",
+      "blocks": [
+        {
+          "weekday": 2,
+          "starts_at": "07:00:00",
+          "ends_at": "09:59:00"
+        }
+      ]
+    },
+    {
+      "code": "CAD612021729-702 SIS",
+      "subject_code": "CAD612021729",
+      "subject_name": "ANÁLISIS NUMÉRICO",
+      "teacher": null,
+      "classroom": null,
+      "credits": 0,
+      "semester": "7",
+      "blocks": [
+        {
+          "weekday": 2,
+          "starts_at": "10:00:00",
+          "ends_at": "12:59:00"
+        }
+      ]
+    },
+    {
+      "code": "CAD612021732-701 SIS",
+      "subject_code": "CAD612021732",
+      "subject_name": "CIENCIA DE DATOS",
+      "teacher": null,
+      "classroom": null,
+      "credits": 0,
+      "semester": "7",
+      "blocks": [
+        {
+          "weekday": 2,
+          "starts_at": "10:00:00",
+          "ends_at": "11:59:00"
+        },
+        {
+          "weekday": 3,
+          "starts_at": "11:00:00",
+          "ends_at": "12:59:00"
+        }
+      ]
+    },
+    {
+      "code": "CAD612021732-702 SIS",
+      "subject_code": "CAD612021732",
+      "subject_name": "CIENCIA DE DATOS",
+      "teacher": null,
+      "classroom": null,
+      "credits": 0,
+      "semester": "7",
+      "blocks": [
+        {
+          "weekday": 3,
+          "starts_at": "07:00:00",
+          "ends_at": "08:59:00"
+        },
+        {
+          "weekday": 2,
+          "starts_at": "07:00:00",
+          "ends_at": "08:59:00"
+        }
+      ]
+    },
+    {
+      "code": "CAI1002020715-CTI2-M1",
+      "subject_code": "CAI1002020715",
+      "subject_name": "CIENCIA, TECNOLOGIA E INNOVACION II",
+      "teacher": null,
+      "classroom": null,
+      "credits": 0,
+      "semester": "7",
+      "blocks": [
+        {
+          "weekday": 2,
+          "starts_at": "07:00:00",
+          "ends_at": "08:59:00"
+        }
+      ]
+    },
+    {
+      "code": "CAI1002020715-CTI2-N1",
+      "subject_code": "CAI1002020715",
+      "subject_name": "CIENCIA, TECNOLOGIA E INNOVACION II",
+      "teacher": null,
+      "classroom": null,
+      "credits": 0,
+      "semester": "7",
+      "blocks": [
+        {
+          "weekday": 1,
+          "starts_at": "18:00:00",
+          "ends_at": "19:59:00"
+        }
+      ]
+    },
+    {
+      "code": "CAI1002020715-CTI2-M3",
+      "subject_code": "CAI1002020715",
+      "subject_name": "CIENCIA, TECNOLOGIA E INNOVACION II",
+      "teacher": null,
+      "classroom": null,
+      "credits": 0,
+      "semester": "7",
+      "blocks": [
+        {
+          "weekday": 3,
+          "starts_at": "07:00:00",
+          "ends_at": "08:59:00"
+        }
+      ]
+    },
+    {
+      "code": "CAI1002020715-CTI2-T1",
+      "subject_code": "CAI1002020715",
+      "subject_name": "CIENCIA, TECNOLOGIA E INNOVACION II",
+      "teacher": null,
+      "classroom": null,
+      "credits": 0,
+      "semester": "7",
+      "blocks": [
+        {
+          "weekday": 1,
+          "starts_at": "14:00:00",
+          "ends_at": "15:59:00"
+        }
+      ]
+    },
+    {
+      "code": "CAI1002020715-CTI2-T2",
+      "subject_code": "CAI1002020715",
+      "subject_name": "CIENCIA, TECNOLOGIA E INNOVACION II",
+      "teacher": null,
+      "classroom": null,
+      "credits": 0,
+      "semester": "7",
+      "blocks": [
+        {
+          "weekday": 1,
+          "starts_at": "12:00:00",
+          "ends_at": "13:59:00"
+        }
+      ]
+    },
+    {
+      "code": "CAI1002020715-CTI2-N2",
+      "subject_code": "CAI1002020715",
+      "subject_name": "CIENCIA, TECNOLOGIA E INNOVACION II",
+      "teacher": null,
+      "classroom": null,
+      "credits": 0,
+      "semester": "7",
+      "blocks": [
+        {
+          "weekday": 3,
+          "starts_at": "18:00:00",
+          "ends_at": "19:59:00"
+        }
+      ]
+    },
+    {
+      "code": "CAI1002020714-EI2-M1",
+      "subject_code": "CAI1002020714",
+      "subject_name": "EMPRENDIMIENTO E INNOVACION II",
+      "teacher": null,
+      "classroom": null,
+      "credits": 0,
+      "semester": "7",
+      "blocks": [
+        {
+          "weekday": 2,
+          "starts_at": "07:00:00",
+          "ends_at": "08:59:00"
+        }
+      ]
+    },
+    {
+      "code": "CAI1002020714-EI2-M2",
+      "subject_code": "CAI1002020714",
+      "subject_name": "EMPRENDIMIENTO E INNOVACION II",
+      "teacher": null,
+      "classroom": null,
+      "credits": 0,
+      "semester": "7",
+      "blocks": [
+        {
+          "weekday": 1,
+          "starts_at": "09:00:00",
+          "ends_at": "10:59:00"
+        }
+      ]
+    },
+    {
+      "code": "CAI1002020714-EI2-M3",
+      "subject_code": "CAI1002020714",
+      "subject_name": "EMPRENDIMIENTO E INNOVACION II",
+      "teacher": null,
+      "classroom": null,
+      "credits": 0,
+      "semester": "7",
+      "blocks": [
+        {
+          "weekday": 5,
+          "starts_at": "07:00:00",
+          "ends_at": "08:59:00"
+        }
+      ]
+    },
+    {
+      "code": "CAI1002020714-EI2-N1",
+      "subject_code": "CAI1002020714",
+      "subject_name": "EMPRENDIMIENTO E INNOVACION II",
+      "teacher": null,
+      "classroom": null,
+      "credits": 0,
+      "semester": "7",
+      "blocks": [
+        {
+          "weekday": 1,
+          "starts_at": "20:00:00",
+          "ends_at": "21:59:00"
+        }
+      ]
+    },
+    {
+      "code": "CAI1002020714-EI2-N2",
+      "subject_code": "CAI1002020714",
+      "subject_name": "EMPRENDIMIENTO E INNOVACION II",
+      "teacher": null,
+      "classroom": null,
+      "credits": 0,
+      "semester": "7",
+      "blocks": [
+        {
+          "weekday": 3,
+          "starts_at": "20:00:00",
+          "ends_at": "21:59:00"
+        }
+      ]
+    },
+    {
+      "code": "CAI1002020714-EI2-T1",
+      "subject_code": "CAI1002020714",
+      "subject_name": "EMPRENDIMIENTO E INNOVACION II",
+      "teacher": null,
+      "classroom": null,
+      "credits": 0,
+      "semester": "7",
+      "blocks": [
+        {
+          "weekday": 2,
+          "starts_at": "12:00:00",
+          "ends_at": "13:59:00"
+        }
+      ]
+    },
+    {
+      "code": "CAI1002020714-EI2-T2",
+      "subject_code": "CAI1002020714",
+      "subject_name": "EMPRENDIMIENTO E INNOVACION II",
+      "teacher": null,
+      "classroom": null,
+      "credits": 0,
+      "semester": "7",
+      "blocks": [
+        {
+          "weekday": 1,
+          "starts_at": "16:00:00",
+          "ends_at": "17:59:00"
+        }
+      ]
+    },
+    {
+      "code": "CAD612021731-701 SIS",
+      "subject_code": "CAD612021731",
+      "subject_name": "OPERATIVA",
+      "teacher": null,
+      "classroom": null,
+      "credits": 0,
+      "semester": "7",
+      "blocks": [
+        {
+          "weekday": 4,
+          "starts_at": "07:00:00",
+          "ends_at": "09:59:00"
+        }
+      ]
+    },
+    {
+      "code": "CAD612021731-702 SIS",
+      "subject_code": "CAD612021731",
+      "subject_name": "OPERATIVA",
+      "teacher": null,
+      "classroom": null,
+      "credits": 0,
+      "semester": "7",
+      "blocks": [
+        {
+          "weekday": 4,
+          "starts_at": "10:00:00",
+          "ends_at": "12:59:00"
+        }
+      ]
+    },
+    {
+      "code": "CAD612021733-701 SIS",
+      "subject_code": "CAD612021733",
+      "subject_name": "REDES Y COMUNICACIÓN",
+      "teacher": null,
+      "classroom": null,
+      "credits": 0,
+      "semester": "7",
+      "blocks": [
+        {
+          "weekday": 1,
+          "starts_at": "10:00:00",
+          "ends_at": "12:59:00"
+        },
+        {
+          "weekday": 0,
+          "starts_at": "10:00:00",
+          "ends_at": "12:59:00"
+        }
+      ]
+    },
+    {
+      "code": "CAD612021733-702 SIS",
+      "subject_code": "CAD612021733",
+      "subject_name": "REDES Y COMUNICACIÓN",
+      "teacher": null,
+      "classroom": null,
+      "credits": 0,
+      "semester": "7",
+      "blocks": [
+        {
+          "weekday": 3,
+          "starts_at": "11:00:00",
+          "ends_at": "13:59:00"
+        },
+        {
+          "weekday": 0,
+          "starts_at": "07:00:00",
+          "ends_at": "09:59:00"
+        }
+      ]
+    },
+    {
+      "code": "CAD612021733-703 SIS",
+      "subject_code": "CAD612021733",
+      "subject_name": "REDES Y COMUNICACIÓN",
+      "teacher": null,
+      "classroom": null,
+      "credits": 0,
+      "semester": "7",
+      "blocks": [
+        {
+          "weekday": 1,
+          "starts_at": "13:00:00",
+          "ends_at": "15:59:00"
+        },
+        {
+          "weekday": 0,
+          "starts_at": "13:00:00",
+          "ends_at": "15:59:00"
+        }
+      ]
+    },
+    {
+      "code": "CAD612021730-701 SIS",
+      "subject_code": "CAD612021730",
+      "subject_name": "SEGURIDAD INFORMÁTICA",
+      "teacher": null,
+      "classroom": null,
+      "credits": 0,
+      "semester": "7",
+      "blocks": [
+        {
+          "weekday": 1,
+          "starts_at": "07:00:00",
+          "ends_at": "08:59:00"
+        },
+        {
+          "weekday": 3,
+          "starts_at": "07:00:00",
+          "ends_at": "08:59:00"
+        }
+      ]
+    },
+    {
+      "code": "CAD612021730-702 SIS",
+      "subject_code": "CAD612021730",
+      "subject_name": "SEGURIDAD INFORMÁTICA",
+      "teacher": null,
+      "classroom": null,
+      "credits": 0,
+      "semester": "7",
+      "blocks": [
+        {
+          "weekday": 4,
+          "starts_at": "07:00:00",
+          "ends_at": "08:59:00"
+        },
+        {
+          "weekday": 3,
+          "starts_at": "09:00:00",
+          "ends_at": "10:59:00"
+        }
+      ]
+    },
+    {
+      "code": "CAI1002020816-CTI3-M2",
+      "subject_code": "CAI1002020816",
+      "subject_name": "CIENCIA, TECNOLOGIA E INNOVACION III",
+      "teacher": null,
+      "classroom": null,
+      "credits": 0,
+      "semester": "8",
+      "blocks": [
+        {
+          "weekday": 3,
+          "starts_at": "09:00:00",
+          "ends_at": "10:59:00"
+        }
+      ]
+    },
+    {
+      "code": "CAI1002020816-CTI3-M3",
+      "subject_code": "CAI1002020816",
+      "subject_name": "CIENCIA, TECNOLOGIA E INNOVACION III",
+      "teacher": null,
+      "classroom": null,
+      "credits": 0,
+      "semester": "8",
+      "blocks": [
+        {
+          "weekday": 2,
+          "starts_at": "11:00:00",
+          "ends_at": "12:59:00"
+        }
+      ]
+    },
+    {
+      "code": "CAI1002020816-CTI3-N1",
+      "subject_code": "CAI1002020816",
+      "subject_name": "CIENCIA, TECNOLOGIA E INNOVACION III",
+      "teacher": null,
+      "classroom": null,
+      "credits": 0,
+      "semester": "8",
+      "blocks": [
+        {
+          "weekday": 4,
+          "starts_at": "18:00:00",
+          "ends_at": "19:59:00"
+        }
+      ]
+    },
+    {
+      "code": "CAI1002020816-CTI3-N2",
+      "subject_code": "CAI1002020816",
+      "subject_name": "CIENCIA, TECNOLOGIA E INNOVACION III",
+      "teacher": null,
+      "classroom": null,
+      "credits": 0,
+      "semester": "8",
+      "blocks": [
+        {
+          "weekday": 1,
+          "starts_at": "20:00:00",
+          "ends_at": "21:59:00"
+        }
+      ]
+    },
+    {
+      "code": "CAI1002020816-CTI3-T1",
+      "subject_code": "CAI1002020816",
+      "subject_name": "CIENCIA, TECNOLOGIA E INNOVACION III",
+      "teacher": null,
+      "classroom": null,
+      "credits": 0,
+      "semester": "8",
+      "blocks": [
+        {
+          "weekday": 4,
+          "starts_at": "12:00:00",
+          "ends_at": "13:59:00"
+        }
+      ]
+    },
+    {
+      "code": "CAI1002020816-CTI3-T2",
+      "subject_code": "CAI1002020816",
+      "subject_name": "CIENCIA, TECNOLOGIA E INNOVACION III",
+      "teacher": null,
+      "classroom": null,
+      "credits": 0,
+      "semester": "8",
+      "blocks": [
+        {
+          "weekday": 4,
+          "starts_at": "14:00:00",
+          "ends_at": "15:59:00"
+        }
+      ]
+    },
+    {
+      "code": "CAD612021834-801 SIS",
+      "subject_code": "CAD612021834",
+      "subject_name": "INTELIGENCIA ARTIFICIAL",
+      "teacher": null,
+      "classroom": null,
+      "credits": 0,
+      "semester": "8",
+      "blocks": [
+        {
+          "weekday": 1,
+          "starts_at": "07:00:00",
+          "ends_at": "09:59:00"
+        },
+        {
+          "weekday": 2,
+          "starts_at": "07:00:00",
+          "ends_at": "09:59:00"
+        }
+      ]
+    },
+    {
+      "code": "CAD612021834-802 SIS",
+      "subject_code": "CAD612021834",
+      "subject_name": "INTELIGENCIA ARTIFICIAL",
+      "teacher": null,
+      "classroom": null,
+      "credits": 0,
+      "semester": "8",
+      "blocks": [
+        {
+          "weekday": 2,
+          "starts_at": "07:00:00",
+          "ends_at": "09:59:00"
+        },
+        {
+          "weekday": 3,
+          "starts_at": "07:00:00",
+          "ends_at": "09:59:00"
+        }
+      ]
+    },
+    {
+      "code": "CAD612021835-801 SIS",
+      "subject_code": "CAD612021835",
+      "subject_name": "LENGUAJES Y AUTOMATAS",
+      "teacher": null,
+      "classroom": null,
+      "credits": 0,
+      "semester": "8",
+      "blocks": [
+        {
+          "weekday": 3,
+          "starts_at": "09:00:00",
+          "ends_at": "11:59:00"
+        },
+        {
+          "weekday": 0,
+          "starts_at": "07:00:00",
+          "ends_at": "09:59:00"
+        }
+      ]
+    },
+    {
+      "code": "CAD612021835-802 SIS",
+      "subject_code": "CAD612021835",
+      "subject_name": "LENGUAJES Y AUTOMATAS",
+      "teacher": null,
+      "classroom": null,
+      "credits": 0,
+      "semester": "8",
+      "blocks": [
+        {
+          "weekday": 0,
+          "starts_at": "10:00:00",
+          "ends_at": "12:59:00"
+        },
+        {
+          "weekday": 4,
+          "starts_at": "07:00:00",
+          "ends_at": "09:59:00"
+        }
+      ]
+    },
+    {
+      "code": "CAD612021836FA-A-801 SIS IML",
+      "subject_code": "CAD612021836FA-A",
+      "subject_name": "PROFUNDIZACION I",
+      "teacher": null,
+      "classroom": null,
+      "credits": 0,
+      "semester": "8",
+      "blocks": [
+        {
+          "weekday": 3,
+          "starts_at": "07:00:00",
+          "ends_at": "08:59:00"
+        }
+      ]
+    },
+    {
+      "code": "CAD612021836FA-D-801 SIS BA",
+      "subject_code": "CAD612021836FA-D",
+      "subject_name": "PROFUNDIZACION I",
+      "teacher": null,
+      "classroom": null,
+      "credits": 0,
+      "semester": "8",
+      "blocks": [
+        {
+          "weekday": 2,
+          "starts_at": "10:00:00",
+          "ends_at": "11:59:00"
+        }
+      ]
+    },
+    {
+      "code": "CAD612021836FA-B-801 SIS BD",
+      "subject_code": "CAD612021836FA-B",
+      "subject_name": "PROFUNDIZACION I",
+      "teacher": null,
+      "classroom": null,
+      "credits": 0,
+      "semester": "8",
+      "blocks": [
+        {
+          "weekday": 4,
+          "starts_at": "07:00:00",
+          "ends_at": "08:59:00"
+        }
+      ]
+    },
+    {
+      "code": "CAD612021836FA-C-801 SIS GPCD",
+      "subject_code": "CAD612021836FA-C",
+      "subject_name": "PROFUNDIZACION I",
+      "teacher": null,
+      "classroom": null,
+      "credits": 0,
+      "semester": "8",
+      "blocks": [
+        {
+          "weekday": 1,
+          "starts_at": "10:00:00",
+          "ends_at": "11:59:00"
+        }
+      ]
+    },
+    {
+      "code": "CAD612021836FA-E-801 SIS MD",
+      "subject_code": "CAD612021836FA-E",
+      "subject_name": "PROFUNDIZACION I",
+      "teacher": null,
+      "classroom": null,
+      "credits": 0,
+      "semester": "8",
+      "blocks": [
+        {
+          "weekday": 4,
+          "starts_at": "09:00:00",
+          "ends_at": "10:59:00"
+        }
+      ]
+    },
+    {
+      "code": "CAD612021836FA-D-802 SIS BA",
+      "subject_code": "CAD612021836FA-D",
+      "subject_name": "PROFUNDIZACION I",
+      "teacher": null,
+      "classroom": null,
+      "credits": 0,
+      "semester": "8",
+      "blocks": [
+        {
+          "weekday": 1,
+          "starts_at": "07:00:00",
+          "ends_at": "08:59:00"
+        }
+      ]
+    },
+    {
+      "code": "CAD612021836FA-B-802 SIS BD",
+      "subject_code": "CAD612021836FA-B",
+      "subject_name": "PROFUNDIZACION I",
+      "teacher": null,
+      "classroom": null,
+      "credits": 0,
+      "semester": "8",
+      "blocks": [
+        {
+          "weekday": 3,
+          "starts_at": "10:00:00",
+          "ends_at": "11:59:00"
+        }
+      ]
+    },
+    {
+      "code": "CAD612021836FA-C-802 SIS GPCD",
+      "subject_code": "CAD612021836FA-C",
+      "subject_name": "PROFUNDIZACION I",
+      "teacher": null,
+      "classroom": null,
+      "credits": 0,
+      "semester": "8",
+      "blocks": [
+        {
+          "weekday": 4,
+          "starts_at": "10:00:00",
+          "ends_at": "11:59:00"
+        }
+      ]
+    },
+    {
+      "code": "CAD612021836FA-A-802 SIS IML",
+      "subject_code": "CAD612021836FA-A",
+      "subject_name": "PROFUNDIZACION I",
+      "teacher": null,
+      "classroom": null,
+      "credits": 0,
+      "semester": "8",
+      "blocks": [
+        {
+          "weekday": 2,
+          "starts_at": "10:00:00",
+          "ends_at": "11:59:00"
+        }
+      ]
+    },
+    {
+      "code": "CAD612021836FA-E-802 SIS MD",
+      "subject_code": "CAD612021836FA-E",
+      "subject_name": "PROFUNDIZACION I",
+      "teacher": null,
+      "classroom": null,
+      "credits": 0,
+      "semester": "8",
+      "blocks": [
+        {
+          "weekday": 0,
+          "starts_at": "07:00:00",
+          "ends_at": "08:59:00"
+        }
+      ]
+    },
+    {
+      "code": "CAD612021937-901 SIS",
+      "subject_code": "CAD612021937",
+      "subject_name": "GERENCIA DE PROYECTOS",
+      "teacher": null,
+      "classroom": null,
+      "credits": 0,
+      "semester": "9",
+      "blocks": [
+        {
+          "weekday": 0,
+          "starts_at": "11:00:00",
+          "ends_at": "12:59:00"
+        }
+      ]
+    },
+    {
+      "code": "CAD612021937-902 SIS",
+      "subject_code": "CAD612021937",
+      "subject_name": "GERENCIA DE PROYECTOS",
+      "teacher": null,
+      "classroom": null,
+      "credits": 0,
+      "semester": "9",
+      "blocks": [
+        {
+          "weekday": 3,
+          "starts_at": "09:00:00",
+          "ends_at": "10:59:00"
+        }
+      ]
+    },
+    {
+      "code": "CAD612021938-901 SIS",
+      "subject_code": "CAD612021938",
+      "subject_name": "MODELACION",
+      "teacher": null,
+      "classroom": null,
+      "credits": 0,
+      "semester": "9",
+      "blocks": [
+        {
+          "weekday": 5,
+          "starts_at": "07:00:00",
+          "ends_at": "09:59:00"
+        }
+      ]
+    },
+    {
+      "code": "CAD612021938-902 SIS",
+      "subject_code": "CAD612021938",
+      "subject_name": "MODELACION",
+      "teacher": null,
+      "classroom": null,
+      "credits": 0,
+      "semester": "9",
+      "blocks": [
+        {
+          "weekday": 5,
+          "starts_at": "10:00:00",
+          "ends_at": "12:59:00"
+        }
+      ]
+    },
+    {
+      "code": "CAD612021940-903 SIS",
+      "subject_code": "CAD612021940",
+      "subject_name": "OPCION DE GRADO",
+      "teacher": null,
+      "classroom": null,
+      "credits": 0,
+      "semester": "9",
+      "blocks": [
+        {
+          "weekday": 4,
+          "starts_at": "13:00:00",
+          "ends_at": "14:59:00"
+        }
+      ]
+    },
+    {
+      "code": "CAD612021939FA-E-901 SIS ADL",
+      "subject_code": "CAD612021939FA-E",
+      "subject_name": "PROFUNDIZACION II",
+      "teacher": null,
+      "classroom": null,
+      "credits": 0,
+      "semester": "9",
+      "blocks": [
+        {
+          "weekday": 1,
+          "starts_at": "09:00:00",
+          "ends_at": "10:59:00"
+        }
+      ]
+    },
+    {
+      "code": "CAD612021939FA-C-901 SIS DLF",
+      "subject_code": "CAD612021939FA-C",
+      "subject_name": "PROFUNDIZACION II",
+      "teacher": null,
+      "classroom": null,
+      "credits": 0,
+      "semester": "9",
+      "blocks": [
+        {
+          "weekday": 1,
+          "starts_at": "07:00:00",
+          "ends_at": "08:59:00"
+        }
+      ]
+    },
+    {
+      "code": "CAD612021939FA-A-901 SIS IAF",
+      "subject_code": "CAD612021939FA-A",
+      "subject_name": "PROFUNDIZACION II",
+      "teacher": null,
+      "classroom": null,
+      "credits": 0,
+      "semester": "9",
+      "blocks": [
+        {
+          "weekday": 4,
+          "starts_at": "07:00:00",
+          "ends_at": "08:59:00"
+        }
+      ]
+    },
+    {
+      "code": "CAD612021939FA-B-901 SIS MLAG",
+      "subject_code": "CAD612021939FA-B",
+      "subject_name": "PROFUNDIZACION II",
+      "teacher": null,
+      "classroom": null,
+      "credits": 0,
+      "semester": "9",
+      "blocks": [
+        {
+          "weekday": 0,
+          "starts_at": "07:00:00",
+          "ends_at": "08:59:00"
+        }
+      ]
+    },
+    {
+      "code": "CAD612021939FA-D-901 SIS PLN",
+      "subject_code": "CAD612021939FA-D",
+      "subject_name": "PROFUNDIZACION II",
+      "teacher": null,
+      "classroom": null,
+      "credits": 0,
+      "semester": "9",
+      "blocks": [
+        {
+          "weekday": 4,
+          "starts_at": "11:00:00",
+          "ends_at": "12:59:00"
+        }
+      ]
+    },
+    {
+      "code": "CAD612021939FA-E-902 SIS ADL",
+      "subject_code": "CAD612021939FA-E",
+      "subject_name": "PROFUNDIZACION II",
+      "teacher": null,
+      "classroom": null,
+      "credits": 0,
+      "semester": "9",
+      "blocks": [
+        {
+          "weekday": 4,
+          "starts_at": "11:00:00",
+          "ends_at": "12:59:00"
+        }
+      ]
+    },
+    {
+      "code": "CAD612021939FA-C-902 SIS DLF",
+      "subject_code": "CAD612021939FA-C",
+      "subject_name": "PROFUNDIZACION II",
+      "teacher": null,
+      "classroom": null,
+      "credits": 0,
+      "semester": "9",
+      "blocks": [
+        {
+          "weekday": 1,
+          "starts_at": "09:00:00",
+          "ends_at": "10:59:00"
+        }
+      ]
+    },
+    {
+      "code": "CAD612021939FA-A-902 SIS IAF",
+      "subject_code": "CAD612021939FA-A",
+      "subject_name": "PROFUNDIZACION II",
+      "teacher": null,
+      "classroom": null,
+      "credits": 0,
+      "semester": "9",
+      "blocks": [
+        {
+          "weekday": 2,
+          "starts_at": "10:00:00",
+          "ends_at": "11:59:00"
+        }
+      ]
+    },
+    {
+      "code": "CAD612021939FA-B-902 SIS MLAG",
+      "subject_code": "CAD612021939FA-B",
+      "subject_name": "PROFUNDIZACION II",
+      "teacher": null,
+      "classroom": null,
+      "credits": 0,
+      "semester": "9",
+      "blocks": [
+        {
+          "weekday": 1,
+          "starts_at": "07:00:00",
+          "ends_at": "08:59:00"
+        }
+      ]
+    },
+    {
+      "code": "CAD612021939FA-D-902 SIS PLN",
+      "subject_code": "CAD612021939FA-D",
+      "subject_name": "PROFUNDIZACION II",
+      "teacher": null,
+      "classroom": null,
+      "credits": 0,
+      "semester": "9",
+      "blocks": [
+        {
+          "weekday": 4,
+          "starts_at": "07:00:00",
+          "ends_at": "08:59:00"
+        }
+      ]
+    }
+  ],
+  "source": "cundinamarca"
+}

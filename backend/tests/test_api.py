@@ -71,3 +71,17 @@ def test_get_catalog() -> None:
     else:
         assert response.status_code == 500
         assert "No se pudo obtener el catálogo" in response.json()["detail"]
+
+
+def test_list_extractions_empty() -> None:
+    """GET /api/extractions devuelve una lista (posiblemente vacía)."""
+    response = client.get("/api/extractions")
+    assert response.status_code == 200
+    assert isinstance(response.json(), list)
+
+
+def test_get_extraction_not_found() -> None:
+    """GET /api/extractions/{id} con id inexistente devuelve 404."""
+    response = client.get("/api/extractions/no-existe-12345")
+    assert response.status_code == 404
+    assert "no encontrada" in response.json()["detail"]

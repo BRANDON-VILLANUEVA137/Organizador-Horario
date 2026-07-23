@@ -22,6 +22,14 @@ const panels = [
 let extractionData = null
 let catalogData = null
 
+function normalizeSemesterKey(value) {
+  return String(value ?? '')
+    .trim()
+    .replace(/\s+/g, ' ')
+    .replace(/\./g, '')
+    .toUpperCase()
+}
+
 // ── API status check ──────────────────────────────────────────────
 function updateApiStatus(state, label) {
   statusText.innerHTML = `<span class="status-dot ${state}"></span> API ${label}`
@@ -75,14 +83,26 @@ connectForm.addEventListener('submit', async (event) => {
 })
 
 function normalizePortalUrl(value) {
+  const CANONICAL =
+    'https://plataforma.ucundinamarca.edu.co/aplicacionesB/condicionales/apl_gen_public.jsp?id=ConsultaHorario'
   try {
     const url = new URL(value)
-    if (url.pathname.endsWith('/condicionales/inicioSeguro.jsp')) {
-      url.pathname = url.pathname.replace(
-        'inicioSeguro.jsp',
-        'apl_gen_public.jsp'
-      )
-      url.search = '?id=ConsultaHorario'
+    const host = url.hostname.toLowerCase()
+    const path = url.pathname || ''
+
+    // Cualquier URL del portal UCundinamarca debe usar el entrypoint del frameset.
+    // inicioSeguro.jsp / pub_rep_val.jsp / raíz no cargan el formulario #sede_sel.
+    if (host.includes('ucundinamarca.edu.co')) {
+      if (
+        path.includes('/aplicacionesB/condicionales') ||
+        path.endsWith('/apl_gen_public.jsp') ||
+        path.endsWith('/inicioSeguro.jsp') ||
+        path.endsWith('/pub_rep_val.jsp') ||
+        path === '/' ||
+        path === ''
+      ) {
+        return CANONICAL
+      }
     }
     return url.toString()
   } catch {
@@ -213,40 +233,53 @@ function renderSubjects(groups) {
   const semesterFilter = document.querySelector('#semester-filter')
 
   const subjectsMap = new Map()
-  const semestersSet = new Set()
+  const semestersMap = new Map()
 
   for (const group of groups) {
+    const semesterLabel = String(group.semester ?? '').trim()
+    const semesterKey = semesterLabel ? normalizeSemesterKey(semesterLabel) : ''
+
     if (!subjectsMap.has(group.subject_code)) {
       subjectsMap.set(group.subject_code, {
         code: group.subject_code,
         name: group.subject_name,
         credits: group.credits,
-        semester: group.semester || null,
+        semesterKey,
+        semesters: new Map(),
         groups: [],
       })
     }
-    subjectsMap.get(group.subject_code).groups.push(group)
 
-    if (group.semester) {
-      semestersSet.add(group.semester)
+    const subject = subjectsMap.get(group.subject_code)
+    subject.groups.push(group)
+
+    if (semesterKey && !subject.semesters.has(semesterKey)) {
+      subject.semesters.set(semesterKey, semesterLabel)
+    }
+
+    if (semesterKey && !semestersMap.has(semesterKey)) {
+      semestersMap.set(semesterKey, semesterLabel)
     }
   }
 
-  const sortedSemesters = Array.from(semestersSet).sort()
+  const sortedSemesters = Array.from(semestersMap.entries()).sort((a, b) =>
+    a[1].localeCompare(b[1], undefined, { numeric: true, sensitivity: 'base' })
+  )
   semesterFilter.innerHTML =
     '<option value="">Todos los semestres</option>' +
-    sortedSemesters.map((s) => `<option value="${s}">${s}</option>`).join('')
+    sortedSemesters
+      .map(([key, label]) => `<option value="${key}">${label}</option>`)
+      .join('')
 
   semesterFilter.onchange = () => {
-    const selectedSemester = semesterFilter.value
+    const selectedSemester = normalizeSemesterKey(semesterFilter.value)
     const allOptions = container.querySelectorAll('.subject-option')
     allOptions.forEach((option) => {
-      const subjectSemester = option.dataset.semester || null
-      if (!selectedSemester || subjectSemester === selectedSemester) {
-        option.hidden = false
-      } else {
-        option.hidden = true
-      }
+      const subjectSemesters = (option.dataset.semesters || '')
+        .split('|')
+        .filter(Boolean)
+      const shouldHide = Boolean(selectedSemester) && !subjectSemesters.includes(selectedSemester)
+      option.style.display = shouldHide ? 'none' : ''
     })
   }
 
@@ -261,16 +294,28 @@ function renderSubjects(groups) {
   container.innerHTML = subjects
     .map(
       (subj) => `
-    <label class="subject-option" data-semester="${subj.semester || ''}">
+    <label class="subject-option" data-semesters="${Array.from(subj.semesters.keys()).join('|')}">
       <input type="checkbox" checked value="${subj.code}" />
       <span>
         <strong>${subj.name}</strong>
-        <small>${subj.code} · ${subj.credits} créditos · ${subj.groups.length} grupo(s)${subj.semester ? ' · ' + subj.semester : ''}</small>
+        <small>${subj.code} · ${subj.credits} créditos · ${subj.groups.length} grupo(s)</small>
       </span>
     </label>
   `
     )
     .join('')
+
+  container.querySelectorAll('.subject-option').forEach((option) => {
+    const subjectCode = option.querySelector('input')?.value
+    const subject = subjectsMap.get(subjectCode)
+    if (!subject) return
+
+    const semesterLabels = Array.from(subject.semesters.values())
+    const semesterText = semesterLabels.length ? ` · ${semesterLabels.join(', ')}` : ''
+    option.querySelector('small').textContent = `${subject.code} · ${subject.credits} créditos · ${subject.groups.length} grupo(s)${semesterText}`
+  })
+
+  semesterFilter.onchange()
 }
 
 // ── Schedule generation ───────────────────────────────────────────

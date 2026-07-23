@@ -13,8 +13,16 @@ from app.domain.models import (
     TimeBlock,
     Weekday,
 )
-from app.extractors.cundinamarca import CundinamarcaExtractor, PUBLIC_SCHEDULE_URL
+from app.extractors.cundinamarca import (
+    CundinamarcaExtractor,
+    normalize_cundinamarca_portal_url,
+)
 from app.normalizers.cundinamarca_normalizer import normalize_table
+from app.repositories.extractions import (
+    list_extraction_ids,
+    load_extraction_response,
+    save_extraction_response,
+)
 
 router = APIRouter()
 extractor = CundinamarcaExtractor()
@@ -23,6 +31,24 @@ extractor = CundinamarcaExtractor()
 @router.get("/health", response_model=HealthResponse, tags=["system"])
 def health_check() -> HealthResponse:
     return HealthResponse(status="ok", service="smartschedule-api")
+
+
+@router.get("/extractions", tags=["extractions"])
+def list_extractions() -> list[str]:
+    """Lista los ids de las extracciones guardadas localmente."""
+    return list_extraction_ids()
+
+
+@router.get("/extractions/{extraction_id}", response_model=ExtractionResponse, tags=["extractions"])
+def get_extraction(extraction_id: str) -> ExtractionResponse:
+    """Carga una extracción guardada por su id."""
+    response = load_extraction_response(extraction_id)
+    if response is None:
+        raise HTTPException(
+            status_code=404,
+            detail=f"Extracción '{extraction_id}' no encontrada.",
+        )
+    return response
 
 
 @router.get("/catalog", response_model=CatalogResponse, tags=["catalog"])
@@ -68,11 +94,14 @@ def create_extraction(request: ExtractionRequest) -> ExtractionResponse:
         and request.campus_code
         and request.program_code
     ):
+        # Forzar el entrypoint correcto del frameset; otras URLs del portal
+        # no cargan #sede_sel y terminan en 502 "schedule form frame was not found".
+        portal_url = normalize_cundinamarca_portal_url(str(request.portal_url))
         try:
             tables = extractor.query_schedule(
                 campus_value=request.campus_code,
                 program_value=request.program_code,
-                portal_url=str(request.portal_url),
+                portal_url=portal_url,
             )
         except Exception as exc:
             import traceback
@@ -105,13 +134,21 @@ def create_extraction(request: ExtractionRequest) -> ExtractionResponse:
                 detail="No se pudo normalizar ninguna tabla de horarios.",
             )
 
-        return ExtractionResponse(
+        response = ExtractionResponse(
             extraction_id=str(uuid4()),
             portal_url=request.portal_url,
             university=request.university,
             groups=all_groups,
             source="cundinamarca",
         )
+        try:
+            save_extraction_response(response)
+        except OSError as exc:
+            raise HTTPException(
+                status_code=500,
+                detail=f"No se pudo guardar la extracción en JSON local: {exc}",
+            )
+        return response
 
     # --- Datos demo (fallback) ---
     groups = [
@@ -134,10 +171,18 @@ def create_extraction(request: ExtractionRequest) -> ExtractionResponse:
             blocks=[TimeBlock(weekday=Weekday.TUESDAY, starts_at=time(9), ends_at=time(11))],
         ),
     ]
-    return ExtractionResponse(
+    response = ExtractionResponse(
         extraction_id=str(uuid4()),
         portal_url=request.portal_url,
         university=request.university,
         groups=groups,
         source="demo",
     )
+    try:
+        save_extraction_response(response)
+    except OSError as exc:
+        raise HTTPException(
+            status_code=500,
+            detail=f"No se pudo guardar la extracción en JSON local: {exc}",
+        )
+    return response

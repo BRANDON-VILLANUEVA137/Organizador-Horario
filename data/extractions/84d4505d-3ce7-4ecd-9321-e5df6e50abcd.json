@@ -1,0 +1,40 @@
+{
+  "extraction_id": "84d4505d-3ce7-4ecd-9321-e5df6e50abcd",
+  "portal_url": "https://plataforma.ucundinamarca.edu.co/aplicacionesB/condicionales/apl_gen_public.jsp?id=ConsultaHorario",
+  "university": "Universidad de Cundinamarca",
+  "groups": [
+    {
+      "code": "MAT-101-01",
+      "subject_code": "MAT-101",
+      "subject_name": "Calculo I",
+      "teacher": "Laura Gomez",
+      "classroom": "A-204",
+      "credits": 3,
+      "semester": null,
+      "blocks": [
+        {
+          "weekday": 0,
+          "starts_at": "07:00:00",
+          "ends_at": "09:00:00"
+        }
+      ]
+    },
+    {
+      "code": "PRO-101-01",
+      "subject_code": "PRO-101",
+      "subject_name": "Programacion I",
+      "teacher": "Diego Ruiz",
+      "classroom": "Lab-3",
+      "credits": 3,
+      "semester": null,
+      "blocks": [
+        {
+          "weekday": 1,
+          "starts_at": "09:00:00",
+          "ends_at": "11:00:00"
+        }
+      ]
+    }
+  ],
+  "source": "demo"
+}
