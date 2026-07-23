@@ -84,6 +84,8 @@ class GeneratedSchedule(BaseModel):
 class ExtractionRequest(BaseModel):
     portal_url: AnyHttpUrl
     university: str | None = None
+    campus_code: str | None = None
+    program_code: str | None = None
 
 
 class ExtractionResponse(BaseModel):
@@ -92,6 +94,17 @@ class ExtractionResponse(BaseModel):
     university: str | None = None
     groups: list[CourseGroup] = Field(default_factory=list)
     source: str = "demo"
+
+
+class CatalogItem(BaseModel):
+    value: str
+    label: str
+
+
+class CatalogResponse(BaseModel):
+    university: str
+    campuses: list[CatalogItem] = Field(default_factory=list)
+    programs_by_campus: dict[str, list[CatalogItem]] = Field(default_factory=dict)
 
 
 class HealthResponse(BaseModel):

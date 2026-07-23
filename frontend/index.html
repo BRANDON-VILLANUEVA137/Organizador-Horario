@@ -23,8 +23,8 @@
           <label for="university">Universidad compatible <span>(opcional)</span></label>
           <select id="university" name="university">
             <option value="">Selecciona una universidad</option>
-            <option>Universidad de Cundinamarca</option>
-            <option>Otra universidad</option>
+            <option value="Universidad de Cundinamarca">Universidad de Cundinamarca</option>
+            <option value="Otra universidad">Otra universidad</option>
           </select>
           <button class="primary-action" type="submit">Conectar <span aria-hidden="true">→</span></button>
         </form>
@@ -57,11 +57,8 @@
         <div class="eyebrow">PASO 03 / MATERIAS</div>
         <h2 id="subjects-title">Escoge las materias<br /><em>de este semestre.</em></h2>
         <p class="section-copy">Selecciona las asignaturas que quieres cursar. SmartSchedule buscará los grupos disponibles.</p>
-        <div class="subject-list">
-          <label class="subject-option"><input type="checkbox" checked value="MAT-101" /><span><strong>Cálculo I</strong><small>MAT-101 · 3 créditos</small></span></label>
-          <label class="subject-option"><input type="checkbox" checked value="PRO-101" /><span><strong>Programación I</strong><small>PRO-101 · 3 créditos</small></span></label>
-          <label class="subject-option"><input type="checkbox" value="FIS-101" /><span><strong>Física I</strong><small>FIS-101 · 3 créditos</small></span></label>
-          <label class="subject-option"><input type="checkbox" value="ING-101" /><span><strong>Inglés I</strong><small>ING-101 · 2 créditos</small></span></label>
+        <div class="subject-list" id="subject-list">
+          <!-- Las materias se cargan dinámicamente desde la API -->
         </div>
         <button class="primary-action next-action" id="to-preferences" type="button">Definir preferencias <span aria-hidden="true">→</span></button>
       </section>
@@ -71,9 +68,9 @@
         <h2 id="preferences-title">Diseña una semana<br /><em>a tu medida.</em></h2>
         <p class="section-copy">Estas preferencias ayudarán a ordenar tus mejores combinaciones.</p>
         <div class="preference-list">
-          <label class="preference-option"><input type="checkbox" checked /><span><strong>Preferir clases en la mañana</strong><small>Priorizar grupos entre 6:00 y 12:00</small></span></label>
-          <label class="preference-option"><input type="checkbox" /><span><strong>Evitar clases los viernes</strong><small>Reducir la carga académica de ese día</small></span></label>
-          <label class="preference-option"><input type="checkbox" checked /><span><strong>Reducir espacios entre clases</strong><small>Buscar jornadas más compactas</small></span></label>
+          <label class="preference-option"><input type="checkbox" id="pref-morning" checked /><span><strong>Preferir clases en la mañana</strong><small>Priorizar grupos entre 6:00 y 12:00</small></span></label>
+          <label class="preference-option"><input type="checkbox" id="pref-fridays" /><span><strong>Evitar clases los viernes</strong><small>Reducir la carga académica de ese día</small></span></label>
+          <label class="preference-option"><input type="checkbox" id="pref-compact" checked /><span><strong>Reducir espacios entre clases</strong><small>Buscar jornadas más compactas</small></span></label>
         </div>
         <button class="primary-action next-action" id="to-results" type="button">Generar horarios <span aria-hidden="true">→</span></button>
       </section>
@@ -81,11 +78,9 @@
       <section class="workflow-view results-view" id="results-panel" aria-labelledby="results-title" hidden>
         <div class="eyebrow">PASO 05 / RESULTADOS</div>
         <h2 id="results-title">Estas son tus mejores<br /><em>opciones.</em></h2>
-        <p class="section-copy">3 horarios válidos ordenados según tus preferencias.</p>
-        <div class="result-list">
-          <article class="result-card featured"><span class="result-rank">01</span><div><strong>Horario equilibrado</strong><small>Lun · Mar · Mié · 18 créditos</small></div><b>96 pts</b></article>
-          <article class="result-card"><span class="result-rank">02</span><div><strong>Jornada compacta</strong><small>Lun · Mié · Jue · 18 créditos</small></div><b>91 pts</b></article>
-          <article class="result-card"><span class="result-rank">03</span><div><strong>Horario matutino</strong><small>Mar · Mié · Vie · 18 créditos</small></div><b>87 pts</b></article>
+        <p class="section-copy" id="results-summary">Cargando horarios...</p>
+        <div class="result-list" id="result-list">
+          <!-- Los resultados se cargan dinámicamente -->
         </div>
         <button class="primary-action next-action" id="to-export" type="button">Exportar horario <span aria-hidden="true">→</span></button>
       </section>
