@@ -1,0 +1,23 @@
+@import url('https://fonts.googleapis.com/css2?family=DM+Mono:wght@400;500&family=Manrope:wght@400;500;600;700;800&display=swap');
+
+:root { color: #102a43; background: #f3f0e8; font-family: 'Manrope', sans-serif; font-synthesis: none; }
+* { box-sizing: border-box; }
+body { margin: 0; min-width: 320px; }
+button { font: inherit; }
+.shell { min-height: 100vh; overflow: hidden; background: radial-gradient(circle at 80% 16%, #e7cfae 0 10%, transparent 34%), linear-gradient(135deg, #f3f0e8 0%, #f4e7d5 100%); }
+.topbar { align-items: center; display: flex; justify-content: space-between; margin: 0 auto; max-width: 1180px; padding: 28px 32px; }
+.brand { align-items: center; display: flex; font-size: 17px; font-weight: 800; gap: 10px; letter-spacing: -0.3px; }
+.brand-mark { align-items: center; background: #102a43; color: #f9c784; display: flex; height: 34px; justify-content: center; width: 34px; }
+.status { color: #627d98; font: 500 11px 'DM Mono', monospace; letter-spacing: .04em; text-transform: uppercase; }
+.status-dot { border-radius: 50%; display: inline-block; height: 7px; margin-right: 7px; width: 7px; background: #f0ad4e; }.status-dot.online { background: #3b9c78; }.status-dot.offline { background: #c05640; }
+.hero { margin: 0 auto; max-width: 1180px; padding: 92px 32px 104px; }
+.eyebrow { align-items: center; color: #c05640; display: flex; font: 500 11px 'DM Mono', monospace; gap: 8px; letter-spacing: .1em; }
+h1 { font-size: clamp(48px, 8vw, 104px); letter-spacing: -5px; line-height: .98; margin: 26px 0 28px; max-width: 850px; }
+h1 em { color: #c05640; font-style: normal; }
+.hero-copy { color: #486581; font-size: 17px; line-height: 1.7; margin: 0 0 36px; max-width: 480px; }
+.primary-action { align-items: center; background: #102a43; border: 0; color: #fff; cursor: pointer; display: inline-flex; font-size: 14px; font-weight: 700; gap: 20px; padding: 17px 20px; transition: background .2s, transform .2s; }.primary-action:hover { background: #243b53; transform: translateY(-2px); }
+.roadmap { border-top: 1px solid #d8cbb9; display: grid; grid-template-columns: repeat(3, 1fr); margin: 0 auto; max-width: 1180px; }
+.step { border-right: 1px solid #d8cbb9; display: flex; gap: 17px; min-height: 150px; padding: 30px 32px; position: relative; }.step:first-child { border-left: 1px solid #d8cbb9; }
+.step-number { color: #c05640; font: 500 12px 'DM Mono', monospace; }.step h2 { font-size: 14px; margin: 0 0 9px; }.step p { color: #627d98; font-size: 12px; margin: 0; }.step-check { color: #7b9e8e; margin-left: auto; }
+footer { color: #829ab1; font: 500 10px 'DM Mono', monospace; letter-spacing: .1em; margin: 58px auto 0; max-width: 1180px; padding: 0 32px 28px; }
+@media (max-width: 700px) { .topbar { padding: 22px 20px; }.status { font-size: 9px; }.hero { padding: 70px 20px 78px; } h1 { letter-spacing: -2px; }.roadmap { display: block; margin: 0 20px; }.step, .step:first-child { border-left: 0; border-right: 0; border-bottom: 1px solid #d8cbb9; min-height: auto; padding: 24px 0; }.step:last-child { border-bottom: 0; } footer { padding-left: 20px; padding-right: 20px; } }

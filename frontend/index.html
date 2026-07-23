@@ -1,0 +1,33 @@
+<html lang="es">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <meta name="theme-color" content="#102a43" />
+    <title>SmartSchedule</title>
+    <link rel="stylesheet" href="src/styles.css" />
+  </head>
+  <body>
+    <main class="shell">
+      <nav class="topbar">
+        <div class="brand"><span class="brand-mark" aria-hidden="true">▦</span> SmartSchedule</div>
+        <div class="status"><span class="status-dot checking"></span> API verificando</div>
+      </nav>
+
+      <section class="hero">
+        <div class="eyebrow">✦ ORGANIZA TU SEMESTRE</div>
+        <h1>Tu mejor horario,<br /><em>sin hacer cuentas.</em></h1>
+        <p class="hero-copy">SmartSchedule encuentra combinaciones de materias compatibles y las ordena según la vida universitaria que quieres llevar.</p>
+        <button class="primary-action" id="start-button" type="button">Comenzar configuración <span aria-hidden="true">→</span></button>
+      </section>
+
+      <section class="roadmap" aria-label="Proceso de configuración">
+        <article class="step"><span class="step-number">01</span><div><h2>Selecciona tu universidad</h2><p>Conecta el portal académico</p></div><span class="step-check">✓</span></article>
+        <article class="step"><span class="step-number">02</span><div><h2>Define tus preferencias</h2><p>Días, jornada y descansos</p></div><span class="step-check">✓</span></article>
+        <article class="step"><span class="step-number">03</span><div><h2>Revisa tus opciones</h2><p>Compara horarios sin cruces</p></div><span class="step-check">✓</span></article>
+      </section>
+
+      <footer>PRIMERA VERSION · EXTRACCION Y OPTIMIZACION ACADEMICA</footer>
+    </main>
+    <script type="module" src="src/app.js"></script>
+  </body>
+</html>

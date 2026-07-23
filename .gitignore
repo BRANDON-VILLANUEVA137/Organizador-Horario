@@ -1,0 +1,16 @@
+hoja_de_ruta.txt
+
+# Local configuration
+.env
+!.env.example
+
+# Frontend
+frontend/node_modules/
+frontend/dist/
+frontend/tsconfig.tsbuildinfo
+
+# Python
+backend/.venv/
+backend/__pycache__/
+backend/app/**/__pycache__/
+*.py[cod]
