@@ -32,8 +32,8 @@
 
       <section class="roadmap" aria-label="Proceso de configuración">
         <article class="step"><span class="step-number">01</span><div><h2>Selecciona tu universidad</h2><p>Conecta el portal académico</p></div><span class="step-check">✓</span></article>
-        <article class="step"><span class="step-number">02</span><div><h2>Define tus preferencias</h2><p>Días, jornada y descansos</p></div><span class="step-check">✓</span></article>
-        <article class="step"><span class="step-number">03</span><div><h2>Revisa tus opciones</h2><p>Compara horarios sin cruces</p></div><span class="step-check">✓</span></article>
+        <article class="step"><span class="step-number">02</span><div><h2>Elige tus materias</h2><p>Selecciona las que cursarás</p></div><span class="step-check">✓</span></article>
+        <article class="step"><span class="step-number">03</span><div><h2>Diseña tu horario</h2><p>Arrastra las materias al calendario</p></div><span class="step-check">✓</span></article>
       </section>
 
       <section class="connection" id="connection-panel" aria-labelledby="connection-title" hidden>
@@ -54,7 +54,7 @@
       </section>
 
       <section class="workflow-view" id="subjects-panel" aria-labelledby="subjects-title" hidden>
-        <div class="eyebrow">PASO 03 / MATERIAS</div>
+        <div class="eyebrow">PASO 02 / MATERIAS</div>
         <h2 id="subjects-title">Escoge las materias<br /><em>de este semestre.</em></h2>
         <p class="section-copy">Selecciona las asignaturas que quieres cursar. SmartSchedule buscará los grupos disponibles.</p>
         <div class="subject-filters">
@@ -64,41 +64,40 @@
         <div class="subject-list" id="subject-list">
           <!-- Las materias se cargan dinámicamente desde la API -->
         </div>
-        <button class="primary-action next-action" id="to-preferences" type="button">Definir preferencias <span aria-hidden="true">→</span></button>
+        <button class="primary-action next-action" id="to-designer" type="button">Diseñar horario <span aria-hidden="true">→</span></button>
       </section>
 
-      <section class="workflow-view" id="preferences-panel" aria-labelledby="preferences-title" hidden>
-        <div class="eyebrow">PASO 04 / PREFERENCIAS</div>
-        <h2 id="preferences-title">Diseña una semana<br /><em>a tu medida.</em></h2>
-        <p class="section-copy">Estas preferencias ayudarán a ordenar tus mejores combinaciones.</p>
-        <div class="preference-list">
-          <label class="preference-option"><input type="checkbox" id="pref-morning" checked /><span><strong>Preferir clases en la mañana</strong><small>Priorizar grupos entre 6:00 y 12:00</small></span></label>
-          <label class="preference-option"><input type="checkbox" id="pref-fridays" /><span><strong>Evitar clases los viernes</strong><small>Reducir la carga académica de ese día</small></span></label>
-          <label class="preference-option"><input type="checkbox" id="pref-compact" checked /><span><strong>Reducir espacios entre clases</strong><small>Buscar jornadas más compactas</small></span></label>
-        </div>
-        <button class="primary-action next-action" id="to-results" type="button">Generar horarios <span aria-hidden="true">→</span></button>
-      </section>
-
-      <section class="workflow-view results-view" id="results-panel" aria-labelledby="results-title" hidden>
-        <div class="eyebrow">PASO 05 / RESULTADOS</div>
-        <h2 id="results-title">Estas son tus mejores<br /><em>opciones.</em></h2>
-        <p class="section-copy" id="results-summary">Cargando horarios...</p>
-        <div class="results-layout">
-          <div class="result-list" id="result-list">
-            <!-- Los resultados se cargan dinámicamente -->
+      <section class="workflow-view" id="designer-panel" aria-labelledby="designer-title" hidden>
+        <div class="eyebrow">PASO 03 / DISEÑADOR</div>
+        <h2 id="designer-title">Arrastra tus materias<br /><em>al horario.</em></h2>
+        <p class="section-copy">Tus materias están a la izquierda. Arrastra los grupos al calendario para construir tu horario ideal.</p>
+        
+        <div class="designer-layout">
+          <!-- Panel izquierdo: materias disponibles -->
+          <div class="designer-sidebar">
+            <div class="eyebrow">MATERIAS DISPONIBLES</div>
+            <div id="designer-subject-list"></div>
+            <div class="designer-preferences">
+              <div class="eyebrow">RECOMENDACIONES</div>
+              <p class="pref-note">Estas preferencias ayudan a ordenar sugerencias, pero tú decides dónde colocar cada materia.</p>
+              <label class="preference-option"><input type="checkbox" id="pref-morning" /><span><strong>Preferir mañana</strong><small>Priorizar grupos entre 6:00 y 12:00</small></span></label>
+              <label class="preference-option"><input type="checkbox" id="pref-fridays" /><span><strong>Evitar viernes</strong><small>Reducir carga académica ese día</small></span></label>
+              <label class="preference-option"><input type="checkbox" id="pref-compact" /><span><strong>Jornadas compactas</strong><small>Reducir espacios entre clases</small></span></label>
+            </div>
           </div>
-          <div class="calendar-panel" id="calendar-panel" hidden>
-            <div class="eyebrow">VISTA SEMANAL</div>
-            <div class="calendar-grid" id="calendar-grid">
-              <!-- La grilla se renderiza dinámicamente -->
+
+          <!-- Panel derecho: calendario semanal -->
+          <div class="designer-calendar">
+            <div class="eyebrow">TU HORARIO</div>
+            <div class="calendar-grid" id="designer-calendar-grid">
+              <!-- Se renderiza dinámicamente -->
             </div>
           </div>
         </div>
-        <button class="primary-action next-action" id="to-export" type="button">Exportar horario <span aria-hidden="true">→</span></button>
       </section>
 
       <section class="workflow-view export-view" id="export-panel" aria-labelledby="export-title" hidden>
-        <div class="eyebrow">PASO 06 / EXPORTAR</div>
+        <div class="eyebrow">PASO 04 / EXPORTAR</div>
         <h2 id="export-title">Tu horario está<br /><em>listo.</em></h2>
         <p class="section-copy">Elige el formato que prefieras para llevarlo contigo.</p>
         <div class="export-actions"><button type="button">PDF</button><button type="button">Excel</button><button type="button">iCalendar</button></div>

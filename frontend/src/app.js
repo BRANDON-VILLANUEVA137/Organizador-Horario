@@ -14,13 +14,13 @@ const formMessage = document.querySelector('#form-message')
 const panels = [
   'connection-panel',
   'subjects-panel',
-  'preferences-panel',
-  'results-panel',
+  'designer-panel',
   'export-panel',
 ].map((id) => document.querySelector(`#${id}`))
 
 let extractionData = null
 let catalogData = null
+let placedBlocks = [] // { group, dayIndex, startHour, endHour }
 
 function normalizeSemesterKey(value) {
   return String(value ?? '')
@@ -53,13 +53,10 @@ function showPanel(panel) {
 document.querySelector('#to-subjects').addEventListener('click', () =>
   showPanel(document.querySelector('#subjects-panel'))
 )
-document.querySelector('#to-preferences').addEventListener('click', () =>
-  showPanel(document.querySelector('#preferences-panel'))
-)
-document.querySelector('#to-results').addEventListener('click', generateSchedules)
-document.querySelector('#to-export').addEventListener('click', () =>
-  showPanel(document.querySelector('#export-panel'))
-)
+document.querySelector('#to-designer').addEventListener('click', () => {
+  showPanel(document.querySelector('#designer-panel'))
+  initDesigner()
+})
 
 // ── Form submission ───────────────────────────────────────────────
 connectForm.addEventListener('submit', async (event) => {
@@ -90,8 +87,6 @@ function normalizePortalUrl(value) {
     const host = url.hostname.toLowerCase()
     const path = url.pathname || ''
 
-    // Cualquier URL del portal UCundinamarca debe usar el entrypoint del frameset.
-    // inicioSeguro.jsp / pub_rep_val.jsp / raíz no cargan el formulario #sede_sel.
     if (host.includes('ucundinamarca.edu.co')) {
       if (
         path.includes('/aplicacionesB/condicionales') ||
@@ -295,7 +290,7 @@ function renderSubjects(groups) {
     .map(
       (subj) => `
     <label class="subject-option" data-semesters="${Array.from(subj.semesters.keys()).join('|')}">
-      <input type="checkbox" checked value="${subj.code}" />
+      <input type="checkbox" value="${subj.code}" />
       <span>
         <strong>${subj.name}</strong>
         <small>${subj.code} · ${subj.credits} créditos · ${subj.groups.length} grupo(s)</small>
@@ -318,134 +313,138 @@ function renderSubjects(groups) {
   semesterFilter.onchange()
 }
 
-// ── Schedule generation ───────────────────────────────────────────
-async function generateSchedules() {
-  const resultList = document.querySelector('#result-list')
-  const summary = document.querySelector('#results-summary')
-  const resultsPanel = document.querySelector('#results-panel')
+// ── Designer (drag & drop) ────────────────────────────────────────
+const DAY_NAMES = ['LUNES', 'MARTES', 'MIÉRCOLES', 'JUEVES', 'VIERNES']
+const DAY_COLORS = ['#c05640', '#3b8069', '#2c7a9e', '#b07a2e', '#7b4f9e']
+const START_HOUR = 6
+const END_HOUR = 22
 
-  showPanel(resultsPanel)
-  summary.textContent = 'Generando horarios...'
-  resultList.innerHTML = '<p class="empty-message">Calculando combinaciones...</p>'
+function initDesigner() {
+  placedBlocks = []
+  renderDesignerSubjects()
+  renderDesignerCalendar()
+}
 
-  if (!extractionData || !extractionData.groups.length) {
-    summary.textContent = 'No hay datos de extracción disponibles.'
-    resultList.innerHTML = ''
-    return
-  }
-
+function getSelectedGroups() {
+  if (!extractionData || !extractionData.groups) return []
   const selectedSubjects = [
     ...document.querySelectorAll('#subject-list input:checked'),
   ].map((input) => input.value)
 
-  if (selectedSubjects.length === 0) {
-    summary.textContent = 'Selecciona al menos una materia.'
-    resultList.innerHTML = ''
-    return
-  }
-
-  const preferMorning = document.querySelector('#pref-morning').checked
-  const avoidFridays = document.querySelector('#pref-fridays').checked
-
-  const selectedGroups = extractionData.groups.filter((g) =>
+  return extractionData.groups.filter((g) =>
     selectedSubjects.includes(g.subject_code)
   )
+}
 
-  const bySubject = new Map()
-  for (const group of selectedGroups) {
-    if (!bySubject.has(group.subject_code)) {
-      bySubject.set(group.subject_code, [])
-    }
-    bySubject.get(group.subject_code).push(group)
-  }
+function renderDesignerSubjects() {
+  const container = document.querySelector('#designer-subject-list')
+  const groups = getSelectedGroups()
 
-  const combinations = generateCombinations(Array.from(bySubject.values()))
-  const scored = combinations.map((combo) => ({
-    groups: combo,
-    score: calculateScore(combo, { preferMorning, avoidFridays }),
-    days: extractDays(combo),
-    credits: combo.reduce((sum, g) => sum + (g.credits || 0), 0),
-  }))
-
-  scored.sort((a, b) => b.score - a.score)
-  const topResults = scored.slice(0, 10)
-
-  if (topResults.length === 0) {
-    summary.textContent =
-      'No se encontraron horarios sin conflictos. Intenta seleccionar más materias.'
-    resultList.innerHTML = ''
+  if (groups.length === 0) {
+    container.innerHTML = '<p class="empty-message">No hay materias seleccionadas. Vuelve atrás y elige al menos una.</p>'
     return
   }
 
-  summary.textContent = `${topResults.length} horario(s) válido(s) ordenados según tus preferencias.`
-
-  window._scoredResults = topResults
-
-  resultList.innerHTML = topResults
-    .map(
-      (item, i) => `
-    <article class="result-card ${i === 0 ? 'featured' : ''}" data-index="${i}">
-      <span class="result-rank">${String(i + 1).padStart(2, '0')}</span>
-      <div>
-        <strong>${item.days.join(' · ')}</strong>
-        <small>${item.credits} créditos</small>
-      </div>
-      <b>${Math.round(item.score)} pts</b>
-    </article>
-  `
-    )
-    .join('')
-
-  document.querySelectorAll('.result-card').forEach((card) => {
-    card.addEventListener('click', () => {
-      const index = parseInt(card.dataset.index)
-      const result = window._scoredResults[index]
-      if (result) renderCalendar(result.groups)
-    })
-  })
-
-  if (topResults.length > 0) {
-    renderCalendar(topResults[0].groups)
-  }
-}
-
-// ── Calendar rendering ────────────────────────────────────────────
-const DAY_NAMES = ['LUNES', 'MARTES', 'MIÉRCOLES', 'JUEVES', 'VIERNES']
-const DAY_COLORS = [
-  '#c05640',
-  '#3b8069',
-  '#2c7a9e',
-  '#b07a2e',
-  '#7b4f9e',
-]
-
-function renderCalendar(groups) {
-  const panel = document.querySelector('#calendar-panel')
-  const grid = document.querySelector('#calendar-grid')
-  panel.hidden = false
-
-  const startHour = 6
-  const endHour = 22
-  const hours = []
-  for (let h = startHour; h < endHour; h++) {
-    hours.push(h)
-  }
-
-  const blocksByDay = {}
+  // Agrupar por materia
+  const bySubject = new Map()
   for (const group of groups) {
-    for (const block of group.blocks) {
-      const dayIndex = block.weekday
-      if (dayIndex > 4) continue
-
-      if (!blocksByDay[dayIndex]) blocksByDay[dayIndex] = []
-      blocksByDay[dayIndex].push({
-        subject: group.subject_name,
+    if (!bySubject.has(group.subject_code)) {
+      bySubject.set(group.subject_code, {
+        name: group.subject_name,
         code: group.subject_code,
-        group: group.code,
-        starts_at: block.starts_at,
-        ends_at: block.ends_at,
+        groups: [],
       })
     }
+    bySubject.get(group.subject_code).groups.push(group)
+  }
+
+  let html = ''
+  for (const [code, subject] of bySubject) {
+    html += `<div class="designer-subject-header">${subject.name}</div>`
+    for (const group of subject.groups) {
+      const timeInfo = formatGroupTime(group)
+      const isDiagnostico = group.subject_name?.includes('[DIAGNÓSTICO]')
+      html += `
+        <div class="designer-group-card" draggable="true"
+             data-subject-code="${code}"
+             data-subject-name="${subject.name}"
+             data-group-code="${group.code}"
+             data-group-json='${encodeGroupData(group)}'>
+          <div class="group-name">${isDiagnostico ? '📋 ' : ''}${group.code}</div>
+          <div class="group-code">${subject.name}</div>
+          <div class="group-time">${timeInfo || 'Sin horario definido'}</div>
+          ${isDiagnostico ? '<span class="group-badge">Diagnóstico</span>' : ''}
+        </div>
+      `
+    }
+  }
+
+  container.innerHTML = html
+
+  // Drag event listeners
+  container.querySelectorAll('.designer-group-card').forEach((card) => {
+    card.addEventListener('dragstart', handleDragStart)
+    card.addEventListener('dragend', handleDragEnd)
+  })
+}
+
+function encodeGroupData(group) {
+  // Serializamos solo lo necesario para evitar problemas con el dataset
+  const data = {
+    code: group.code,
+    subject_code: group.subject_code,
+    subject_name: group.subject_name,
+    blocks: (group.blocks || []).map(b => ({
+      weekday: b.weekday,
+      starts_at: b.starts_at,
+      ends_at: b.ends_at,
+    })),
+    credits: group.credits,
+  }
+  return JSON.stringify(data).replace(/'/g, '&#39;')
+}
+
+function formatGroupTime(group) {
+  if (!group.blocks || group.blocks.length === 0) return ''
+  return group.blocks
+    .map((b) => {
+      const day = DAY_NAMES[b.weekday] || ''
+      const s = `${String(b.starts_at.hour || 0).padStart(2, '0')}:${String(b.starts_at.minute || 0).padStart(2, '0')}`
+      const e = `${String(b.ends_at.hour || 0).padStart(2, '0')}:${String(b.ends_at.minute || 0).padStart(2, '0')}`
+      return `${day} ${s}-${e}`
+    })
+    .join(' · ')
+}
+
+// ── Drag & Drop handlers ──────────────────────────────────────────
+let draggedGroupData = null
+
+function handleDragStart(e) {
+  const card = e.target.closest('.designer-group-card')
+  if (!card) return
+
+  try {
+    draggedGroupData = JSON.parse(card.dataset.groupJson)
+  } catch {
+    return
+  }
+
+  card.classList.add('dragging')
+  e.dataTransfer.effectAllowed = 'move'
+  e.dataTransfer.setData('text/plain', card.dataset.groupJson)
+}
+
+function handleDragEnd(e) {
+  const card = e.target.closest('.designer-group-card')
+  if (card) card.classList.remove('dragging')
+  document.querySelectorAll('.calendar-cell.drag-over').forEach((c) => c.classList.remove('drag-over'))
+}
+
+function renderDesignerCalendar() {
+  const grid = document.querySelector('#designer-calendar-grid')
+  const hours = []
+  for (let h = START_HOUR; h < END_HOUR; h++) {
+    hours.push(h)
   }
 
   let html = ''
@@ -459,119 +458,172 @@ function renderCalendar(groups) {
     html += `<div class="calendar-hour">${label}</div>`
 
     for (let d = 0; d < 5; d++) {
-      const cellId = `cell-${d}-${hour}`
-      html += `<div class="calendar-cell" id="${cellId}"></div>`
+      const cellId = `des-cell-${d}-${hour}`
+      html += `<div class="calendar-cell" id="${cellId}" data-day="${d}" data-hour="${hour}"></div>`
     }
   }
 
   grid.innerHTML = html
 
-  for (let d = 0; d < 5; d++) {
-    const dayBlocks = blocksByDay[d] || []
-    for (const block of dayBlocks) {
-      const sHour = block.starts_at.hour || 0
-      const sMin = block.starts_at.minute || 0
-      const eHour = block.ends_at.hour || 0
-      const eMin = block.ends_at.minute || 0
+  // Drop event listeners on cells
+  grid.querySelectorAll('.calendar-cell').forEach((cell) => {
+    cell.addEventListener('dragover', handleCellDragOver)
+    cell.addEventListener('dragenter', handleCellDragEnter)
+    cell.addEventListener('dragleave', handleCellDragLeave)
+    cell.addEventListener('drop', handleCellDrop)
+  })
+}
 
-      const topOffset = sMin / 60
-      const height = (eHour - sHour) + (eMin - sMin) / 60
+function handleCellDragOver(e) {
+  e.preventDefault()
+  e.dataTransfer.dropEffect = 'move'
+}
 
-      const cell = document.querySelector(`#cell-${d}-${sHour}`)
-      if (!cell) continue
+function handleCellDragEnter(e) {
+  e.preventDefault()
+  const cell = e.target.closest('.calendar-cell')
+  if (cell) cell.classList.add('drag-over')
+}
 
-      const color = DAY_COLORS[d % DAY_COLORS.length]
+function handleCellDragLeave(e) {
+  const cell = e.target.closest('.calendar-cell')
+  if (cell) cell.classList.remove('drag-over')
+}
 
-      const blockEl = document.createElement('div')
-      blockEl.className = 'calendar-block'
-      blockEl.style.top = `${topOffset * 100}%`
-      blockEl.style.height = `${height * 100}%`
-      blockEl.style.background = color
-      blockEl.innerHTML = `<strong>${block.subject}</strong>`
-      blockEl.title = `${block.subject} (${block.group})\n${String(sHour).padStart(2,'0')}:${String(sMin).padStart(2,'0')} - ${String(eHour).padStart(2,'0')}:${String(eMin).padStart(2,'0')}`
-      cell.appendChild(blockEl)
-    }
+function handleCellDrop(e) {
+  e.preventDefault()
+  const cell = e.target.closest('.calendar-cell')
+  if (!cell) return
+
+  cell.classList.remove('drag-over')
+
+  if (!draggedGroupData) return
+
+  const dayIndex = parseInt(cell.dataset.day)
+  const dropHour = parseInt(cell.dataset.hour)
+
+  // Buscar el bloque que cae en este día
+  const block = draggedGroupData.blocks.find((b) => b.weekday === dayIndex)
+  if (!block) {
+    showDesignerMessage('Este grupo no tiene horario en ese día.', 'warning')
+    return
+  }
+
+  const sHour = block.starts_at.hour || 0
+  const sMin = block.starts_at.minute || 0
+  const eHour = block.ends_at.hour || 0
+  const eMin = block.ends_at.minute || 0
+
+  // Verificar conflictos con bloques ya colocados
+  const conflict = placedBlocks.find((pb) => {
+    if (pb.dayIndex !== dayIndex) return false
+    return pb.startHour < eHour && dropHour < pb.endHour
+  })
+
+  if (conflict) {
+    showDesignerMessage(
+      `Conflicto de horario con ${conflict.group.subject_name} (${conflict.group.code}).`,
+      'error'
+    )
+    return
+  }
+
+  // Verificar que no se duplique la misma materia
+  const alreadyPlaced = placedBlocks.find(
+    (pb) => pb.group.subject_code === draggedGroupData.subject_code
+  )
+  if (alreadyPlaced) {
+    showDesignerMessage(
+      `Ya tienes "${draggedGroupData.subject_name}" en el horario. Quítala primero si quieres cambiar de grupo.`,
+      'warning'
+    )
+    return
+  }
+
+  // Colocar el bloque
+  placedBlocks.push({
+    group: draggedGroupData,
+    dayIndex,
+    startHour: sHour,
+    endHour: eHour,
+    startMin: sMin,
+    endMin: eMin,
+  })
+
+  renderPlacedBlocks()
+  showDesignerMessage(`"${draggedGroupData.subject_name}" (${draggedGroupData.code}) agregado.`, 'success')
+  draggedGroupData = null
+}
+
+function renderPlacedBlocks() {
+  const grid = document.querySelector('#designer-calendar-grid')
+
+  // Limpiar blocks anteriores
+  grid.querySelectorAll('.calendar-block').forEach((el) => el.remove())
+  grid.querySelectorAll('.has-block').forEach((el) => el.classList.remove('has-block'))
+
+  for (const pb of placedBlocks) {
+    const { dayIndex, startHour, startMin, endHour, endMin, group } = pb
+    const cell = document.querySelector(`#des-cell-${dayIndex}-${startHour}`)
+    if (!cell) continue
+
+    const topOffset = startMin / 60
+    const height = (endHour - startHour) + (endMin - startMin) / 60
+    const color = DAY_COLORS[dayIndex % DAY_COLORS.length]
+
+    const blockEl = document.createElement('div')
+    blockEl.className = 'calendar-block'
+    blockEl.style.top = `${topOffset * 100}%`
+    blockEl.style.height = `${height * 100}%`
+    blockEl.style.background = color
+    blockEl.innerHTML = `
+      <strong>${group.subject_name}</strong>
+      <span>${group.code}</span>
+      <span class="block-remove" data-subject-code="${group.subject_code}">✕</span>
+    `
+    blockEl.title = `${group.subject_name} (${group.code})\n${String(startHour).padStart(2, '0')}:${String(startMin).padStart(2, '0')} - ${String(endHour).padStart(2, '0')}:${String(endMin).padStart(2, '0')}`
+
+    cell.classList.add('has-block')
+    cell.appendChild(blockEl)
+
+    // Evento para eliminar
+    blockEl.querySelector('.block-remove').addEventListener('click', (e) => {
+      e.stopPropagation()
+      const subjectCode = e.target.dataset.subjectCode
+      placedBlocks = placedBlocks.filter((pb) => pb.group.subject_code !== subjectCode)
+      renderPlacedBlocks()
+      showDesignerMessage(`"${group.subject_name}" eliminado del horario.`, 'info')
+    })
   }
 }
 
-// ── Combinatorics ─────────────────────────────────────────────────
-function generateCombinations(groupsBySubject) {
-  if (groupsBySubject.length === 0) return []
-
-  function cartesian(arrays) {
-    if (arrays.length === 0) return [[]]
-    const [first, ...rest] = arrays
-    const restCombos = cartesian(rest)
-    return first.flatMap((item) => restCombos.map((combo) => [item, ...combo]))
+function showDesignerMessage(text, type = 'info') {
+  // Buscar o crear un mensaje en el designer
+  let msgEl = document.querySelector('#designer-message')
+  if (!msgEl) {
+    msgEl = document.createElement('p')
+    msgEl.id = 'designer-message'
+    msgEl.className = 'form-message'
+    const calendar = document.querySelector('.designer-calendar')
+    if (calendar) calendar.prepend(msgEl)
   }
 
-  const allCombos = cartesian(groupsBySubject)
-  return allCombos.filter((combo) => !hasConflicts(combo))
+  const colors = {
+    success: '#3b8069',
+    warning: '#f0ad4e',
+    error: '#c05640',
+    info: '#486581',
+  }
+  msgEl.style.color = colors[type] || colors.info
+  msgEl.textContent = text
+
+  clearTimeout(msgEl._timeout)
+  msgEl._timeout = setTimeout(() => {
+    msgEl.textContent = ''
+  }, 4000)
 }
 
-function hasConflicts(groups) {
-  for (let i = 0; i < groups.length; i++) {
-    for (let j = i + 1; j < groups.length; j++) {
-      if (groupsOverlap(groups[i], groups[j])) return true
-    }
-  }
-  return false
-}
-
-function groupsOverlap(a, b) {
-  for (const blockA of a.blocks) {
-    for (const blockB of b.blocks) {
-      if (blocksOverlap(blockA, blockB)) return true
-    }
-  }
-  return false
-}
-
-function blocksOverlap(a, b) {
-  if (a.weekday !== b.weekday) return false
-  return a.starts_at < b.ends_at && b.starts_at < a.ends_at
-}
-
-// ── Scoring ───────────────────────────────────────────────────────
-function calculateScore(combo, { preferMorning, avoidFridays }) {
-  let score = 50
-
-  if (preferMorning) {
-    const morningCount = combo.filter((g) =>
-      g.blocks.some((b) => {
-        const hour = b.starts_at.hour || 0
-        return hour >= 6 && hour < 12
-      })
-    ).length
-    score += (morningCount / combo.length) * 25
-  }
-
-  if (avoidFridays) {
-    const fridayCount = combo.filter((g) =>
-      g.blocks.some((b) => b.weekday === 4)
-    ).length
-    score -= (fridayCount / combo.length) * 30
-  }
-
-  const allDays = new Set()
-  for (const g of combo) {
-    for (const b of g.blocks) {
-      allDays.add(b.weekday)
-    }
-  }
-  const dayBonus = Math.max(0, (5 - allDays.size) * 5)
-  score += dayBonus
-
-  return Math.max(0, Math.min(100, score))
-}
-
-function extractDays(combo) {
-  const dayNames = ['Lun', 'Mar', 'Mié', 'Jue', 'Vie', 'Sáb', 'Dom']
-  const days = new Set()
-  for (const g of combo) {
-    for (const b of g.blocks) {
-      days.add(b.weekday)
-    }
-  }
-  return Array.from(days).sort().map((d) => dayNames[d])
-}
+// ── Export navigation ─────────────────────────────────────────────
+document.querySelector('#to-export')?.addEventListener('click', () =>
+  showPanel(document.querySelector('#export-panel'))
+)
