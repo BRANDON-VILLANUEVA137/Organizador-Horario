@@ -20,7 +20,7 @@ const panels = [
 
 let extractionData = null
 let catalogData = null
-let placedBlocks = [] // { group, dayIndex, startHour, endHour }
+let placedBlocks = [] // { group, dayIndex, startHour, endHour, startMin, endMin }
 
 function normalizeSemesterKey(value) {
   return String(value ?? '')
@@ -28,6 +28,22 @@ function normalizeSemesterKey(value) {
     .replace(/\s+/g, ' ')
     .replace(/\./g, '')
     .toUpperCase()
+}
+
+// ── Time helpers ──────────────────────────────────────────────────
+function parseTime(timeStr) {
+  // timeStr viene como "HH:MM:SS" desde la serialización JSON de Python time
+  if (!timeStr) return { hour: 0, minute: 0 }
+  const parts = timeStr.split(':')
+  return {
+    hour: parseInt(parts[0], 10) || 0,
+    minute: parseInt(parts[1], 10) || 0,
+  }
+}
+
+function formatTime(timeStr) {
+  const t = parseTime(timeStr)
+  return `${String(t.hour).padStart(2, '0')}:${String(t.minute).padStart(2, '0')}`
 }
 
 // ── API status check ──────────────────────────────────────────────
@@ -314,8 +330,8 @@ function renderSubjects(groups) {
 }
 
 // ── Designer (drag & drop) ────────────────────────────────────────
-const DAY_NAMES = ['LUNES', 'MARTES', 'MIÉRCOLES', 'JUEVES', 'VIERNES']
-const DAY_COLORS = ['#c05640', '#3b8069', '#2c7a9e', '#b07a2e', '#7b4f9e']
+const DAY_NAMES = ['LUNES', 'MARTES', 'MIÉRCOLES', 'JUEVES', 'VIERNES', 'SÁBADO']
+const DAY_COLORS = ['#c05640', '#3b8069', '#2c7a9e', '#b07a2e', '#7b4f9e', '#9e6b3b']
 const START_HOUR = 6
 const END_HOUR = 22
 
@@ -389,7 +405,6 @@ function renderDesignerSubjects() {
 }
 
 function encodeGroupData(group) {
-  // Serializamos solo lo necesario para evitar problemas con el dataset
   const data = {
     code: group.code,
     subject_code: group.subject_code,
@@ -409,9 +424,7 @@ function formatGroupTime(group) {
   return group.blocks
     .map((b) => {
       const day = DAY_NAMES[b.weekday] || ''
-      const s = `${String(b.starts_at.hour || 0).padStart(2, '0')}:${String(b.starts_at.minute || 0).padStart(2, '0')}`
-      const e = `${String(b.ends_at.hour || 0).padStart(2, '0')}:${String(b.ends_at.minute || 0).padStart(2, '0')}`
-      return `${day} ${s}-${e}`
+      return `${day} ${formatTime(b.starts_at)}-${formatTime(b.ends_at)}`
     })
     .join(' · ')
 }
@@ -449,7 +462,7 @@ function renderDesignerCalendar() {
 
   let html = ''
   html += '<div class="calendar-header"></div>'
-  for (let d = 0; d < 5; d++) {
+  for (let d = 0; d < 6; d++) {
     html += `<div class="calendar-header">${DAY_NAMES[d]}</div>`
   }
 
@@ -457,7 +470,7 @@ function renderDesignerCalendar() {
     const label = `${String(hour).padStart(2, '0')}:00`
     html += `<div class="calendar-hour">${label}</div>`
 
-    for (let d = 0; d < 5; d++) {
+    for (let d = 0; d < 6; d++) {
       const cellId = `des-cell-${d}-${hour}`
       html += `<div class="calendar-cell" id="${cellId}" data-day="${d}" data-hour="${hour}"></div>`
     }
@@ -500,7 +513,6 @@ function handleCellDrop(e) {
   if (!draggedGroupData) return
 
   const dayIndex = parseInt(cell.dataset.day)
-  const dropHour = parseInt(cell.dataset.hour)
 
   // Buscar el bloque que cae en este día
   const block = draggedGroupData.blocks.find((b) => b.weekday === dayIndex)
@@ -509,15 +521,18 @@ function handleCellDrop(e) {
     return
   }
 
-  const sHour = block.starts_at.hour || 0
-  const sMin = block.starts_at.minute || 0
-  const eHour = block.ends_at.hour || 0
-  const eMin = block.ends_at.minute || 0
+  // Parsear horas reales del bloque (vienen como string "HH:MM:SS")
+  const sTime = parseTime(block.starts_at)
+  const eTime = parseTime(block.ends_at)
+  const sHour = sTime.hour
+  const sMin = sTime.minute
+  const eHour = eTime.hour
+  const eMin = eTime.minute
 
   // Verificar conflictos con bloques ya colocados
   const conflict = placedBlocks.find((pb) => {
     if (pb.dayIndex !== dayIndex) return false
-    return pb.startHour < eHour && dropHour < pb.endHour
+    return pb.startHour < eHour && sHour < pb.endHour
   })
 
   if (conflict) {
@@ -540,7 +555,7 @@ function handleCellDrop(e) {
     return
   }
 
-  // Colocar el bloque
+  // Colocar el bloque con las horas reales del grupo
   placedBlocks.push({
     group: draggedGroupData,
     dayIndex,
@@ -598,7 +613,6 @@ function renderPlacedBlocks() {
 }
 
 function showDesignerMessage(text, type = 'info') {
-  // Buscar o crear un mensaje en el designer
   let msgEl = document.querySelector('#designer-message')
   if (!msgEl) {
     msgEl = document.createElement('p')
