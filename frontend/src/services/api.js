@@ -1,4 +1,6 @@
-const apiBase = import.meta.env.VITE_API_URL || 'http://localhost:8000/api'
+const apiBase = (typeof import.meta !== 'undefined' && import.meta.env?.VITE_API_URL) 
+  ? import.meta.env.VITE_API_URL 
+  : 'http://localhost:8000/api'
 const healthUrl = `${apiBase}/health`
 const catalogUrl = `${apiBase}/catalog`
 const extractionUrl = `${apiBase}/extractions`
