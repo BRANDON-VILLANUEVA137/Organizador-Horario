@@ -2,6 +2,7 @@ from fastapi import APIRouter, HTTPException
 
 from datetime import time
 from uuid import uuid4
+import traceback
 
 from app.domain.models import (
     CatalogItem,
@@ -73,6 +74,7 @@ def get_catalog() -> CatalogResponse:
             },
         )
     except Exception as exc:
+        traceback.print_exc()
         raise HTTPException(
             status_code=500,
             detail=f"No se pudo obtener el catálogo del portal: {exc}",
