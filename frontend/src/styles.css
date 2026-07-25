@@ -78,6 +78,27 @@ footer { color: #829ab1; font: 500 10px 'DM Mono', monospace; letter-spacing: .1
 .designer-calendar .calendar-block .block-remove { position: absolute; top: 1px; right: 3px; color: rgba(255,255,255,.7); font-size: 10px; cursor: pointer; display: none; }
 .designer-calendar .calendar-block:hover .block-remove { display: block; }
 
+.designer-group-card.placed { opacity: .5; border-color: #7b9e8e; cursor: default; }
+.designer-group-card.placed:hover { box-shadow: none; }
+
+/* ── Draft tabs ── */
+.draft-tabs { display: flex; gap: 8px; margin-bottom: 20px; }
+.draft-tab { background: rgba(255, 250, 242, .65); border: 1px solid #d8cbb9; color: #486581; cursor: pointer; display: grid; font-size: 12px; font-weight: 600; gap: 2px; padding: 10px 16px; text-align: left; transition: border-color .15s, background .15s; }
+.draft-tab:hover { border-color: #7b9e8e; }
+.draft-tab.active { background: #102a43; border-color: #102a43; color: #fff; }
+.draft-tab .draft-count { color: inherit; font: 500 9px 'DM Mono', monospace; opacity: .7; }
+
+/* ── Filter sections ── */
+.filter-section { border-top: 1px solid #d8cbb9; display: grid; gap: 8px; padding-top: 12px; }
+.filter-section strong { color: #486581; font-size: 11px; text-transform: uppercase; letter-spacing: .05em; }
+.day-filters { display: flex; flex-wrap: wrap; gap: 6px; }
+.day-filter-label { align-items: center; background: #fffaf2; border: 1px solid #d8cbb9; cursor: pointer; display: flex; font-size: 11px; font-weight: 600; gap: 4px; padding: 5px 8px; transition: border-color .15s; }
+.day-filter-label:has(input:checked) { border-color: #c05640; background: #f4eee2; }
+.day-filter-label input { accent-color: #c05640; margin: 0; }
+.hour-range { display: flex; gap: 10px; }
+.hour-range label { color: #486581; font-size: 11px; font-weight: 600; display: flex; align-items: center; gap: 4px; }
+.hour-range select { background: #fffaf2; border: 1px solid #d8cbb9; color: #102a43; font: 500 12px 'Manrope', sans-serif; padding: 4px 6px; }
+
 .designer-actions { display: flex; gap: 10px; margin-top: 20px; flex-wrap: wrap; }
 .designer-actions .secondary-action { background: transparent; border: 1px solid #d8cbb9; color: #486581; cursor: pointer; font-size: 13px; font-weight: 600; padding: 12px 18px; transition: border-color .15s; }
 .designer-actions .secondary-action:hover { border-color: #c05640; }

@@ -71,18 +71,43 @@
         <div class="eyebrow">PASO 03 / DISEÑADOR</div>
         <h2 id="designer-title">Arrastra tus materias<br /><em>al horario.</em></h2>
         <p class="section-copy">Tus materias están a la izquierda. Arrastra los grupos al calendario para construir tu horario ideal.</p>
+
+        <!-- Draft tabs -->
+        <div class="draft-tabs" id="draft-tabs"></div>
         
         <div class="designer-layout">
-          <!-- Panel izquierdo: materias disponibles -->
+          <!-- Panel izquierdo: materias disponibles + filtros -->
           <div class="designer-sidebar">
             <div class="eyebrow">MATERIAS DISPONIBLES</div>
             <div id="designer-subject-list"></div>
+
+            <!-- Filtros avanzados -->
             <div class="designer-preferences">
               <div class="eyebrow">RECOMENDACIONES</div>
-              <p class="pref-note">Estas preferencias ayudan a ordenar sugerencias, pero tú decides dónde colocar cada materia.</p>
-              <label class="preference-option"><input type="checkbox" id="pref-morning" /><span><strong>Preferir mañana</strong><small>Priorizar grupos entre 6:00 y 12:00</small></span></label>
-              <label class="preference-option"><input type="checkbox" id="pref-fridays" /><span><strong>Evitar viernes</strong><small>Reducir carga académica ese día</small></span></label>
-              <label class="preference-option"><input type="checkbox" id="pref-compact" /><span><strong>Jornadas compactas</strong><small>Reducir espacios entre clases</small></span></label>
+              <p class="pref-note">Filtra los grupos que se muestran según tus preferencias. Tú decides qué arrastrar.</p>
+              <label class="preference-option"><input type="checkbox" id="pref-morning" /><span><strong>Preferir mañana</strong><small>Mostrar solo grupos antes de las 12:00</small></span></label>
+              <label class="preference-option"><input type="checkbox" id="pref-fridays" /><span><strong>Evitar viernes</strong><small>Ocultar grupos con clases en viernes</small></span></label>
+              <label class="preference-option"><input type="checkbox" id="pref-compact" /><span><strong>Jornadas compactas</strong><small>Preferir grupos con menos días dispersos</small></span></label>
+              
+              <div class="filter-section">
+                <strong>Días preferidos</strong>
+                <div class="day-filters">
+                  <label class="day-filter-label"><input type="checkbox" data-day-filter="0" /> Lun</label>
+                  <label class="day-filter-label"><input type="checkbox" data-day-filter="1" /> Mar</label>
+                  <label class="day-filter-label"><input type="checkbox" data-day-filter="2" /> Mié</label>
+                  <label class="day-filter-label"><input type="checkbox" data-day-filter="3" /> Jue</label>
+                  <label class="day-filter-label"><input type="checkbox" data-day-filter="4" /> Vie</label>
+                  <label class="day-filter-label"><input type="checkbox" data-day-filter="5" /> Sáb</label>
+                </div>
+              </div>
+
+              <div class="filter-section">
+                <strong>Rango de horas</strong>
+                <div class="hour-range">
+                  <label>Desde: <select id="filter-min-hour"></select></label>
+                  <label>Hasta: <select id="filter-max-hour"></select></label>
+                </div>
+              </div>
             </div>
           </div>
 
