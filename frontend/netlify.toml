@@ -3,7 +3,7 @@
   publish = "dist"
 
 [build.environment]
-  VITE_API_URL = "https://crea-tu-horario.onrender.com/api"
+  VITE_API_URL = "https://crea-tu-horario-api.onrender.com/api"
 
 [[redirects]]
   from = "/*"
