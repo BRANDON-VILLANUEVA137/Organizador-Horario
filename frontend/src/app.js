@@ -626,54 +626,25 @@ function handleCellDrop(e) {
 
   const dayIndex = parseInt(cell.dataset.day)
 
-  // Buscar el bloque horario del grupo para este día
-  const block = draggedGroupData.blocks.find((b) => b.weekday === dayIndex)
-  if (!block) {
+  // Verificar que el grupo tenga al menos un bloque en el día donde se soltó
+  const hasBlockOnDropDay = draggedGroupData.blocks.some((b) => b.weekday === dayIndex)
+  if (!hasBlockOnDropDay) {
     showDesignerMessage('Este grupo no tiene horario en ese día.', 'warning')
     return
   }
 
-  const sTime = parseTime(block.starts_at)
-  const eTime = parseTime(block.ends_at)
-  const sHour = sTime.hour
-  const sMin = sTime.minute
-  const eHour = eTime.hour
-  const eMin = eTime.minute
-
   const placedBlocks = getPlacedBlocks()
 
-  // ── VALIDACIONES ──
+  // ── VALIDACIONES A NIVEL DE GRUPO COMPLETO ──
 
-  // 1. Conflicto horario con otro grupo en el mismo día
-  const conflict = placedBlocks.find((pb) => {
-    if (pb.dayIndex !== dayIndex) return false
-    return pb.startHour < eHour && sHour < pb.endHour
-  })
-  if (conflict) {
-    showDesignerMessage(
-      `Conflicto de horario con ${conflict.group.subject_name} (${conflict.group.code}).`,
-      'error'
-    )
+  // 1. Mismo grupo ya colocado
+  if (placedBlocks.some((pb) => pb.groupCode === draggedGroupData.code)) {
+    showDesignerMessage(`El grupo "${draggedGroupData.code}" ya está en el horario.`, 'warning')
     return
   }
 
-  // 2. Mismo grupo ya colocado (por groupCode, NO por subject_code)
-  const alreadyPlaced = placedBlocks.find(
-    (pb) => pb.groupCode === draggedGroupData.code
-  )
-  if (alreadyPlaced) {
-    showDesignerMessage(
-      `El grupo "${draggedGroupData.code}" ya está en el horario.`,
-      'warning'
-    )
-    return
-  }
-
-  // 3. Otra materia del mismo subject_code ya colocada
-  const sameSubjectPlaced = placedBlocks.find(
-    (pb) => pb.group.subject_code === draggedGroupData.subject_code
-  )
-  if (sameSubjectPlaced) {
+  // 2. Otra materia del mismo subject_code ya colocada
+  if (placedBlocks.some((pb) => pb.group.subject_code === draggedGroupData.subject_code)) {
     showDesignerMessage(
       `Ya tienes "${draggedGroupData.subject_name}" con otro grupo. Quita ese primero si quieres cambiar.`,
       'warning'
@@ -681,21 +652,49 @@ function handleCellDrop(e) {
     return
   }
 
-  // Colocar el bloque
-  placedBlocks.push({
-    group: draggedGroupData,
-    dayIndex,
-    startHour: sHour,
-    endHour: eHour,
-    startMin: sMin,
-    endMin: eMin,
-    groupCode: draggedGroupData.code,
-  })
+  // 3. Conflicto horario: verificar TODOS los bloques del grupo contra TODOS los bloques colocados
+  for (const newBlock of draggedGroupData.blocks) {
+    const sTime = parseTime(newBlock.starts_at)
+    const eTime = parseTime(newBlock.ends_at)
+    const sHour = sTime.hour
+    const eHour = eTime.hour
+
+    const conflict = placedBlocks.find((pb) => {
+      if (pb.dayIndex !== newBlock.weekday) return false
+      return pb.startHour < eHour && sHour < pb.endHour
+    })
+    if (conflict) {
+      showDesignerMessage(
+        `Conflicto de horario: "${draggedGroupData.subject_name}" choca con ${conflict.group.subject_name} (${conflict.group.code}) el ${DAY_NAMES[newBlock.weekday]}.`,
+        'error'
+      )
+      return
+    }
+  }
+
+  // ── COLOCAR TODOS LOS BLOQUES DEL GRUPO ──
+  for (const block of draggedGroupData.blocks) {
+    const sTime = parseTime(block.starts_at)
+    const eTime = parseTime(block.ends_at)
+
+    placedBlocks.push({
+      group: draggedGroupData,
+      dayIndex: block.weekday,
+      startHour: sTime.hour,
+      endHour: eTime.hour,
+      startMin: sTime.minute,
+      endMin: eTime.minute,
+      groupCode: draggedGroupData.code,
+    })
+  }
 
   renderPlacedBlocks()
   renderDesignerSubjects()
   renderDraftTabs()
-  showDesignerMessage(`"${draggedGroupData.subject_name}" (${draggedGroupData.code}) agregado.`, 'success')
+  showDesignerMessage(
+    `"${draggedGroupData.subject_name}" (${draggedGroupData.code}) — ${draggedGroupData.blocks.length} bloque(s) agregado(s).`,
+    'success'
+  )
   draggedGroupData = null
 }
 
