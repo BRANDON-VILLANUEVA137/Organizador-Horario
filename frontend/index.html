@@ -54,6 +54,7 @@
       </section>
 
       <section class="workflow-view" id="subjects-panel" aria-labelledby="subjects-title" hidden>
+        <button class="back-button" data-back="connection-panel" type="button">← Volver a extracción</button>
         <div class="eyebrow">PASO 02 / MATERIAS</div>
         <h2 id="subjects-title">Escoge las materias<br /><em>de este semestre.</em></h2>
         <p class="section-copy">Selecciona las asignaturas que quieres cursar. SmartSchedule buscará los grupos disponibles.</p>
@@ -68,6 +69,10 @@
       </section>
 
       <section class="workflow-view" id="designer-panel" aria-labelledby="designer-title" hidden>
+        <div class="designer-toolbar">
+          <button class="back-button" data-back="subjects-panel" type="button">← Volver a materias</button>
+          <button class="reset-button" id="reset-designer" type="button">✕ Reiniciar horario</button>
+        </div>
         <div class="eyebrow">PASO 03 / DISEÑADOR</div>
         <h2 id="designer-title">Arrastra tus materias<br /><em>al horario.</em></h2>
         <p class="section-copy">Tus materias están a la izquierda. Arrastra los grupos al calendario para construir tu horario ideal.</p>

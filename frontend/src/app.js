@@ -25,7 +25,6 @@ let catalogData = null
 const DRAFT_COUNT = 3
 const draftNames = ['Horario A', 'Horario B', 'Horario C']
 let activeDraft = 0
-// Cada draft: [{ group, dayIndex, startHour, endHour, startMin, endMin, groupCode }, ...]
 let drafts = Array.from({ length: DRAFT_COUNT }, () => [])
 
 // ── Designer filter state ─────────────────────────────────────────
@@ -33,9 +32,53 @@ let designerFilters = {
   preferMorning: false,
   avoidFridays: false,
   compactDays: false,
-  preferredDays: [],      // [] = todos, [0-5] = días específicos
+  preferredDays: [],
   minHour: 6,
   maxHour: 22,
+}
+
+// ── localStorage persistence ──────────────────────────────────────
+const STORAGE_KEY = 'smartschedule_state'
+
+function saveState() {
+  try {
+    const selectedSubjects = [...document.querySelectorAll('#subject-list input:checked')].map(i => i.value)
+    const state = {
+      extractionData,
+      catalogData,
+      drafts,
+      activeDraft,
+      designerFilters,
+      selectedSubjects,
+      hasExtraction: !!extractionData,
+    }
+    localStorage.setItem(STORAGE_KEY, JSON.stringify(state))
+  } catch { /* quota exceeded, ignore */ }
+}
+
+function loadState() {
+  try {
+    const raw = localStorage.getItem(STORAGE_KEY)
+    if (!raw) return false
+    const state = JSON.parse(raw)
+    if (!state.hasExtraction) return false
+
+    extractionData = state.extractionData
+    catalogData = state.catalogData
+    drafts = state.drafts || Array.from({ length: DRAFT_COUNT }, () => [])
+    activeDraft = state.activeDraft || 0
+    designerFilters = state.designerFilters || {
+      preferMorning: false, avoidFridays: false, compactDays: false,
+      preferredDays: [], minHour: 6, maxHour: 22,
+    }
+    return true
+  } catch {
+    return false
+  }
+}
+
+function clearSavedState() {
+  try { localStorage.removeItem(STORAGE_KEY) } catch { /* ignore */ }
 }
 
 function normalizeSemesterKey(value) {
@@ -50,10 +93,7 @@ function normalizeSemesterKey(value) {
 function parseTime(timeStr) {
   if (!timeStr) return { hour: 0, minute: 0 }
   const parts = timeStr.split(':')
-  return {
-    hour: parseInt(parts[0], 10) || 0,
-    minute: parseInt(parts[1], 10) || 0,
-  }
+  return { hour: parseInt(parts[0], 10) || 0, minute: parseInt(parts[1], 10) || 0 }
 }
 
 function formatTime(timeStr) {
@@ -86,12 +126,47 @@ function showPanel(panel) {
   panel.scrollIntoView({ behavior: 'smooth', block: 'start' })
 }
 
-document.querySelector('#to-subjects').addEventListener('click', () =>
-  showPanel(document.querySelector('#subjects-panel'))
-)
+// ── Back / Forward navigation ────────────────────────────────────
+function navigateTo(panelId) {
+  const panel = document.querySelector(`#${panelId}`)
+  if (panel) showPanel(panel)
+}
+
+document.querySelector('#to-subjects').addEventListener('click', () => {
+  navigateTo('subjects-panel')
+})
+
 document.querySelector('#to-designer').addEventListener('click', () => {
-  showPanel(document.querySelector('#designer-panel'))
-  initDesigner()
+  navigateTo('designer-panel')
+  // Si ya hay datos en drafts, no reiniciar
+  if (drafts.some(d => d.length > 0)) {
+    renderDraftTabs()
+    renderDesignerSubjects()
+    renderPlacedBlocks()
+  } else {
+    initDesigner()
+  }
+})
+
+// Back buttons
+document.querySelectorAll('[data-back]').forEach((btn) => {
+  btn.addEventListener('click', () => {
+    const target = btn.dataset.back
+    navigateTo(target)
+  })
+})
+
+// ── Reset button ──────────────────────────────────────────────────
+document.querySelector('#reset-designer')?.addEventListener('click', () => {
+  if (confirm('¿Estás seguro? Se borrarán todos los horarios que hayas armado.')) {
+    drafts = Array.from({ length: DRAFT_COUNT }, () => [])
+    activeDraft = 0
+    renderDraftTabs()
+    renderDesignerSubjects()
+    renderPlacedBlocks()
+    saveState()
+    showDesignerMessage('Horario reiniciado. Puedes empezar de nuevo.', 'info')
+  }
 })
 
 // ── Form submission ───────────────────────────────────────────────
@@ -251,6 +326,7 @@ async function runExtraction(payload) {
     document.querySelector('#to-subjects').hidden = false
 
     renderSubjects(groups)
+    saveState()
   } catch (error) {
     formMessage.textContent =
       error.message ||
@@ -322,17 +398,23 @@ function renderSubjects(groups) {
     return
   }
 
+  // Restore previously selected subjects
+  const savedState = (() => { try { return JSON.parse(localStorage.getItem(STORAGE_KEY)) } catch { return null } })()
+
   container.innerHTML = subjects
     .map(
-      (subj) => `
+      (subj) => {
+        const wasChecked = savedState?.selectedSubjects?.includes(subj.code)
+        return `
     <label class="subject-option" data-semesters="${Array.from(subj.semesters.keys()).join('|')}">
-      <input type="checkbox" value="${subj.code}" />
+      <input type="checkbox" value="${subj.code}" ${wasChecked ? 'checked' : ''} />
       <span>
         <strong>${subj.name}</strong>
         <small>${subj.code} · ${subj.credits} créditos · ${subj.groups.length} grupo(s)</small>
       </span>
     </label>
   `
+      }
     )
     .join('')
 
@@ -344,6 +426,11 @@ function renderSubjects(groups) {
     const semesterLabels = Array.from(subject.semesters.values())
     const semesterText = semesterLabels.length ? ` · ${semesterLabels.join(', ')}` : ''
     option.querySelector('small').textContent = `${subject.code} · ${subject.credits} créditos · ${subject.groups.length} grupo(s)${semesterText}`
+  })
+
+  // Save on checkbox change
+  container.querySelectorAll('input[type="checkbox"]').forEach((cb) => {
+    cb.addEventListener('change', saveState)
   })
 
   semesterFilter.onchange()
@@ -363,12 +450,8 @@ function initDesigner() {
   drafts = Array.from({ length: DRAFT_COUNT }, () => [])
   activeDraft = 0
   designerFilters = {
-    preferMorning: false,
-    avoidFridays: false,
-    compactDays: false,
-    preferredDays: [],
-    minHour: 6,
-    maxHour: 22,
+    preferMorning: false, avoidFridays: false, compactDays: false,
+    preferredDays: [], minHour: 6, maxHour: 22,
   }
   populateHourSelects()
   renderDraftTabs()
@@ -376,6 +459,7 @@ function initDesigner() {
   renderDesignerCalendar()
   renderPlacedBlocks()
   syncFilterUI()
+  saveState()
 }
 
 function populateHourSelects() {
@@ -383,9 +467,7 @@ function populateHourSelects() {
   const maxSelect = document.querySelector('#filter-max-hour')
   if (!minSelect || !maxSelect) return
   const hours = []
-  for (let h = 6; h <= 22; h++) {
-    hours.push(h)
-  }
+  for (let h = 6; h <= 22; h++) hours.push(h)
   const opts = hours.map(h => `<option value="${h}">${String(h).padStart(2,'0')}:00</option>`).join('')
   minSelect.innerHTML = opts
   maxSelect.innerHTML = opts
@@ -435,10 +517,8 @@ function renderDesignerSubjects() {
     return
   }
 
-  // Get placed group codes for this draft
   const placedGroupCodes = new Set(drafts[activeDraft].map(pb => pb.groupCode))
 
-  // Apply filters
   let filteredGroups = groups.filter(g =>
     g.blocks.some(b => {
       const startMin = timeToMinutes(b.starts_at)
@@ -463,14 +543,11 @@ function renderDesignerSubjects() {
     )
   }
 
-  // Agrupar por materia
   const bySubject = new Map()
   for (const group of filteredGroups) {
     if (!bySubject.has(group.subject_code)) {
       bySubject.set(group.subject_code, {
-        name: group.subject_name,
-        code: group.subject_code,
-        groups: [],
+        name: group.subject_name, code: group.subject_code, groups: [],
       })
     }
     bySubject.get(group.subject_code).groups.push(group)
@@ -505,7 +582,6 @@ function renderDesignerSubjects() {
 
   container.innerHTML = html
 
-  // Drag event listeners (only for non-placed cards)
   container.querySelectorAll('.designer-group-card:not(.placed)').forEach((card) => {
     card.addEventListener('dragstart', handleDragStart)
     card.addEventListener('dragend', handleDragEnd)
@@ -518,9 +594,7 @@ function encodeGroupData(group) {
     subject_code: group.subject_code,
     subject_name: group.subject_name,
     blocks: (group.blocks || []).map(b => ({
-      weekday: b.weekday,
-      starts_at: b.starts_at,
-      ends_at: b.ends_at,
+      weekday: b.weekday, starts_at: b.starts_at, ends_at: b.ends_at,
     })),
     credits: group.credits,
   }
@@ -530,10 +604,7 @@ function encodeGroupData(group) {
 function formatGroupTime(group) {
   if (!group.blocks || group.blocks.length === 0) return ''
   return group.blocks
-    .map((b) => {
-      const day = DAY_NAMES[b.weekday] || ''
-      return `${day} ${formatTime(b.starts_at)}-${formatTime(b.ends_at)}`
-    })
+    .map((b) => `${DAY_NAMES[b.weekday] || ''} ${formatTime(b.starts_at)}-${formatTime(b.ends_at)}`)
     .join(' · ')
 }
 
@@ -543,17 +614,9 @@ let draggedGroupData = null
 function handleDragStart(e) {
   const card = e.target.closest('.designer-group-card')
   if (!card) return
+  if (card.classList.contains('placed')) { e.preventDefault(); return }
 
-  if (card.classList.contains('placed')) {
-    e.preventDefault()
-    return
-  }
-
-  try {
-    draggedGroupData = JSON.parse(card.dataset.groupJson)
-  } catch {
-    return
-  }
+  try { draggedGroupData = JSON.parse(card.dataset.groupJson) } catch { return }
 
   card.classList.add('dragging')
   e.dataTransfer.effectAllowed = 'move'
@@ -569,23 +632,15 @@ function handleDragEnd(e) {
 function renderDesignerCalendar() {
   const grid = document.querySelector('#designer-calendar-grid')
   const hours = []
-  for (let h = START_HOUR; h < END_HOUR; h++) {
-    hours.push(h)
-  }
+  for (let h = START_HOUR; h < END_HOUR; h++) hours.push(h)
 
-  let html = ''
-  html += '<div class="calendar-header"></div>'
-  for (let d = 0; d < 6; d++) {
-    html += `<div class="calendar-header">${DAY_NAMES[d]}</div>`
-  }
+  let html = '<div class="calendar-header"></div>'
+  for (let d = 0; d < 6; d++) html += `<div class="calendar-header">${DAY_NAMES[d]}</div>`
 
   for (const hour of hours) {
-    const label = `${String(hour).padStart(2, '0')}:00`
-    html += `<div class="calendar-hour">${label}</div>`
-
+    html += `<div class="calendar-hour">${String(hour).padStart(2, '0')}:00</div>`
     for (let d = 0; d < 6; d++) {
-      const cellId = `des-cell-${d}-${hour}`
-      html += `<div class="calendar-cell" id="${cellId}" data-day="${d}" data-hour="${hour}"></div>`
+      html += `<div class="calendar-cell" id="des-cell-${d}-${hour}" data-day="${d}" data-hour="${hour}"></div>`
     }
   }
 
@@ -599,17 +654,12 @@ function renderDesignerCalendar() {
   })
 }
 
-function handleCellDragOver(e) {
-  e.preventDefault()
-  e.dataTransfer.dropEffect = 'move'
-}
-
+function handleCellDragOver(e) { e.preventDefault(); e.dataTransfer.dropEffect = 'move' }
 function handleCellDragEnter(e) {
   e.preventDefault()
   const cell = e.target.closest('.calendar-cell')
   if (cell) cell.classList.add('drag-over')
 }
-
 function handleCellDragLeave(e) {
   const cell = e.target.closest('.calendar-cell')
   if (cell) cell.classList.remove('drag-over')
@@ -621,29 +671,22 @@ function handleCellDrop(e) {
   if (!cell) return
 
   cell.classList.remove('drag-over')
-
   if (!draggedGroupData) return
 
   const dayIndex = parseInt(cell.dataset.day)
 
-  // Verificar que el grupo tenga al menos un bloque en el día donde se soltó
-  const hasBlockOnDropDay = draggedGroupData.blocks.some((b) => b.weekday === dayIndex)
-  if (!hasBlockOnDropDay) {
+  if (!draggedGroupData.blocks.some((b) => b.weekday === dayIndex)) {
     showDesignerMessage('Este grupo no tiene horario en ese día.', 'warning')
     return
   }
 
   const placedBlocks = getPlacedBlocks()
 
-  // ── VALIDACIONES A NIVEL DE GRUPO COMPLETO ──
-
-  // 1. Mismo grupo ya colocado
+  // Validaciones a nivel de grupo completo
   if (placedBlocks.some((pb) => pb.groupCode === draggedGroupData.code)) {
     showDesignerMessage(`El grupo "${draggedGroupData.code}" ya está en el horario.`, 'warning')
     return
   }
-
-  // 2. Otra materia del mismo subject_code ya colocada
   if (placedBlocks.some((pb) => pb.group.subject_code === draggedGroupData.subject_code)) {
     showDesignerMessage(
       `Ya tienes "${draggedGroupData.subject_name}" con otro grupo. Quita ese primero si quieres cambiar.`,
@@ -652,38 +695,32 @@ function handleCellDrop(e) {
     return
   }
 
-  // 3. Conflicto horario: verificar TODOS los bloques del grupo contra TODOS los bloques colocados
+  // Conflicto horario: verificar TODOS los bloques del grupo
   for (const newBlock of draggedGroupData.blocks) {
     const sTime = parseTime(newBlock.starts_at)
     const eTime = parseTime(newBlock.ends_at)
-    const sHour = sTime.hour
-    const eHour = eTime.hour
-
     const conflict = placedBlocks.find((pb) => {
       if (pb.dayIndex !== newBlock.weekday) return false
-      return pb.startHour < eHour && sHour < pb.endHour
+      return pb.startHour < eTime.hour && sTime.hour < pb.endHour
     })
     if (conflict) {
       showDesignerMessage(
-        `Conflicto de horario: "${draggedGroupData.subject_name}" choca con ${conflict.group.subject_name} (${conflict.group.code}) el ${DAY_NAMES[newBlock.weekday]}.`,
+        `Conflicto: "${draggedGroupData.subject_name}" choca con ${conflict.group.subject_name} el ${DAY_NAMES[newBlock.weekday]}.`,
         'error'
       )
       return
     }
   }
 
-  // ── COLOCAR TODOS LOS BLOQUES DEL GRUPO ──
+  // Colocar TODOS los bloques del grupo
   for (const block of draggedGroupData.blocks) {
     const sTime = parseTime(block.starts_at)
     const eTime = parseTime(block.ends_at)
-
     placedBlocks.push({
       group: draggedGroupData,
       dayIndex: block.weekday,
-      startHour: sTime.hour,
-      endHour: eTime.hour,
-      startMin: sTime.minute,
-      endMin: eTime.minute,
+      startHour: sTime.hour, endHour: eTime.hour,
+      startMin: sTime.minute, endMin: eTime.minute,
       groupCode: draggedGroupData.code,
     })
   }
@@ -691,6 +728,7 @@ function handleCellDrop(e) {
   renderPlacedBlocks()
   renderDesignerSubjects()
   renderDraftTabs()
+  saveState()
   showDesignerMessage(
     `"${draggedGroupData.subject_name}" (${draggedGroupData.code}) — ${draggedGroupData.blocks.length} bloque(s) agregado(s).`,
     'success'
@@ -702,7 +740,6 @@ function renderPlacedBlocks() {
   const grid = document.querySelector('#designer-calendar-grid')
   if (!grid) return
 
-  // Limpiar blocks anteriores
   grid.querySelectorAll('.calendar-block').forEach((el) => el.remove())
   grid.querySelectorAll('.has-block').forEach((el) => el.classList.remove('has-block'))
 
@@ -727,12 +764,11 @@ function renderPlacedBlocks() {
       <span>${group.code}</span>
       <span class="block-remove" data-group-code="${group.code}">✕</span>
     `
-    blockEl.title = `${group.subject_name} (${group.code})\n${String(startHour).padStart(2, '0')}:${String(startMin).padStart(2, '0')} - ${String(endHour).padStart(2, '0')}:${String(endMin).padStart(2, '0')}`
+    blockEl.title = `${group.subject_name} (${group.code})\n${String(startHour).padStart(2,'0')}:${String(startMin).padStart(2,'0')} - ${String(endHour).padStart(2,'0')}:${String(endMin).padStart(2,'0')}`
 
     cell.classList.add('has-block')
     cell.appendChild(blockEl)
 
-    // Evento para eliminar (por groupCode)
     blockEl.querySelector('.block-remove').addEventListener('click', (e) => {
       e.stopPropagation()
       const groupCode = e.target.dataset.groupCode
@@ -742,7 +778,8 @@ function renderPlacedBlocks() {
         renderPlacedBlocks()
         renderDesignerSubjects()
         renderDraftTabs()
-        showDesignerMessage(`Bloque eliminado del horario.`, 'info')
+        saveState()
+        showDesignerMessage('Bloque eliminado del horario.', 'info')
       }
     })
   }
@@ -758,42 +795,30 @@ function showDesignerMessage(text, type = 'info') {
     if (calendar) calendar.prepend(msgEl)
   }
 
-  const colors = {
-    success: '#3b8069',
-    warning: '#f0ad4e',
-    error: '#c05640',
-    info: '#486581',
-  }
+  const colors = { success: '#3b8069', warning: '#f0ad4e', error: '#c05640', info: '#486581' }
   msgEl.style.color = colors[type] || colors.info
   msgEl.textContent = text
 
   clearTimeout(msgEl._timeout)
-  msgEl._timeout = setTimeout(() => {
-    msgEl.textContent = ''
-  }, 4000)
+  msgEl._timeout = setTimeout(() => { msgEl.textContent = '' }, 4000)
 }
 
 // ── Filter controls ───────────────────────────────────────────────
 document.querySelector('#pref-morning')?.addEventListener('change', (e) => {
-  designerFilters.preferMorning = e.target.checked
-  renderDesignerSubjects()
+  designerFilters.preferMorning = e.target.checked; renderDesignerSubjects()
 })
 document.querySelector('#pref-fridays')?.addEventListener('change', (e) => {
-  designerFilters.avoidFridays = e.target.checked
-  renderDesignerSubjects()
+  designerFilters.avoidFridays = e.target.checked; renderDesignerSubjects()
 })
 document.querySelector('#pref-compact')?.addEventListener('change', (e) => {
-  designerFilters.compactDays = e.target.checked
-  renderDesignerSubjects()
+  designerFilters.compactDays = e.target.checked; renderDesignerSubjects()
 })
 
 document.querySelectorAll('[data-day-filter]').forEach((cb) => {
   cb.addEventListener('change', (e) => {
     const day = parseInt(e.target.dataset.dayFilter)
     if (e.target.checked) {
-      if (!designerFilters.preferredDays.includes(day)) {
-        designerFilters.preferredDays.push(day)
-      }
+      if (!designerFilters.preferredDays.includes(day)) designerFilters.preferredDays.push(day)
     } else {
       designerFilters.preferredDays = designerFilters.preferredDays.filter(d => d !== day)
     }
@@ -802,12 +827,10 @@ document.querySelectorAll('[data-day-filter]').forEach((cb) => {
 })
 
 document.querySelector('#filter-min-hour')?.addEventListener('change', (e) => {
-  designerFilters.minHour = parseInt(e.target.value) || 6
-  renderDesignerSubjects()
+  designerFilters.minHour = parseInt(e.target.value) || 6; renderDesignerSubjects()
 })
 document.querySelector('#filter-max-hour')?.addEventListener('change', (e) => {
-  designerFilters.maxHour = parseInt(e.target.value) || 22
-  renderDesignerSubjects()
+  designerFilters.maxHour = parseInt(e.target.value) || 22; renderDesignerSubjects()
 })
 
 function syncFilterUI() {
@@ -823,5 +846,40 @@ function syncFilterUI() {
 
 // ── Export navigation ─────────────────────────────────────────────
 document.querySelector('#to-export')?.addEventListener('click', () =>
-  showPanel(document.querySelector('#export-panel'))
+  navigateTo('export-panel')
 )
+
+// ── Restore saved state on load ───────────────────────────────────
+function restoreSavedState() {
+  if (!loadState()) return false
+
+  // Restore hero/roadmap visibility
+  hero.hidden = true
+  roadmap.hidden = true
+
+  // Show subjects panel with data
+  connectionPanel.hidden = true
+  document.querySelector('#subjects-panel').hidden = false
+  document.querySelector('#to-subjects').hidden = false
+
+  // Render subjects with saved selections
+  renderSubjects(extractionData.groups)
+
+  // Restore designer if there are drafts
+  if (drafts.some(d => d.length > 0)) {
+    document.querySelector('#designer-panel').hidden = false
+    populateHourSelects()
+    renderDraftTabs()
+    renderDesignerSubjects()
+    renderDesignerCalendar()
+    renderPlacedBlocks()
+    syncFilterUI()
+  }
+
+  return true
+}
+
+// Try to restore on page load
+if (!restoreSavedState()) {
+  console.log('No saved state found, starting fresh.')
+}

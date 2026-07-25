@@ -99,6 +99,12 @@ footer { color: #829ab1; font: 500 10px 'DM Mono', monospace; letter-spacing: .1
 .hour-range label { color: #486581; font-size: 11px; font-weight: 600; display: flex; align-items: center; gap: 4px; }
 .hour-range select { background: #fffaf2; border: 1px solid #d8cbb9; color: #102a43; font: 500 12px 'Manrope', sans-serif; padding: 4px 6px; }
 
+.designer-toolbar { display: flex; gap: 10px; align-items: center; margin-bottom: 16px; }
+.designer-toolbar .back-button { background: transparent; border: 0; color: #627d98; cursor: pointer; font: 500 11px 'DM Mono', monospace; padding: 0; text-transform: uppercase; }
+.designer-toolbar .back-button:hover { color: #c05640; }
+.reset-button { background: transparent; border: 1px solid #d8cbb9; color: #c05640; cursor: pointer; font-size: 11px; font-weight: 600; margin-left: auto; padding: 6px 12px; transition: border-color .15s; }
+.reset-button:hover { border-color: #c05640; background: rgba(192,86,64,.06); }
+
 .designer-actions { display: flex; gap: 10px; margin-top: 20px; flex-wrap: wrap; }
 .designer-actions .secondary-action { background: transparent; border: 1px solid #d8cbb9; color: #486581; cursor: pointer; font-size: 13px; font-weight: 600; padding: 12px 18px; transition: border-color .15s; }
 .designer-actions .secondary-action:hover { border-color: #c05640; }
