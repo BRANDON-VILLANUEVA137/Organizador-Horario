@@ -33,4 +33,30 @@ export async function runExtraction(payload) {
   return response.json()
 }
 
+// ── Academic Plan & Eligibility ──────────────────────────────────
+const academicPensumUrl = `${apiBase}/academic/pensum`
+const eligibilityUrl = `${apiBase}/academic/eligibility`
+
+export async function fetchAcademicPensum() {
+  const response = await fetch(academicPensumUrl)
+  if (!response.ok) throw new Error('No se pudo obtener el plan académico')
+  return response.json()
+}
+
+export async function checkEligibility(completedSubjects, completedDiagnostics = []) {
+  const response = await fetch(eligibilityUrl, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({
+      completed_subjects: completedSubjects,
+      completed_diagnostics: completedDiagnostics,
+    }),
+  })
+  if (!response.ok) {
+    const errorBody = await response.json().catch(() => ({}))
+    throw new Error(errorBody.detail || 'No se pudo evaluar la elegibilidad')
+  }
+  return response.json()
+}
+
 export { apiBase }

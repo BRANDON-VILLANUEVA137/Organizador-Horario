@@ -5,12 +5,18 @@ from uuid import uuid4
 import traceback
 
 from app.domain.models import (
+    AcademicPlan,
     CatalogItem,
     CatalogResponse,
     CourseGroup,
+    EligibilityResponse,
     ExtractionRequest,
     ExtractionResponse,
     HealthResponse,
+    Pensum,
+    StudentAcademicState,
+    SyncProgressRequest,
+    SyncProgressResponse,
     TimeBlock,
     Weekday,
 )
@@ -24,9 +30,12 @@ from app.repositories.extractions import (
     load_extraction_response,
     save_extraction_response,
 )
+from app.services.dag_engine import DAGEngine
+from app.services.pensum_service import PensumService
 
 router = APIRouter()
 extractor = CundinamarcaExtractor()
+pensum_service = PensumService()
 
 
 @router.get("/health", response_model=HealthResponse, tags=["system"])
@@ -85,7 +94,7 @@ def get_catalog() -> CatalogResponse:
 def create_extraction(request: ExtractionRequest) -> ExtractionResponse:
     """
     Ejecuta la extracción de horarios.
-    
+
     Si la universidad es 'Universidad de Cundinamarca' y se proporcionan
     campus_code y program_code, usa el extractor real con Playwright.
     De lo contrario, devuelve datos demo.
@@ -143,43 +152,36 @@ def create_extraction(request: ExtractionRequest) -> ExtractionResponse:
             groups=all_groups,
             source="cundinamarca",
         )
-        try:
-            save_extraction_response(response)
-        except OSError as exc:
-            raise HTTPException(
-                status_code=500,
-                detail=f"No se pudo guardar la extracción en JSON local: {exc}",
-            )
-        return response
+    else:
+        # --- Datos demo (fallback) ---
+        groups = [
+            CourseGroup(
+                code="MAT-101-01",
+                subject_code="MAT-101",
+                subject_name="Calculo I",
+                teacher="Laura Gomez",
+                classroom="A-204",
+                credits=3,
+                blocks=[TimeBlock(weekday=Weekday.MONDAY, starts_at=time(7), ends_at=time(9))],
+            ),
+            CourseGroup(
+                code="PRO-101-01",
+                subject_code="PRO-101",
+                subject_name="Programacion I",
+                teacher="Diego Ruiz",
+                classroom="Lab-3",
+                credits=3,
+                blocks=[TimeBlock(weekday=Weekday.TUESDAY, starts_at=time(9), ends_at=time(11))],
+            ),
+        ]
+        response = ExtractionResponse(
+            extraction_id=str(uuid4()),
+            portal_url=request.portal_url,
+            university=request.university,
+            groups=groups,
+            source="demo",
+        )
 
-    # --- Datos demo (fallback) ---
-    groups = [
-        CourseGroup(
-            code="MAT-101-01",
-            subject_code="MAT-101",
-            subject_name="Calculo I",
-            teacher="Laura Gomez",
-            classroom="A-204",
-            credits=3,
-            blocks=[TimeBlock(weekday=Weekday.MONDAY, starts_at=time(7), ends_at=time(9))],
-        ),
-        CourseGroup(
-            code="PRO-101-01",
-            subject_code="PRO-101",
-            subject_name="Programacion I",
-            teacher="Diego Ruiz",
-            classroom="Lab-3",
-            credits=3,
-            blocks=[TimeBlock(weekday=Weekday.TUESDAY, starts_at=time(9), ends_at=time(11))],
-        ),
-    ]
-    response = ExtractionResponse(
-        extraction_id=str(uuid4()),
-        portal_url=request.portal_url,
-        university=request.university,
-        groups=groups,
-        source="demo",
-    )
     try:
         save_extraction_response(response)
     except OSError as exc:
@@ -188,3 +190,155 @@ def create_extraction(request: ExtractionRequest) -> ExtractionResponse:
             detail=f"No se pudo guardar la extracción en JSON local: {exc}",
         )
     return response
+
+
+# ──────────────────────────────────────────────
+# Endpoints de Malla Curricular y Sincronización
+# ──────────────────────────────────────────────
+
+
+@router.get("/pensum", response_model=Pensum, tags=["pensum"])
+def get_pensum() -> Pensum:
+    """
+    Devuelve la malla curricular completa (pensum) de la carrera.
+
+    Carga el archivo PENSUM_2020_SISTEMAS.json y lo retorna como un objeto
+    estructurado con todas las materias, créditos, prerrequisitos
+    y diagnósticos.
+    """
+    try:
+        return pensum_service.get_pensum()
+    except FileNotFoundError as exc:
+        raise HTTPException(status_code=500, detail=str(exc))
+    except Exception as exc:
+        traceback.print_exc()
+        raise HTTPException(
+            status_code=500,
+            detail=f"Error al cargar el pensum: {exc}",
+        )
+
+
+@router.post("/sync-progress", response_model=SyncProgressResponse, tags=["sync"])
+def sync_student_progress(request: SyncProgressRequest) -> SyncProgressResponse:
+    """
+    Sincroniza el avance académico del estudiante.
+
+    Recibe los códigos de materias y diagnósticos aprobados, los
+    procesa contra la malla curricular usando un Grafo Acíclico
+    Dirigido (DAG) y devuelve:
+
+    - Materias habilitadas para el siguiente período.
+    - Diagnósticos pendientes que bloquean materias.
+    - Materias cursadas con sus detalles.
+    - Progreso de carrera (porcentaje de créditos).
+    """
+    try:
+        pensum = pensum_service.get_pensum()
+        engine = DAGEngine(pensum)
+
+        habilitadas = engine.calcular_habilitadas(
+            request.completed_codes,
+            request.diagnostic_completed_codes,
+        )
+
+        diagnosticos_pendientes = engine.diagnosticos_pendientes(
+            request.completed_codes,
+            request.diagnostic_completed_codes,
+        )
+
+        materias_cursadas = [
+            m for m in pensum.materias if m.codigo in request.completed_codes
+        ]
+
+        progreso = engine.calcular_progreso(request.completed_codes)
+        creditos_aprob = engine.creditos_aprobados(request.completed_codes)
+        creditos_rest = engine.creditos_restantes(request.completed_codes)
+
+        return SyncProgressResponse(
+            habilitadas=habilitadas,
+            diagnosticos_pendientes=diagnosticos_pendientes,
+            materias_cursadas=materias_cursadas,
+            progreso_carrera=progreso,
+            creditos_aprobados=creditos_aprob,
+            creditos_restantes=creditos_rest,
+        )
+
+    except FileNotFoundError as exc:
+        raise HTTPException(status_code=500, detail=str(exc))
+    except Exception as exc:
+        traceback.print_exc()
+        raise HTTPException(
+            status_code=500,
+            detail=f"Error al procesar la sincronización: {exc}",
+        )
+
+
+# ──────────────────────────────────────────────
+# Endpoints Académicos (AcademicPlan)
+# ──────────────────────────────────────────────
+
+
+@router.get("/academic/pensum", response_model=AcademicPlan, tags=["academic"])
+def get_academic_pensum() -> AcademicPlan:
+    """
+    Devuelve el plan académico completo (AcademicPlan).
+
+    Retorna la malla curricular con la estructura de PrerequisiteSubject
+    y DiagnosticRequirement para ser usada por el frontend.
+    """
+    try:
+        return pensum_service.get_academic_plan()
+    except FileNotFoundError as exc:
+        raise HTTPException(status_code=500, detail=str(exc))
+    except Exception as exc:
+        traceback.print_exc()
+        raise HTTPException(
+            status_code=500,
+            detail=f"Error al cargar el plan académico: {exc}",
+        )
+
+
+@router.post("/academic/eligibility", response_model=EligibilityResponse, tags=["academic"])
+def check_eligibility(state: StudentAcademicState) -> EligibilityResponse:
+    """
+    Evalúa la elegibilidad de materias según el avance del estudiante.
+
+    Recibe las materias y diagnósticos que el estudiante ha completado
+    y devuelve dos listas:
+
+    - **eligible_subjects**: Materias que puede cursar (cumplen requisitos).
+    - **blocked_subjects**: Materias bloqueadas con el detalle de qué
+      requisitos le faltan (materias y/o diagnósticos).
+
+    Esto permite al frontend mostrar las materias bloqueadas con opacidad
+    reducida y un tooltip con el motivo del bloqueo.
+    """
+    try:
+        plan = pensum_service.get_academic_plan()
+        engine = DAGEngine(plan)
+
+        eligible, blocked = engine.calcular_elegibilidad(
+            state.completed_subjects,
+            state.completed_diagnostics,
+        )
+
+        progreso = engine.calcular_progreso(state.completed_subjects)
+        creditos_aprob = engine.creditos_aprobados(state.completed_subjects)
+        creditos_rest = engine.creditos_restantes(state.completed_subjects)
+
+        return EligibilityResponse(
+            eligible_subjects=eligible,
+            blocked_subjects=blocked,
+            progress_percentage=progreso,
+            total_credits_approved=creditos_aprob,
+            total_credits_remaining=creditos_rest,
+        )
+
+    except FileNotFoundError as exc:
+        raise HTTPException(status_code=500, detail=str(exc))
+    except Exception as exc:
+        traceback.print_exc()
+        raise HTTPException(
+            status_code=500,
+            detail=f"Error al evaluar elegibilidad: {exc}",
+        )

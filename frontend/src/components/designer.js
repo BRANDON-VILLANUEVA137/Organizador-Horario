@@ -1,9 +1,14 @@
 import { formatGroupTime, encodeGroupData, timeToMinutes, DAY_NAMES } from '../utils/helpers.js'
 import { getSelectedSubjectCodes } from './subjects.js'
 import { getPlacedBlocks, isGroupPlaced, isSubjectPlaced, hasConflict, placeGroup, removeGroup } from '../services/scheduler.js'
+import { checkEligibility } from '../services/api.js'
 
 let draggedGroupData = null
 let onStateChange = null
+
+// Cache de elegibilidad: { subject_code -> { eligible, reason, missing_requirements, missing_diagnostics } }
+let eligibilityCache = null
+let eligibilityLoading = false
 
 export function setOnStateChange(callback) {
   onStateChange = callback
@@ -11,6 +16,44 @@ export function setOnStateChange(callback) {
 
 export function getDraggedGroupData() { return draggedGroupData }
 export function clearDraggedGroupData() { draggedGroupData = null }
+
+// ── Cargar elegibilidad desde el backend ─────────────────────────
+export async function loadEligibility(completedSubjects, completedDiagnostics = []) {
+  eligibilityLoading = true
+  try {
+    const result = await checkEligibility(completedSubjects, completedDiagnostics)
+    // Construir mapa: subject_code -> info de elegibilidad
+    const map = {}
+    for (const s of result.eligible_subjects) {
+      map[s.codigo] = { eligible: true, reason: null, missing_requirements: [], missing_diagnostics: [] }
+    }
+    for (const s of result.blocked_subjects) {
+      map[s.codigo] = {
+        eligible: false,
+        reason: s.reason,
+        missing_requirements: s.missing_requirements,
+        missing_diagnostics: s.missing_diagnostics,
+      }
+    }
+    eligibilityCache = map
+    return result
+  } catch (err) {
+    console.warn('No se pudo cargar elegibilidad:', err)
+    eligibilityCache = null
+    return null
+  } finally {
+    eligibilityLoading = false
+  }
+}
+
+export function getEligibility(subjectCode) {
+  if (!eligibilityCache) return null
+  return eligibilityCache[subjectCode] || null
+}
+
+export function isEligibilityLoaded() {
+  return eligibilityCache !== null
+}
 
 // ── Render available subjects in designer sidebar ─────────────────
 export function renderDesignerSubjects(container, extractionData, drafts, activeDraft, filters) {
@@ -35,21 +78,37 @@ export function renderDesignerSubjects(container, extractionData, drafts, active
 
   let html = ''
   for (const [code, subject] of bySubject) {
-    html += `<div class="designer-subject-header">${subject.name}</div>`
+    // Verificar elegibilidad de esta materia
+    const elig = getEligibility(code)
+    const isBlocked = elig && !elig.eligible
+    const blockReason = elig ? elig.reason : null
+
+    html += `<div class="designer-subject-header ${isBlocked ? 'blocked' : ''}">${subject.name}</div>`
     for (const group of subject.groups) {
       const timeInfo = formatGroupTime(group)
       const isDiagnostico = group.subject_name?.includes('[DIAGNÓSTICO]')
       const isPlaced = placedGroupCodes.has(group.code)
+      const canDrag = !isPlaced && !isBlocked
+
       html += `
-        <div class="designer-group-card ${isPlaced ? 'placed' : ''}" draggable="${!isPlaced}"
+        <div class="designer-group-card 
+             ${isPlaced ? 'placed' : ''} 
+             ${isBlocked ? 'blocked' : ''}" 
+             draggable="${canDrag}"
              data-subject-code="${code}"
              data-subject-name="${subject.name}"
              data-group-code="${group.code}"
-             data-group-json='${encodeGroupData(group)}'>
-          <div class="group-name">${isDiagnostico ? '📋 ' : ''}${group.code} ${isPlaced ? '✓' : ''}</div>
+             data-group-json='${encodeGroupData(group)}'
+             ${blockReason ? `title="🔒 Bloqueada: ${blockReason}"` : ''}>
+          <div class="group-name">
+            ${isDiagnostico ? '📋 ' : ''}
+            ${isBlocked ? '🔒 ' : ''}
+            ${group.code} ${isPlaced ? '✓' : ''}
+          </div>
           <div class="group-code">${subject.name}</div>
           <div class="group-time">${timeInfo || 'Sin horario definido'}</div>
           ${isDiagnostico ? '<span class="group-badge">Diagnóstico</span>' : ''}
+          ${isBlocked ? '<span class="group-badge blocked-badge">Bloqueada</span>' : ''}
         </div>
       `
     }
@@ -62,8 +121,8 @@ export function renderDesignerSubjects(container, extractionData, drafts, active
 
   container.innerHTML = html
 
-  // Drag event listeners
-  container.querySelectorAll('.designer-group-card:not(.placed)').forEach((card) => {
+  // Drag event listeners (solo para cards no placed y no blocked)
+  container.querySelectorAll('.designer-group-card:not(.placed):not(.blocked)').forEach((card) => {
     card.addEventListener('dragstart', handleDragStart)
     card.addEventListener('dragend', handleDragEnd)
   })

@@ -1,0 +1,694 @@
+{
+  "carrera": "Ingeniería de Sistemas y Computación",
+  "codigo_carrera": "CAD6120",
+  "version_pensum": "2020",
+  "total_creditos": 153,
+  "materias": [
+    {
+      "codigo": "CAD612021101",
+      "nombre": "ÁLGEBRA LINEAL",
+      "creditos": 3,
+      "periodo": 1,
+      "requisitos": [],
+      "diagnosticos": [],
+      "correquisitos": [],
+      "tipo": "obligatoria"
+    },
+    {
+      "codigo": "CAD612021106",
+      "nombre": "FUNDAMENTOS DE ELECTRÓNICA",
+      "creditos": 4,
+      "periodo": 1,
+      "requisitos": [],
+      "diagnosticos": [],
+      "correquisitos": [],
+      "tipo": "obligatoria"
+    },
+    {
+      "codigo": "CAD612021103",
+      "nombre": "FUNDAMENTOS DE INGENIERÍA",
+      "creditos": 2,
+      "periodo": 1,
+      "requisitos": [],
+      "diagnosticos": [],
+      "correquisitos": [],
+      "tipo": "obligatoria"
+    },
+    {
+      "codigo": "CAD612021105",
+      "nombre": "MATEMÁTICAS DISCRETAS",
+      "creditos": 2,
+      "periodo": 1,
+      "requisitos": [],
+      "diagnosticos": [],
+      "correquisitos": [],
+      "tipo": "obligatoria"
+    },
+    {
+      "codigo": "CAD612021102",
+      "nombre": "PENSAMIENTO ALGORÍTMICO",
+      "creditos": 3,
+      "periodo": 1,
+      "requisitos": [],
+      "diagnosticos": [],
+      "correquisitos": [],
+      "tipo": "obligatoria"
+    },
+    {
+      "codigo": "CAD612021104",
+      "nombre": "PENSAMIENTO SISTÉMICO Y AUTOMATIZACIÓN",
+      "creditos": 2,
+      "periodo": 1,
+      "requisitos": [],
+      "diagnosticos": [],
+      "correquisitos": [],
+      "tipo": "obligatoria"
+    },
+    {
+      "codigo": "CAD612021207",
+      "nombre": "CALCULO DIFERENCIAL",
+      "creditos": 4,
+      "periodo": 2,
+      "requisitos": [],
+      "diagnosticos": [],
+      "correquisitos": [],
+      "tipo": "obligatoria"
+    },
+    {
+      "codigo": "CAI1002020202",
+      "nombre": "COMUNICACIÓN Y LECTURA CRÍTICA I",
+      "creditos": 2,
+      "periodo": 2,
+      "requisitos": [],
+      "diagnosticos": [
+        "DN-CAI1002020202"
+      ],
+      "correquisitos": [],
+      "tipo": "obligatoria"
+    },
+    {
+      "codigo": "CAD612021210",
+      "nombre": "ESTADÍSTICA,PROBABILIDAD E INFERENCIA",
+      "creditos": 3,
+      "periodo": 2,
+      "requisitos": [],
+      "diagnosticos": [],
+      "correquisitos": [],
+      "tipo": "obligatoria"
+    },
+    {
+      "codigo": "CAD612021208",
+      "nombre": "FISICA I",
+      "creditos": 4,
+      "periodo": 2,
+      "requisitos": [],
+      "diagnosticos": [],
+      "correquisitos": [],
+      "tipo": "obligatoria"
+    },
+    {
+      "codigo": "CAD612021209",
+      "nombre": "PROGRAMACIÓN I",
+      "creditos": 3,
+      "periodo": 2,
+      "requisitos": [
+        "CAD612021102"
+      ],
+      "diagnosticos": [],
+      "correquisitos": [],
+      "tipo": "obligatoria"
+    },
+    {
+      "codigo": "CAI1002020201",
+      "nombre": "RAZONAMIENTO LÓGICO Y CUANTITATIVO",
+      "creditos": 2,
+      "periodo": 2,
+      "requisitos": [],
+      "diagnosticos": [
+        "DN-CAI1002020201"
+      ],
+      "correquisitos": [],
+      "tipo": "obligatoria"
+    },
+    {
+      "codigo": "CAD612021311",
+      "nombre": "CALCULO INTEGRAL",
+      "creditos": 4,
+      "periodo": 3,
+      "requisitos": [
+        "CAD612021207"
+      ],
+      "diagnosticos": [],
+      "correquisitos": [],
+      "tipo": "obligatoria"
+    },
+    {
+      "codigo": "CAI1002020303",
+      "nombre": "CIUDADANIA DEL SIGLO 21",
+      "creditos": 2,
+      "periodo": 3,
+      "requisitos": [],
+      "diagnosticos": [
+        "DN-CAI1002020303"
+      ],
+      "correquisitos": [],
+      "tipo": "obligatoria"
+    },
+    {
+      "codigo": "CAI1002020305",
+      "nombre": "COMUNICACIÓN Y LECTURA CRÍTICA II",
+      "creditos": 2,
+      "periodo": 3,
+      "requisitos": [
+        "CAI1002020202"
+      ],
+      "diagnosticos": [],
+      "correquisitos": [],
+      "tipo": "obligatoria"
+    },
+    {
+      "codigo": "CAD612021312",
+      "nombre": "FISICA II",
+      "creditos": 4,
+      "periodo": 3,
+      "requisitos": [
+        "CAD612021208"
+      ],
+      "diagnosticos": [],
+      "correquisitos": [],
+      "tipo": "obligatoria"
+    },
+    {
+      "codigo": "CAI1002020304",
+      "nombre": "LENGUA EXTRANJERA I",
+      "creditos": 2,
+      "periodo": 3,
+      "requisitos": [],
+      "diagnosticos": [
+        "DN-CAI1002020304"
+      ],
+      "correquisitos": [],
+      "tipo": "obligatoria"
+    },
+    {
+      "codigo": "CAD612021313",
+      "nombre": "PROGRAMACIÓN II",
+      "creditos": 3,
+      "periodo": 3,
+      "requisitos": [
+        "CAD612021209"
+      ],
+      "diagnosticos": [],
+      "correquisitos": [],
+      "tipo": "obligatoria"
+    },
+    {
+      "codigo": "CAD612021417",
+      "nombre": "ARQUITECTURA DE COMPUTADORES",
+      "creditos": 3,
+      "periodo": 4,
+      "requisitos": [
+        "CAD612021106"
+      ],
+      "diagnosticos": [],
+      "correquisitos": [],
+      "tipo": "obligatoria"
+    },
+    {
+      "codigo": "CAD612021414",
+      "nombre": "CALCULO MULTIVARIADO",
+      "creditos": 4,
+      "periodo": 4,
+      "requisitos": [
+        "CAD612021311"
+      ],
+      "diagnosticos": [],
+      "correquisitos": [],
+      "tipo": "obligatoria"
+    },
+    {
+      "codigo": "CAD612021416",
+      "nombre": "ESTRUCTURAS DE INFORMACIÓN",
+      "creditos": 2,
+      "periodo": 4,
+      "requisitos": [
+        "CAD612021209"
+      ],
+      "diagnosticos": [],
+      "correquisitos": [],
+      "tipo": "obligatoria"
+    },
+    {
+      "codigo": "CAD612021415",
+      "nombre": "FISICA III",
+      "creditos": 3,
+      "periodo": 4,
+      "requisitos": [
+        "CAD612021312"
+      ],
+      "diagnosticos": [],
+      "correquisitos": [],
+      "tipo": "obligatoria"
+    },
+    {
+      "codigo": "CAD612021418",
+      "nombre": "FUNDAMENTOS ADMINISTRATIVOS",
+      "creditos": 2,
+      "periodo": 4,
+      "requisitos": [],
+      "diagnosticos": [],
+      "correquisitos": [],
+      "tipo": "obligatoria"
+    },
+    {
+      "codigo": "CAI1002020406",
+      "nombre": "LENGUA EXTRANJERA II",
+      "creditos": 2,
+      "periodo": 4,
+      "requisitos": [
+        "CAI1002020304"
+      ],
+      "diagnosticos": [],
+      "correquisitos": [],
+      "tipo": "obligatoria"
+    },
+    {
+      "codigo": "CAD612021523",
+      "nombre": "BASE DE DATOS",
+      "creditos": 2,
+      "periodo": 5,
+      "requisitos": [
+        "CAD612021313"
+      ],
+      "diagnosticos": [],
+      "correquisitos": [],
+      "tipo": "obligatoria"
+    },
+    {
+      "codigo": "CAD612021519",
+      "nombre": "ECUACIONES DIFERENCIALES",
+      "creditos": 4,
+      "periodo": 5,
+      "requisitos": [
+        "CAD612021311"
+      ],
+      "diagnosticos": [],
+      "correquisitos": [],
+      "tipo": "obligatoria"
+    },
+    {
+      "codigo": "CAD612021521",
+      "nombre": "INGENIERIA DE SOFTWARE I",
+      "creditos": 3,
+      "periodo": 5,
+      "requisitos": [
+        "CAD612021416",
+        "CAD612021313"
+      ],
+      "diagnosticos": [],
+      "correquisitos": [],
+      "tipo": "obligatoria"
+    },
+    {
+      "codigo": "CAI1002020507",
+      "nombre": "LENGUA EXTRANJERA III",
+      "creditos": 2,
+      "periodo": 5,
+      "requisitos": [
+        "CAI1002020406"
+      ],
+      "diagnosticos": [],
+      "correquisitos": [],
+      "tipo": "obligatoria"
+    },
+    {
+      "codigo": "CAD612021524",
+      "nombre": "PLANEACION ESTRATEGICA",
+      "creditos": 2,
+      "periodo": 5,
+      "requisitos": [],
+      "diagnosticos": [],
+      "correquisitos": [],
+      "tipo": "obligatoria"
+    },
+    {
+      "codigo": "CAD612021522",
+      "nombre": "SISTEMAS DE INFORMACION",
+      "creditos": 2,
+      "periodo": 5,
+      "requisitos": [
+        "CAD612021313"
+      ],
+      "diagnosticos": [],
+      "correquisitos": [],
+      "tipo": "obligatoria"
+    },
+    {
+      "codigo": "CAD612021520",
+      "nombre": "SISTEMAS OPERATIVOS",
+      "creditos": 2,
+      "periodo": 5,
+      "requisitos": [
+        "CAD612021416",
+        "CAD612021313"
+      ],
+      "diagnosticos": [],
+      "correquisitos": [],
+      "tipo": "obligatoria"
+    },
+    {
+      "codigo": "CAI1002020609",
+      "nombre": "CATEDRA GENERACION SIGLO 21",
+      "creditos": 1,
+      "periodo": 6,
+      "requisitos": [
+        "CAD612021519",
+        "CAD612021520",
+        "CAD612021521",
+        "CAD612021522",
+        "CAD612021524",
+        "CAI1002020507",
+        "CAD612021523"
+      ],
+      "diagnosticos": [
+        "DN-CAI1002020613",
+        "DN-CAI1002020612"
+      ],
+      "correquisitos": [],
+      "tipo": "obligatoria"
+    },
+    {
+      "codigo": "CAI1002020613",
+      "nombre": "CIENCIA, TECNOLOGIA E INNOVACION I",
+      "creditos": 2,
+      "periodo": 6,
+      "requisitos": [],
+      "diagnosticos": [
+        "DN-CAI1002020613"
+      ],
+      "correquisitos": [],
+      "tipo": "obligatoria"
+    },
+    {
+      "codigo": "CAD612021626",
+      "nombre": "COMUNICACIÓN DE DATOS",
+      "creditos": 3,
+      "periodo": 6,
+      "requisitos": [
+        "CAD612021520"
+      ],
+      "diagnosticos": [],
+      "correquisitos": [],
+      "tipo": "obligatoria"
+    },
+    {
+      "codigo": "CAI1002020612",
+      "nombre": "EMPRENDIMIENTO E INNOVACION I",
+      "creditos": 2,
+      "periodo": 6,
+      "requisitos": [],
+      "diagnosticos": [
+        "DN-CAI1002020612"
+      ],
+      "correquisitos": [],
+      "tipo": "obligatoria"
+    },
+    {
+      "codigo": "CAD612021627",
+      "nombre": "INGENIERIA DE SOFTWARE II",
+      "creditos": 3,
+      "periodo": 6,
+      "requisitos": [
+        "CAD612021521"
+      ],
+      "diagnosticos": [],
+      "correquisitos": [],
+      "tipo": "obligatoria"
+    },
+    {
+      "codigo": "CAI1002020608",
+      "nombre": "LENGUA EXTRANJERA IV",
+      "creditos": 2,
+      "periodo": 6,
+      "requisitos": [
+        "CAI1002020507"
+      ],
+      "diagnosticos": [],
+      "correquisitos": [],
+      "tipo": "obligatoria"
+    },
+    {
+      "codigo": "CAD612021625",
+      "nombre": "MATEMATICAS ESPECIALES",
+      "creditos": 3,
+      "periodo": 6,
+      "requisitos": [
+        "CAD612021519"
+      ],
+      "diagnosticos": [],
+      "correquisitos": [],
+      "tipo": "obligatoria"
+    },
+    {
+      "codigo": "CAD612021628",
+      "nombre": "NETWORKING",
+      "creditos": 2,
+      "periodo": 6,
+      "requisitos": [
+        "CAD612021522"
+      ],
+      "diagnosticos": [],
+      "correquisitos": [],
+      "tipo": "obligatoria"
+    },
+    {
+      "codigo": "CAD612021729",
+      "nombre": "ANÁLISIS NUMÉRICO",
+      "creditos": 3,
+      "periodo": 7,
+      "requisitos": [
+        "CAD612021625"
+      ],
+      "diagnosticos": [],
+      "correquisitos": [],
+      "tipo": "obligatoria"
+    },
+    {
+      "codigo": "CAD612021732",
+      "nombre": "CIENCIA DE DATOS",
+      "creditos": 2,
+      "periodo": 7,
+      "requisitos": [
+        "CAD612021522"
+      ],
+      "diagnosticos": [],
+      "correquisitos": [],
+      "tipo": "obligatoria"
+    },
+    {
+      "codigo": "CAI1002020715",
+      "nombre": "CIENCIA, TECNOLOGIA E INNOVACION II",
+      "creditos": 2,
+      "periodo": 7,
+      "requisitos": [
+        "CAI1002020613"
+      ],
+      "diagnosticos": [],
+      "correquisitos": [],
+      "tipo": "obligatoria"
+    },
+    {
+      "codigo": "CAI1002020714",
+      "nombre": "EMPRENDIMIENTO E INNOVACION II",
+      "creditos": 2,
+      "periodo": 7,
+      "requisitos": [
+        "CAI1002020612"
+      ],
+      "diagnosticos": [],
+      "correquisitos": [],
+      "tipo": "obligatoria"
+    },
+    {
+      "codigo": "CAD612021731",
+      "nombre": "OPERATIVA",
+      "creditos": 3,
+      "periodo": 7,
+      "requisitos": [
+        "CAD612021625"
+      ],
+      "diagnosticos": [],
+      "correquisitos": [],
+      "tipo": "obligatoria"
+    },
+    {
+      "codigo": "CAD612021733",
+      "nombre": "REDES Y COMUNICACIÓN",
+      "creditos": 3,
+      "periodo": 7,
+      "requisitos": [
+        "CAD612021626"
+      ],
+      "diagnosticos": [],
+      "correquisitos": [],
+      "tipo": "obligatoria"
+    },
+    {
+      "codigo": "CAD612021730",
+      "nombre": "SEGURIDAD INFORMÁTICA",
+      "creditos": 2,
+      "periodo": 7,
+      "requisitos": [
+        "CAD612021628"
+      ],
+      "diagnosticos": [],
+      "correquisitos": [],
+      "tipo": "obligatoria"
+    },
+    {
+      "codigo": "CAI1002020816",
+      "nombre": "CIENCIA, TECNOLOGIA E INNOVACION III",
+      "creditos": 2,
+      "periodo": 8,
+      "requisitos": [
+        "CAI1002020715"
+      ],
+      "diagnosticos": [],
+      "correquisitos": [],
+      "tipo": "obligatoria"
+    },
+    {
+      "codigo": "CAD612021834",
+      "nombre": "INTELIGENCIA ARTIFICIAL",
+      "creditos": 3,
+      "periodo": 8,
+      "requisitos": [
+        "CAD612021733"
+      ],
+      "diagnosticos": [],
+      "correquisitos": [],
+      "tipo": "obligatoria"
+    },
+    {
+      "codigo": "CAD612021835",
+      "nombre": "LENGUAJES Y AUTOMATAS",
+      "creditos": 3,
+      "periodo": 8,
+      "requisitos": [
+        "CAD612021733"
+      ],
+      "diagnosticos": [],
+      "correquisitos": [],
+      "tipo": "obligatoria"
+    },
+    {
+      "codigo": "CAD612021836FA",
+      "nombre": "PROFUNDIZACION I",
+      "creditos": 10,
+      "periodo": 8,
+      "requisitos": [
+        "CAD612021733",
+        "CAD612021628"
+      ],
+      "diagnosticos": [],
+      "correquisitos": [],
+      "tipo": "obligatoria"
+    },
+    {
+      "codigo": "CAD612021937",
+      "nombre": "GERENCIA DE PROYECTOS",
+      "creditos": 2,
+      "periodo": 9,
+      "requisitos": [
+        "CAD612021524"
+      ],
+      "diagnosticos": [],
+      "correquisitos": [],
+      "tipo": "obligatoria"
+    },
+    {
+      "codigo": "CAD612021938",
+      "nombre": "MODELACION",
+      "creditos": 3,
+      "periodo": 9,
+      "requisitos": [
+        "CAD612021731"
+      ],
+      "diagnosticos": [],
+      "correquisitos": [],
+      "tipo": "obligatoria"
+    },
+    {
+      "codigo": "CAD612021940",
+      "nombre": "OPCION DE GRADO",
+      "creditos": 1,
+      "periodo": 9,
+      "requisitos": [
+        "CAI1002020816"
+      ],
+      "diagnosticos": [],
+      "correquisitos": [],
+      "tipo": "obligatoria"
+    },
+    {
+      "codigo": "CAD612021939FA",
+      "nombre": "PROFUNDIZACION II",
+      "creditos": 10,
+      "periodo": 9,
+      "requisitos": [
+        "CAD612021628",
+        "CAD612021836FA",
+        "CAD612021733"
+      ],
+      "diagnosticos": [],
+      "correquisitos": [],
+      "tipo": "obligatoria"
+    }
+  ],
+  "diagnosticos": [
+    {
+      "codigo": "DN-CAI1002020202",
+      "nombre": "DIAGNOSTICO Y NIVELATORIO COMUNICACIÓN Y LECTURA CRÍTICA I",
+      "obligatorio_para": [
+        "CAI1002020202"
+      ]
+    },
+    {
+      "codigo": "DN-CAI1002020201",
+      "nombre": "DIAGNOSTICO Y NIVELATORIO RAZONAMIENTO LÓGICO Y CUANTITATIVO",
+      "obligatorio_para": [
+        "CAI1002020201"
+      ]
+    },
+    {
+      "codigo": "DN-CAI1002020303",
+      "nombre": "DIAGNOSTICO Y NIVELATORIO CIUDADANIA DEL SIGLO 21",
+      "obligatorio_para": [
+        "CAI1002020303"
+      ]
+    },
+    {
+      "codigo": "DN-CAI1002020304",
+      "nombre": "DIAGNOSTICO Y NIVELATORIO LENGUA EXTRANJERA I",
+      "obligatorio_para": [
+        "CAI1002020304"
+      ]
+    },
+    {
+      "codigo": "DN-CAI1002020613",
+      "nombre": "DIAGNOSTICO Y NIVELATORIO CIENCIA, TECNOLOGIA E INNOVACION I",
+      "obligatorio_para": [
+        "CAI1002020609",
+        "CAI1002020613"
+      ]
+    },
+    {
+      "codigo": "DN-CAI1002020612",
+      "nombre": "DIAGNOSTICO Y NIVELATORIO EMPRENDIMIENTO E INNOVACION I",
+      "obligatorio_para": [
+        "CAI1002020609",
+        "CAI1002020612"
+      ]
+    }
+  ]
+}

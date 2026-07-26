@@ -111,3 +111,116 @@ class CatalogResponse(BaseModel):
 class HealthResponse(BaseModel):
     status: str
     service: str
+
+
+# ──────────────────────────────────────────────
+# Modelos para Malla Curricular (Pensum / AcademicPlan)
+# ──────────────────────────────────────────────
+
+
+class PensumSubject(BaseModel):
+    """Materia en el pensum (malla curricular)"""
+    codigo: str
+    nombre: str
+    creditos: int = 0
+    periodo: int = 0
+    requisitos: list[str] = []
+    diagnosticos: list[str] = []
+    correquisitos: list[str] = []
+    tipo: str = "obligatoria"
+    area: str | None = None
+
+
+class Diagnostico(BaseModel):
+    """Diagnóstico que puede bloquear materias"""
+    codigo: str
+    nombre: str
+    obligatorio_para: list[str] = []
+
+
+class Pensum(BaseModel):
+    """Malla curricular completa de una carrera"""
+    carrera: str
+    codigo_carrera: str
+    version_pensum: str
+    total_creditos: int
+    materias: list[PensumSubject]
+    diagnosticos: list[Diagnostico] = []
+
+
+class SyncProgressRequest(BaseModel):
+    """Solicitud de sincronización de avance académico"""
+    completed_codes: list[str]
+    diagnostic_completed_codes: list[str] = []
+
+
+class SyncProgressResponse(BaseModel):
+    """Respuesta con materias habilitadas y progreso de carrera"""
+    habilitadas: list[PensumSubject]
+    diagnosticos_pendientes: list[Diagnostico]
+    materias_cursadas: list[PensumSubject]
+    progreso_carrera: float = 0.0
+    creditos_aprobados: int = 0
+    creditos_restantes: int = 0
+
+
+# ──────────────────────────────────────────────
+# Modelos para AcademicPlan (Nuevos esquemas)
+# ──────────────────────────────────────────────
+
+
+class PrerequisiteSubject(BaseModel):
+    """Materia dentro del plan académico (AcademicPlan)"""
+    codigo: str
+    nombre: str
+    creditos: int = 0
+    periodo: int = 0
+    requisitos: list[str] = Field(default_factory=list)
+    diagnosticos: list[str] = Field(default_factory=list)
+    correquisitos: list[str] = Field(default_factory=list)
+    tipo: str = "obligatoria"
+
+
+class DiagnosticRequirement(BaseModel):
+    """Requisito diagnóstico del plan académico"""
+    codigo: str
+    nombre: str
+    obligatorio_para: list[str] = Field(default_factory=list)
+
+
+class AcademicPlan(BaseModel):
+    """Plan académico completo (malla curricular)"""
+    carrera: str
+    codigo_carrera: str
+    version_pensum: str
+    total_creditos: int
+    subjects: list[PrerequisiteSubject]
+    diagnostics: list[DiagnosticRequirement] = Field(default_factory=list)
+
+
+class StudentAcademicState(BaseModel):
+    """Estado académico actual del estudiante enviado desde el frontend"""
+    completed_subjects: list[str] = Field(default_factory=list)
+    completed_diagnostics: list[str] = Field(default_factory=list)
+
+
+class SubjectEligibility(BaseModel):
+    """Resultado de elegibilidad para una materia"""
+    codigo: str
+    nombre: str
+    creditos: int
+    periodo: int
+    tipo: str
+    eligible: bool
+    reason: str | None = None
+    missing_requirements: list[str] = Field(default_factory=list)
+    missing_diagnostics: list[str] = Field(default_factory=list)
+
+
+class EligibilityResponse(BaseModel):
+    """Respuesta del endpoint de elegibilidad"""
+    eligible_subjects: list[SubjectEligibility]
+    blocked_subjects: list[SubjectEligibility]
+    progress_percentage: float = 0.0
+    total_credits_approved: int = 0
+    total_credits_remaining: int = 0

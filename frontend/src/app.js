@@ -7,7 +7,8 @@ import { renderSubjects, getSelectedSubjectCodes } from './components/subjects.j
 import { renderCalendarGrid, placeBlocks, setupDropListeners } from './components/calendar.js'
 import {
   renderDesignerSubjects, renderDraftTabs, populateHourSelects, syncFilterUI,
-  setOnStateChange, handleDrop, handleRemoveBlock, clearDraggedGroupData
+  setOnStateChange, handleDrop, handleRemoveBlock, clearDraggedGroupData,
+  loadEligibility, isEligibilityLoaded
 } from './components/designer.js'
 import {
   getDrafts, getActiveDraft, getDraftNames, getDraftCount,
@@ -110,6 +111,40 @@ document.querySelector('#reset-designer')?.addEventListener('click', () => {
     refreshDesigner()
     showDesignerMessage('Horario reiniciado. Puedes empezar de nuevo.', 'info')
   }
+})
+
+// ── Restart / Nueva consulta ──────────────────────────────────────
+function restartApp() {
+  if (!confirm('¿Estás seguro? Se borrarán todos los datos actuales y podrás ingresar una nueva URL.')) return
+
+  // Limpiar todo el estado
+  extractionData = null
+  catalogData = null
+  resetDrafts()
+  clearSavedState()
+
+  // Ocultar todos los paneles
+  panels.forEach(p => p.hidden = true)
+
+  // Mostrar hero y roadmap
+  hero.hidden = false
+  roadmap.hidden = false
+
+  // Resetear el formulario
+  connectForm.reset()
+  document.querySelector('#to-subjects').hidden = true
+  formMessage.textContent = ''
+
+  // Limpiar controles de catálogo si existen
+  const catalogControls = document.querySelector('.catalog-controls')
+  if (catalogControls) catalogControls.remove()
+
+  // Scroll al inicio
+  window.scrollTo({ top: 0, behavior: 'smooth' })
+}
+
+document.querySelectorAll('.restart-button').forEach(btn => {
+  btn.addEventListener('click', restartApp)
 })
 
 // ── Form submission ───────────────────────────────────────────────
@@ -225,11 +260,24 @@ async function doExtraction(payload) {
 }
 
 // ── Init designer ─────────────────────────────────────────────────
-function initDesigner() {
+async function initDesigner() {
   resetDrafts()
   designerFilters = { preferMorning: false, avoidFridays: false, compactDays: false, preferredDays: [], minHour: 6, maxHour: 22 }
   populateHourSelects()
   syncFilterUI(designerFilters)
+
+  // Cargar elegibilidad desde el backend
+  // Por ahora enviamos listas vacías (el usuario no ha sincronizado su avance)
+  // En el futuro, esto vendrá del popup de sincronización
+  showDesignerMessage('Cargando elegibilidad de materias...', 'info')
+  await loadEligibility([], [])
+  showDesignerMessage(
+    isEligibilityLoaded()
+      ? 'Elegibilidad cargada. Las materias bloqueadas se muestran con opacidad reducida.'
+      : 'No se pudo cargar la elegibilidad. Todas las materias estarán disponibles.',
+    isEligibilityLoaded() ? 'success' : 'warning'
+  )
+
   refreshDesigner()
   saveState(extractionData, catalogData, getDrafts(), getActiveDraft(), designerFilters)
 }

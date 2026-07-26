@@ -3,7 +3,7 @@ hoja_de_actualizaciones.txt
 muestra_de_horario.txt
 
 /data/extractions
-
+/docs/propuesta_arquitectura_sincronizacion.md
 # Local configuration
 .env
 !.env.example
