@@ -15,7 +15,7 @@ import {
   setDrafts, setActiveDraft, resetDrafts, restoreDrafts,
   getPlacedBlocks
 } from './services/scheduler.js'
-import { openSyncPopup, parseRegistroExtendido, processPdfFile, SyncState } from './services/syncService.js'
+import { openSyncPopup, parseAcademicHistoryText, processPdfFile, SyncState } from './services/syncService.js'
 
 // ── DOM refs ──────────────────────────────────────────────────────
 const statusText = document.querySelector('.status')
@@ -321,7 +321,6 @@ async function handleSyncClick() {
     await openSyncPopup()
     updateSyncUI(SyncState.WAITING)
   } catch (err) {
-    // Error ya manejado por updateSyncUI
     if (err.message) showDesignerMessage(err.message, 'error')
   }
 }
@@ -334,7 +333,7 @@ async function handleManualSync() {
   }
 
   try {
-    syncData = parseRegistroExtendido(texto)
+    syncData = parseAcademicHistoryText(texto)
     
     if (syncData.completed.length === 0 && syncData.diagnostics.length === 0) {
       showDesignerMessage('No se encontraron materias aprobadas en el texto.', 'warning')
@@ -347,14 +346,12 @@ async function handleManualSync() {
     syncProgressPct.textContent = `${eligResult.progress_percentage}%`
     updateSyncUI(SyncState.SUCCESS, syncData)
     
-    // Registrar materias completadas para filtrar del diseñador
     setCompletedSubjects(syncData.completed)
     await loadEligibility(syncData.completed, syncData.diagnostics)
     
-    // Forzar re-renderizado del diseñador para ocultar materias completadas
     refreshDesigner()
     
-    showDesignerMessage(`✅ Sincronización manual: ${syncData.completed.length} materias, ${syncData.diagnostics.length} diagnósticos. ${eligResult.progress_percentage}% de carrera.`, 'success')
+    showDesignerMessage(`Sincronización manual: ${syncData.completed.length} materias, ${syncData.diagnostics.length} diagnósticos. ${eligResult.progress_percentage}% de carrera.`, 'success')
   } catch (err) {
     showDesignerMessage(err.message || 'Error al procesar el texto.', 'error')
   }
@@ -382,17 +379,14 @@ async function handlePdfUpload(file) {
     syncProgressPct.textContent = `${eligResult.progress_percentage}%`
     updateSyncUI(SyncState.SUCCESS, syncData)
     
-    // Registrar materias completadas para filtrar del diseñador
     setCompletedSubjects(syncData.completed)
     await loadEligibility(syncData.completed, syncData.diagnostics)
     
-// Forzar re-renderizado del diseñador para ocultar materias completadas
     refreshDesigner()
-    syncDropzoneText.textContent = '¡PDF procesado!'
-    // Limpiar el textarea para evitar re-parseo accidental que sobreescribiría el caché
+    syncDropzoneText.textContent = 'PDF procesado!'
     if (syncManualTextarea) syncManualTextarea.value = ''
     
-    showDesignerMessage(`✅ Sincronización PDF: ${syncData.completed.length} materias, ${syncData.diagnostics.length} diagnósticos. ${eligResult.progress_percentage}% de carrera.`, 'success')
+    showDesignerMessage(`Sincronización PDF: ${syncData.completed.length} materias, ${syncData.diagnostics.length} diagnósticos. ${eligResult.progress_percentage}% de carrera.`, 'success')
   } catch (err) {
     syncDropzoneText.textContent = 'Arrastra tu PDF aquí'
     showDesignerMessage(err.message || 'Error al procesar el PDF.', 'error')
@@ -459,9 +453,6 @@ async function initDesigner() {
   populateHourSelects()
   syncFilterUI(designerFilters)
 
-  // Cargar elegibilidad desde el backend
-  // Por ahora enviamos listas vacías (el usuario no ha sincronizado su avance)
-  // En el futuro, esto vendrá del popup de sincronización
   showDesignerMessage('Cargando elegibilidad de materias...', 'info')
   await loadEligibility([], [])
   showDesignerMessage(
@@ -540,12 +531,6 @@ function restoreSavedState() {
 
   return true
 }
-
-// ── Setup calendar drop zone ──────────────────────────────────────
-// This runs once on page load to set up the grid's drop listeners
-// The grid is re-rendered dynamically, so we need to re-attach after each render
-// We handle this via refreshDesigner() which calls placeBlocks + renderDesignerSubjects
-// The drop listeners are set up in the calendar module's renderCalendarGrid
 
 // ── Bootstrap ─────────────────────────────────────────────────────
 if (!restoreSavedState()) {

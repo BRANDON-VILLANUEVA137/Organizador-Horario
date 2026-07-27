@@ -1,5 +1,5 @@
 /**
- * Servicio de sincronización de avance académico.
+ * Servicio de sincronizacion de avance academico.
  * 
  * Abre un popup hacia Academusoft para guiar al usuario paso a paso
  * hasta el Registro Extendido. Luego proporciona opciones de ingesta:
@@ -15,40 +15,33 @@
  * 6. SmartSchedule procesa y actualiza elegibilidad
  */
 
-import { checkEligibility, apiBase } from './api.js'
+import { apiBase } from './api.js'
 
-// URL del portal de Academusoft para inicio de sesión SSO
+// URL del portal de Academusoft para inicio de sesion SSO
 const SYNC_POPUP_URL = "https://plataforma.ucundinamarca.edu.co/ucundinamarca/hermesoft/vortal/o365/login";
 const POPUP_WIDTH = 900;
 const POPUP_HEIGHT = 700;
-const SYNC_TIMEOUT_MS = 5 * 60 * 1000; // 5 minutos
 
 /**
- * Estado actual de la sincronización
+ * Estado actual de la sincronizacion
  */
 export const SyncState = {
   IDLE: "idle",
-  OPENING: "opening",       // Abriendo el popup
-  WAITING: "waiting",       // Esperando datos del popup
-  PROCESSING: "processing", // Procesando datos (PDF/texto)
-  SUCCESS: "success",       // Sincronización exitosa
-  ERROR: "error",           // Error
-  BLOCKED: "blocked",       // Popup bloqueado por el navegador
-  TIMEOUT: "timeout",       // Tiempo de espera agotado
+  OPENING: "opening",
+  WAITING: "waiting",
+  PROCESSING: "processing",
+  SUCCESS: "success",
+  ERROR: "error",
+  BLOCKED: "blocked",
+  TIMEOUT: "timeout",
 };
 
 let _onStateChange = null;
 
-/**
- * Registra un callback para cambios de estado de sincronización.
- */
 export function setSyncStateCallback(callback) {
   _onStateChange = callback;
 }
 
-/**
- * Abre el popup de sincronización hacia Academusoft.
- */
 export function openSyncPopup() {
   return new Promise((resolve, reject) => {
     _notifyState(SyncState.OPENING);
@@ -64,7 +57,7 @@ export function openSyncPopup() {
 
     if (!popup || popup.closed) {
       _notifyState(SyncState.BLOCKED);
-      reject(new Error("El navegador bloqueó el popup. Permite popups para este sitio e intenta de nuevo."));
+      reject(new Error("El navegador bloqueo el popup. Permite popups para este sitio e intenta de nuevo."));
       return;
     }
 
@@ -73,12 +66,6 @@ export function openSyncPopup() {
   });
 }
 
-/**
- * Procesa un archivo PDF subido (envía a FastAPI para extraer texto).
- * 
- * @param {File} file - Archivo PDF del Registro Extendido
- * @returns {Promise<{completed: string[], diagnostics: string[]}>}
- */
 export async function processPdfFile(file) {
   _notifyState(SyncState.PROCESSING);
 
@@ -101,58 +88,57 @@ export async function processPdfFile(file) {
 }
 
 /**
- * Parsea texto crudo del Registro Extendido (pegado manual).
- * 
- * @param {string} textoCrudo - Texto copiado de la página de Registro Extendido
- * @returns {{completed: string[], diagnostics: string[]}}
+ * Parsea texto crudo del Registro Extendido copiado desde Academusoft UDEC.
+ * Normaliza caracteres invisibles (\u00A0) y formato de notas con coma (3,6 -> 3.6).
+ * Busca el patron de tabla: CODIGO  NOMBRE  CREDITOS  TIPO  NOTA_FINAL  NOTA_DEFINITIVA
+ * Fallback con regex simple si la tabla pierde estructura al pegar.
  */
-export function parseRegistroExtendido(textoCrudo) {
-  const materiasAprobadas = new Set();
-  const diagnosticosAprobados = new Set();
+export function parseAcademicHistoryText(rawText) {
+  if (!rawText) return { completed: [], diagnostics: [] };
 
-  const lineas = textoCrudo.split('\n');
-  
-  lineas.forEach(linea => {
-    // Extraer Código de Asignatura
-    const matchCodigo = linea.match(/(?:DN-)?([A-Z]{2,4}\d{6,12})/i);
-    
-    if (matchCodigo) {
-      const codigoRaw = matchCodigo[0].toUpperCase();
+  // Limpieza de caracteres invisibles (\u00A0) y espacios repetidos
+  const cleanText = rawText.replace(/\u00A0/g, ' ').replace(/\r\n/g, '\n');
 
-      // Buscar nota Definitiva en la línea
-      const matchNota = linea.match(/DEFINITIVA:\s*(\d[.,]\d)/i) || 
-                        linea.match(/\b(\d[.,]\d)\b/);
-      
-      if (matchNota) {
-        const nota = parseFloat(matchNota[1].replace(',', '.'));
-        
-        if (nota >= 3.0) {
-          const codigoLimpio = codigoRaw.replace(/^DN-/, '');
+  const approvedCodes = new Set();
+  const approvedDiagnostics = new Set();
 
-          if (codigoRaw.startsWith('DN-')) {
-            diagnosticosAprobados.add(codigoRaw);
-            diagnosticosAprobados.add(codigoLimpio);
-          } else {
-            materiasAprobadas.add(codigoLimpio);
-          }
-        }
+  // Expresion regular para capturar Codigo, Asignatura y Definitiva
+  // Soporta notas con comas o puntos (3,6 o 3.6)
+  const lineRegex = /([A-Z0-9-]+)\s+(.+?)\s+(\d+)\s+(.+?)\s+([\d,.]+)\s+-\s+([\d,.]+)/g;
+
+  let match;
+  while ((match = lineRegex.exec(cleanText)) !== null) {
+    const code = match[1].trim();
+    const finalGradeStr = match[6].replace(',', '.');
+    const grade = parseFloat(finalGradeStr);
+
+    if (!isNaN(grade) && grade >= 3.0) {
+      if (code.startsWith('DN-')) {
+        approvedDiagnostics.add(code);
+      } else {
+        approvedCodes.add(code);
       }
     }
-  });
+  }
 
-  console.log('[SmartSchedule] Materias aprobadas (parseo manual):', Array.from(materiasAprobadas));
-  console.log('[SmartSchedule] Diagnósticos aprobados:', Array.from(diagnosticosAprobados));
+  // Fallback si la tabla pierde estructura al pegar
+  if (approvedCodes.size === 0) {
+    const fallbackRegex = /(CAD\d+|CAI\d+)/g;
+    const codesFound = cleanText.match(fallbackRegex) || [];
+    codesFound.forEach(code => approvedCodes.add(code));
+  }
+
+  console.log('[SmartSchedule] Aprobadas (texto):', Array.from(approvedCodes));
+  console.log('[SmartSchedule] Diagnosticos:', Array.from(approvedDiagnostics));
 
   const result = {
-    completed: Array.from(materiasAprobadas),
-    diagnostics: Array.from(diagnosticosAprobados)
+    completed: Array.from(approvedCodes),
+    diagnostics: Array.from(approvedDiagnostics)
   };
 
   _notifyState(SyncState.SUCCESS, result);
   return result;
 }
-
-// ── Helpers internos ──────────────────────────────────────────
 
 function _notifyState(state, data = null) {
   if (_onStateChange) {
