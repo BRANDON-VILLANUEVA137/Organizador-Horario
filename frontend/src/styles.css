@@ -94,25 +94,6 @@ footer { color: #829ab1; font: 500 10px 'DM Mono', monospace; letter-spacing: .1
 .draft-tab.active { background: #102a43; border-color: #102a43; color: #fff; }
 .draft-tab .draft-count { color: inherit; font: 500 9px 'DM Mono', monospace; opacity: .7; }
 
-/* ── Sync section (Sincronizar avance) ── */
-.sync-section { background: rgba(255, 250, 242, .65); border: 1px solid #d8cbb9; padding: 20px; margin-bottom: 24px; max-width: 620px; }
-.sync-section .eyebrow { margin-bottom: 10px; }
-.sync-description { color: #486581; font-size: 13px; line-height: 1.6; margin: 0 0 16px; }
-.sync-controls { display: flex; align-items: center; gap: 16px; flex-wrap: wrap; }
-.sync-button { align-items: center; background: #102a43; border: 0; color: #fff; cursor: pointer; display: inline-flex; font-size: 13px; font-weight: 700; gap: 10px; padding: 14px 20px; transition: background .2s, transform .2s; }
-.sync-button:hover { background: #243b53; transform: translateY(-1px); }
-.sync-button:disabled { background: #829ab1; cursor: not-allowed; transform: none; }
-.sync-button .sync-icon { font-size: 16px; }
-.sync-status { display: flex; align-items: center; gap: 8px; font-size: 12px; }
-.sync-status-icon { font-size: 16px; }
-.sync-status-text { color: #486581; font-weight: 500; }
-.sync-status.loading .sync-status-icon { animation: spin 1s linear infinite; }
-@keyframes spin { from { transform: rotate(0deg); } to { transform: rotate(360deg); } }
-.sync-result { margin-top: 16px; padding-top: 16px; border-top: 1px solid #d8cbb9; }
-.sync-result-stats { display: flex; gap: 20px; flex-wrap: wrap; }
-.sync-stat { color: #486581; font-size: 12px; }
-.sync-stat strong { color: #102a43; font-size: 16px; display: block; }
-
 /* ── Filter sections ── */
 .filter-section strong { color: #486581; font-size: 11px; text-transform: uppercase; letter-spacing: .05em; }
 .day-filters { display: flex; flex-wrap: wrap; gap: 6px; }
