@@ -1,21 +1,19 @@
-# TODO: Integración Parser PDF + Motor DAG + Limpieza de UI
+# ✅ Plan de Implementación: UX y Persistencia
 
-## Paso 1: Modificar `designer.js`
-- [x] Agregar `let completedSubjectsCache = null`
-- [x] Agregar función `setCompletedSubjects(subjects)`
-- [x] Agregar función `getCompletedSubjects()`
-- [x] Modificar `renderDesignerSubjects()` para ocultar materias completadas
-- [x] Exportar nuevas funciones
+## Pendientes
 
-## Paso 2: Modificar `app.js`
-- [x] Importar `setCompletedSubjects` desde designer.js
-- [x] En `handlePdfUpload()`: llamar `setCompletedSubjects(syncData.completed)`
-- [x] En `handleManualSync()`: llamar `setCompletedSubjects(syncData.completed)`
-- [x] En `restartApp()`: limpiar cache con `setCompletedSubjects(null)`
+- [x] 1. **storage.js** — Agregar `saveAcademicProgress()`, `loadAcademicProgress()`, `clearAcademicProgress()`
+- [x] 2. **styles.css** — Estilos para campo de búsqueda y botón de borrar avance
+- [x] 3. **index.html** — Agregar buscador en diseñador y botón "🗑️ Borrar Avance" en sync
+- [x] 4. **designer.js** — Agregar filtro por búsqueda (nombre/código) en `renderDesignerSubjects()` + export `setSearchQuery`/`getSearchQuery`
+- [x] 5. **app.js** — Integrar persistencia en handlePdfUpload / handleManualSync, cargar en initApp, conectar botón de reset + debounce en buscador
 
-## Paso 3: Verificar flujo completo
-- [x] Código implementado y listo para pruebas
-- [ ] Probar: subir PDF → parsear → elegibilidad → diseñador filtrado
-- [ ] Confirmar que materias completadas no aparecen en vista
-- [ ] Confirmar que combinaciones solo usan materias elegibles
+## Completados
+
+Todos los pasos completados. Archivos modificados:
+- `frontend/src/utils/storage.js`
+- `frontend/src/styles.css`
+- `frontend/index.html`
+- `frontend/src/components/designer.js`
+- `frontend/src/app.js`
 

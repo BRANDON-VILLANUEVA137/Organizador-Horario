@@ -1,5 +1,42 @@
 import { normalizeSemesterKey } from '../utils/helpers.js'
 
+// ── Subject search state ──────────────────────────────────────────
+let subjectSearchQuery = ''
+
+export function setSubjectSearchQuery(query) {
+  subjectSearchQuery = (query || '').toLowerCase().trim()
+}
+
+export function getSubjectSearchQuery() {
+  return subjectSearchQuery
+}
+
+// ── Apply all filters (semester + search) on subject list ─────────
+function applySubjectFilters(container) {
+  const semesterFilter = document.querySelector('#semester-filter')
+  const selectedSemester = semesterFilter ? normalizeSemesterKey(semesterFilter.value) : ''
+  const q = subjectSearchQuery
+
+  container.querySelectorAll('.subject-option').forEach((option) => {
+    const subjectSemesters = (option.dataset.semesters || '').split('|').filter(Boolean)
+    const subjectName = (option.dataset.subjectName || '').toLowerCase()
+    const subjectCode = (option.dataset.subjectCode || '').toLowerCase()
+
+    // Filtro por semestre
+    let visible = true
+    if (selectedSemester && !subjectSemesters.includes(selectedSemester)) {
+      visible = false
+    }
+
+    // Filtro por búsqueda (nombre o código)
+    if (visible && q && !subjectName.includes(q) && !subjectCode.includes(q)) {
+      visible = false
+    }
+
+    option.style.display = visible ? '' : 'none'
+  })
+}
+
 // ── Render subject list ───────────────────────────────────────────
 export function renderSubjects(container, groups, selectedSubjects = [], onCheckChange) {
   const semesterFilter = document.querySelector('#semester-filter')
@@ -42,14 +79,8 @@ export function renderSubjects(container, groups, selectedSubjects = [], onCheck
     '<option value="">Todos los semestres</option>' +
     sortedSemesters.map(([key, label]) => `<option value="${key}">${label}</option>`).join('')
 
-  // Semester filter change handler
-  semesterFilter.onchange = () => {
-    const selected = normalizeSemesterKey(semesterFilter.value)
-    container.querySelectorAll('.subject-option').forEach((option) => {
-      const subjectSemesters = (option.dataset.semesters || '').split('|').filter(Boolean)
-      option.style.display = (selected && !subjectSemesters.includes(selected)) ? 'none' : ''
-    })
-  }
+  // Semester filter + search change handler
+  semesterFilter.onchange = () => applySubjectFilters(container)
 
   const subjects = Array.from(subjectsMap.values())
 
@@ -62,7 +93,7 @@ export function renderSubjects(container, groups, selectedSubjects = [], onCheck
     .map((subj) => {
       const isChecked = selectedSubjects.includes(subj.code)
       return `
-    <label class="subject-option" data-semesters="${Array.from(subj.semesters.keys()).join('|')}">
+    <label class="subject-option" data-semesters="${Array.from(subj.semesters.keys()).join('|')}" data-subject-name="${subj.name}" data-subject-code="${subj.code}">
       <input type="checkbox" value="${subj.code}" ${isChecked ? 'checked' : ''} />
       <span>
         <strong>${subj.name}</strong>

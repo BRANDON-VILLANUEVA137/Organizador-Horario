@@ -126,12 +126,18 @@
                 <strong id="sync-progress-pct">0%</strong> de carrera
               </span>
             </div>
+            <div style="margin-top: 12px;">
+              <button class="sync-clear-button" id="sync-clear-button" type="button">🗑️ Borrar / Actualizar Avance</button>
+            </div>
           </div>
         </div>
 
         <div class="subject-filters">
           <label for="semester-filter">Filtrar por semestre</label>
           <select id="semester-filter"><option value="">Todos los semestres</option></select>
+          <div class="subject-search">
+            <input type="search" id="subject-search-input" placeholder="Buscar por nombre o código..." />
+          </div>
         </div>
         <div class="subject-list" id="subject-list">
           <!-- Las materias se cargan dinámicamente desde la API -->
@@ -156,6 +162,9 @@
           <!-- Panel izquierdo: materias disponibles + filtros -->
           <div class="designer-sidebar">
             <div class="eyebrow">MATERIAS DISPONIBLES</div>
+            <div class="designer-search">
+              <input type="search" id="designer-search-input" placeholder="Buscar por nombre o código..." />
+            </div>
             <div id="designer-subject-list"></div>
 
             <!-- Filtros avanzados -->

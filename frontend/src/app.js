@@ -1,14 +1,14 @@
 // ── SmartSchedule - Main Orchestrator ────────────────────────────
 import { checkHealth, fetchCatalog, runExtraction, checkEligibility } from './services/api.js'
-import { saveState, loadState, clearSavedState } from './utils/storage.js'
+import { saveState, loadState, clearSavedState, saveAcademicProgress, loadAcademicProgress, clearAcademicProgress } from './utils/storage.js'
 import { normalizeSemesterKey } from './utils/helpers.js'
 import { showPanel, navigateTo } from './components/navigation.js'
-import { renderSubjects, getSelectedSubjectCodes } from './components/subjects.js'
+import { renderSubjects, getSelectedSubjectCodes, setSubjectSearchQuery } from './components/subjects.js'
 import { renderCalendarGrid, placeBlocks, setupDropListeners } from './components/calendar.js'
 import {
   renderDesignerSubjects, renderDraftTabs, populateHourSelects, syncFilterUI,
   setOnStateChange, handleDrop, handleRemoveBlock, clearDraggedGroupData,
-  loadEligibility, isEligibilityLoaded, setCompletedSubjects
+  loadEligibility, isEligibilityLoaded, setCompletedSubjects, setSearchQuery, getSearchQuery
 } from './components/designer.js'
 import {
   getDrafts, getActiveDraft, getDraftNames, getDraftCount,
@@ -105,7 +105,7 @@ document.querySelectorAll('[data-back]').forEach((btn) => {
 })
 document.querySelector('#to-export')?.addEventListener('click', () => navigateTo(panels, 'export-panel'))
 
-// ── Reset button ──────────────────────────────────────────────────
+// ── Reset button (reiniciar horario) ────────────────────────────────
 document.querySelector('#reset-designer')?.addEventListener('click', () => {
   if (confirm('¿Estás seguro? Se borrarán todos los horarios que hayas armado.')) {
     resetDrafts()
@@ -123,6 +123,7 @@ function restartApp() {
   catalogData = null
   resetDrafts()
   clearSavedState()
+  clearAcademicProgress()
   setCompletedSubjects(null)
 
   // Ocultar todos los paneles
@@ -253,6 +254,7 @@ const syncManualButton = document.querySelector('#sync-manual-button')
 const syncDropzone = document.querySelector('#sync-dropzone')
 const syncDropzoneInput = document.querySelector('#sync-dropzone-input')
 const syncDropzoneText = document.querySelector('#sync-dropzone-text')
+const syncClearButton = document.querySelector('#sync-clear-button')
 
 function updateSyncUI(state, data) {
   if (!syncButton || !syncStatus) return
@@ -346,6 +348,7 @@ async function handleManualSync() {
     syncProgressPct.textContent = `${eligResult.progress_percentage}%`
     updateSyncUI(SyncState.SUCCESS, syncData)
     
+    saveAcademicProgress(syncData.completed, syncData.diagnostics)
     setCompletedSubjects(syncData.completed)
     await loadEligibility(syncData.completed, syncData.diagnostics)
     
@@ -379,6 +382,7 @@ async function handlePdfUpload(file) {
     syncProgressPct.textContent = `${eligResult.progress_percentage}%`
     updateSyncUI(SyncState.SUCCESS, syncData)
     
+    saveAcademicProgress(syncData.completed, syncData.diagnostics)
     setCompletedSubjects(syncData.completed)
     await loadEligibility(syncData.completed, syncData.diagnostics)
     
@@ -395,6 +399,22 @@ async function handlePdfUpload(file) {
 
 if (syncButton) syncButton.addEventListener('click', handleSyncClick)
 if (syncManualButton) syncManualButton.addEventListener('click', handleManualSync)
+
+// ── Botón "🗑️ Borrar / Actualizar Avance" ────────────────────────
+if (syncClearButton) {
+  syncClearButton.addEventListener('click', () => {
+    clearAcademicProgress()
+    syncData = null
+    setCompletedSubjects([])
+    syncResult.hidden = true
+    if (syncManualTextarea) syncManualTextarea.value = ''
+    syncDropzoneText.textContent = 'Arrastra tu PDF aquí o haz clic para seleccionar'
+    syncProgressPct.textContent = '0%'
+    loadEligibility([], [])
+    refreshDesigner()
+    showDesignerMessage('Avance académico borrado. Todas las materias están visibles.', 'info')
+  })
+}
 
 // Dropzone events
 if (syncDropzone) {
@@ -420,6 +440,34 @@ if (syncDropzone) {
       if (file) handlePdfUpload(file)
     })
   }
+}
+
+// ── Buscador de materias en el panel de selección (paso 02) ──────
+const subjectSearchInput = document.querySelector('#subject-search-input')
+if (subjectSearchInput) {
+  let subjectSearchTimer = null
+  subjectSearchInput.addEventListener('input', () => {
+    clearTimeout(subjectSearchTimer)
+    subjectSearchTimer = setTimeout(() => {
+      setSubjectSearchQuery(subjectSearchInput.value)
+      // Disparar el filtro combinado (semestre + búsqueda)
+      const semesterFilter = document.querySelector('#semester-filter')
+      if (semesterFilter && semesterFilter.onchange) semesterFilter.onchange()
+    }, 150)
+  })
+}
+
+// ── Buscador de materias en el diseñador ──────────────────────────
+const searchInput = document.querySelector('#designer-search-input')
+if (searchInput) {
+  let debounceTimer = null
+  searchInput.addEventListener('input', () => {
+    clearTimeout(debounceTimer)
+    debounceTimer = setTimeout(() => {
+      setSearchQuery(searchInput.value)
+      refreshDesigner()
+    }, 200) // 200ms debounce
+  })
 }
 
 // ── Extraction ────────────────────────────────────────────────────
@@ -502,6 +550,22 @@ document.querySelector('#filter-max-hour')?.addEventListener('change', (e) => {
   renderDesignerSubjects(document.querySelector('#designer-subject-list'), extractionData, getDrafts(), getActiveDraft(), designerFilters)
 })
 
+// ── Cargar progreso académico guardado al iniciar ────────────────
+function loadCachedAcademicProgress() {
+  const cached = loadAcademicProgress()
+  if (!cached) return false
+
+  const { completed, diagnostics } = cached
+  if (!Array.isArray(completed) || !Array.isArray(diagnostics)) return false
+  if (completed.length === 0 && diagnostics.length === 0) return false
+
+  console.log('[SmartSchedule] Restaurando progreso académico desde localStorage:', completed.length, 'materias')
+  setCompletedSubjects(completed)
+  loadEligibility(completed, diagnostics)
+
+  return true
+}
+
 // ── Restore saved state on load ───────────────────────────────────
 function restoreSavedState() {
   const saved = loadState()
@@ -522,6 +586,9 @@ function restoreSavedState() {
     saveState(extractionData, catalogData, getDrafts(), getActiveDraft(), designerFilters)
   })
 
+  // Cargar progreso académico cacheado si existe
+  loadCachedAcademicProgress()
+
   if (getDrafts().some(d => d.length > 0)) {
     document.querySelector('#designer-panel').hidden = false
     populateHourSelects()
@@ -534,5 +601,8 @@ function restoreSavedState() {
 
 // ── Bootstrap ─────────────────────────────────────────────────────
 if (!restoreSavedState()) {
+  // Intentar cargar progreso académico incluso sin estado completo
+  loadCachedAcademicProgress()
   console.log('No saved state found, starting fresh.')
 }
+

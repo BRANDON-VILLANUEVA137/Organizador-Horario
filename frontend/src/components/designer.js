@@ -73,8 +73,19 @@ export function isEligibilityLoaded() {
   return eligibilityCache !== null
 }
 
+// ── Búsqueda de materias por nombre o código ──────────────────────
+let searchQuery = ''
+
+export function setSearchQuery(query) {
+  searchQuery = (query || '').toLowerCase().trim()
+}
+
+export function getSearchQuery() {
+  return searchQuery
+}
+
 // ── Render available subjects in designer sidebar ─────────────────
-export function renderDesignerSubjects(container, extractionData, drafts, activeDraft, filters) {
+export function renderDesignerSubjects(container, extractionData, drafts, activeDraft, filters, queryOverride) {
   const groups = getFilteredGroups(extractionData, filters)
 
   if (groups.length === 0) {
@@ -97,12 +108,20 @@ export function renderDesignerSubjects(container, extractionData, drafts, active
   // Obtener materias completadas para filtrarlas de la vista
   const completedSubjects = new Set(completedSubjectsCache || [])
 
+  // Aplicar filtro de búsqueda por nombre o código (case-insensitive)
+  const q = (queryOverride !== undefined ? queryOverride : searchQuery).toLowerCase().trim()
+
   let html = ''
   let completedCount = 0
   for (const [code, subject] of bySubject) {
     // Saltar materias completadas (aprobadas) — no se muestran en el diseñador
     if (completedSubjects.has(code)) {
       completedCount++
+      continue
+    }
+
+    // Filtrar por búsqueda: coincidencia en nombre o código
+    if (q && !subject.name.toLowerCase().includes(q) && !subject.code.toLowerCase().includes(q)) {
       continue
     }
 
@@ -142,8 +161,10 @@ export function renderDesignerSubjects(container, extractionData, drafts, active
     }
   }
 
-  if (groups.length === 0) {
-    container.innerHTML = '<p class="empty-message">Ningún grupo coincide con los filtros actuales.</p>'
+  if (html === '') {
+    container.innerHTML = q
+      ? '<p class="empty-message">Ninguna materia coincide con la búsqueda.</p>'
+      : '<p class="empty-message">Ningún grupo coincide con los filtros actuales.</p>'
     return
   }
 
