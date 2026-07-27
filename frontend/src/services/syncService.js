@@ -15,7 +15,7 @@
  * 6. SmartSchedule procesa y actualiza elegibilidad
  */
 
-import { checkEligibility } from './api.js'
+import { checkEligibility, apiBase } from './api.js'
 
 // URL del portal de Academusoft para inicio de sesión SSO
 const SYNC_POPUP_URL = "https://plataforma.ucundinamarca.edu.co/ucundinamarca/hermesoft/vortal/o365/login";
@@ -85,7 +85,7 @@ export async function processPdfFile(file) {
   const formData = new FormData();
   formData.append('file', file);
 
-  const response = await fetch('http://localhost:8000/api/academic/parse-pdf', {
+  const response = await fetch(`${apiBase}/academic/parse-pdf`, {
     method: 'POST',
     body: formData,
   });

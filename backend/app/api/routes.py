@@ -7,6 +7,7 @@ import traceback
 import tempfile
 import os
 import re
+import pdfplumber
 
 from app.domain.models import (
     AcademicPlan,
