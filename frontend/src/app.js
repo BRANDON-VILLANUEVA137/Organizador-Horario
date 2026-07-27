@@ -326,10 +326,8 @@ async function handleSyncClick() {
       refreshDesigner()
     }
     
-    showDesignerMessage(
-      `✅ Sincronización completa: ${syncData.completed.length} materias, ${syncData.diagnostics.length} diagnósticos. ${eligResult.progress_percentage}% de carrera.`,
-      'success'
-    )
+    const msg = `✅ Sincronización completa: ${syncData.completed.length} materias, ${syncData.diagnostics.length} diagnósticos. ${eligResult.progress_percentage}% de carrera.`
+    showDesignerMessage(msg, 'success')
   } catch (err) {
     // Error ya manejado por updateSyncUI
     if (err.message) {

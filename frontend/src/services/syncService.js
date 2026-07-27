@@ -17,8 +17,8 @@
  * 8. Frontend recibe los datos y consulta elegibilidad
  */
 
-// URL del portal de Academusoft para consulta de ruta académica
-const SYNC_POPUP_URL = "https://academusoft.unicundi.edu.co/con_pen_pen.jsp";
+// URL del portal de Academusoft para inicio de sesión SSO
+const SYNC_POPUP_URL = "https://plataforma.ucundinamarca.edu.co/ucundinamarca/hermesoft/vortal/o365/login";
 const POPUP_WIDTH = 800;
 const POPUP_HEIGHT = 600;
 const SYNC_TIMEOUT_MS = 5 * 60 * 1000; // 5 minutos
@@ -93,8 +93,8 @@ export function openSyncPopup() {
       ];
       if (!allowedOrigins.includes(event.origin)) return;
 
-      // Validar estructura del mensaje
-      if (!event.data || event.data.type !== "STUDENT_PROGRESS") return;
+      // Validar estructura del mensaje (nuevo formato SMARTSCHEDULE_SYNC_SUCCESS)
+      if (!event.data || event.data.type !== "SMARTSCHEDULE_SYNC_SUCCESS") return;
 
       // Mensaje válido recibido
       clearTimeout(timeoutId);
@@ -103,8 +103,9 @@ export function openSyncPopup() {
       // Cerrar popup
       if (!popup.closed) popup.close();
 
-      const completed = event.data.completed || [];
-      const diagnostics = event.data.diagnostics || [];
+      const payload = event.data.payload || {};
+      const completed = payload.completed_subjects || [];
+      const diagnostics = payload.completed_diagnostics || [];
 
       _notifyState(SyncState.SUCCESS, { completed, diagnostics });
       resolve({ completed, diagnostics });
@@ -128,108 +129,141 @@ export function openSyncPopup() {
 /**
  * Script de captura que se ejecuta DENTRO del popup.
  * 
- * NOTA: Este script debe ser inyectado mediante un proxy ligero o
- * incluido como bookmarklet. No modificamos el código de Academusoft.
+ * Estrategia: Auto-navegación + Extracción del Semáforo Académico
  * 
- * Estrategia: Observar el DOM hasta que aparezca la tabla de ruta
- * académica, extraer las materias aprobadas y enviarlas al opener.
+ * 1. Abre la URL de login SSO de Academusoft
+ * 2. Usuario se autentica con Microsoft/UDEC
+ * 3. Script detecta inicioSeguro.jsp y redirige al semáforo
+ * 4. Extrae las tarjetas del semáforo (notas >= 3.0 o checks verdes)
+ * 5. Normaliza códigos DN- removiendo el prefijo
+ * 6. Envía datos via postMessage y cierra el popup
  */
 export const CAPTURE_SCRIPT = `
 (function() {
-  const TIMEOUT_MS = 120000; // 2 minutos
-  const INTERVALO_MS = 1000;
+  const TIMEOUT_MS = 180000; // 3 minutos (tiempo suficiente para login + navegación)
+  const URL_SEMAFORO = 'https://plataforma.ucundinamarca.edu.co/ucundinamarca/academusoft/academicoEstudiante/vModern/sistemaEstudiante/calificaciones/semaforoEstudiante/cal_sem_div2.jsp?nota=0';
 
   let resolved = false;
 
-  function extraerMateriasAprobadas() {
-    if (resolved) return;
-    
-    // Buscar tabla de ruta académica (varios selectores posibles)
-    const tablaRuta = document.querySelector(
-      'table[class*="ruta"], ' +
-      'table[class*="academica"], ' +
-      'table[class*="pensum"], ' +
-      'table[class*="materia"], ' +
-      '#tablaRuta, ' +
-      '.tablaRuta'
-    );
-    
-    if (!tablaRuta) return false;
+  // ── Lógica de Detección del Semáforo ───────────────────────────
+  // NOTA: No redirigimos automáticamente desde inicioSeguro.jsp para no
+  // interferir con MSAL.js. El script solo extrae datos cuando detecta
+  // que el usuario ya está en la página del semáforo.
+  
+  let checkInterval = null;
 
-    resolved = true;
-    observer.disconnect();
+  function intentarExtraccion() {
+    const currentUrl = window.location.href;
 
-    const filas = tablaRuta.querySelectorAll("tr");
-    const materiasAprobadas = [];
-    const diagnosticosAprobados = [];
-
-    filas.forEach(fila => {
-      const celdas = fila.querySelectorAll("td");
-      celdas.forEach(celda => {
-        const texto = celda.textContent.trim();
-        
-        // Buscar códigos de materia (ej: CAD612021102, DN-CAI10020202)
-        const matchMateria = texto.match(/[A-Z]{2,4}\d{10,12}/);
-        const matchDiagnostico = texto.match(/DN-[A-Z]{3,4}\d{6,10}/);
-        
-        if (matchMateria || matchDiagnostico) {
-          const codigo = (matchMateria || matchDiagnostico)[0];
-          
-          // Verificar si la celda indica "Aprobada"
-          const estaAprobada = 
-            celda.classList.contains("aprobada") ||
-            celda.classList.contains("approved") ||
-            celda.querySelector(".estado-aprobado, .approved, .aprobado") ||
-            celda.style.color === "green" ||
-            celda.textContent.includes("APROBADA") ||
-            celda.textContent.includes("Aprobada");
-            
-          if (estaAprobada) {
-            if (codigo.startsWith("DN-")) {
-              diagnosticosAprobados.push(codigo);
-            } else {
-              materiasAprobadas.push(codigo);
-            }
-          }
-        }
-      });
-    });
-
-    // Enviar al opener
-    if (window.opener && !window.opener.closed) {
-      window.opener.postMessage({
-        type: "STUDENT_PROGRESS",
-        completed: [...new Set(materiasAprobadas)],
-        diagnostics: [...new Set(diagnosticosAprobados)]
-      }, "*");
+    // Solo ejecutar en la página del semáforo
+    if (!currentUrl.includes('cal_sem_div2.jsp')) {
+      return false;
     }
-    
-    return true;
+
+    const tarjetasMateria = document.querySelectorAll(
+      'div[class*="materia"], ' +
+      'div[class*="card"], ' +
+      '.mat-card, ' +
+      'div[class*="semaforo"], ' +
+      'div[class*="calificacion"]'
+    );
+
+    if (tarjetasMateria.length > 0) {
+      console.log('[SmartSchedule] Semáforo detectado, extrayendo materias...');
+      const datosExtraidos = extraerMateriasAprobadasSemaforo(tarjetasMateria);
+      
+      // Transmitir datos extraídos a la ventana principal de smartschedule
+      if (window.opener && !window.opener.closed) {
+        window.opener.postMessage({
+          type: 'SMARTSCHEDULE_SYNC_SUCCESS',
+          payload: datosExtraidos
+        }, '*');
+      }
+
+      // Cerrar el popup de manera automática e inmediata
+      setTimeout(() => {
+        window.close();
+      }, 500);
+
+      return true;
+    }
+
+    return false;
   }
 
-  // Observer para detectar cuando la tabla se carga en el DOM
-  const observer = new MutationObserver(() => {
-    extraerMateriasAprobadas();
-  });
-  
-  observer.observe(document.body, { 
-    childList: true, 
-    subtree: true 
-  });
+  // Verificar periódicamente si la página cambió al semáforo
+  checkInterval = setInterval(() => {
+    if (intentarExtraccion()) {
+      clearInterval(checkInterval);
+    }
+  }, 1000);
 
-  // También intentar inmediatamente por si ya está cargada
-  extraerMateriasAprobadas();
+  // Intentar una vez al cargar por si ya está en el semáforo
+  intentarExtraccion();
 
-  // Timeout de seguridad
+  // ── Extractor del Semáforo ─────────────────────────────────────
+  function extraerMateriasAprobadasSemaforo(tarjetas) {
+    const materiasAprobadas = new Set();
+    const diagnosticosAprobados = new Set();
+
+    tarjetas.forEach(tarjeta => {
+      const texto = tarjeta.innerText || tarjeta.textContent || '';
+
+      // Extraer Código de Asignatura (Ej: CAD612021207, DN-CAI1002020303, CAI1002020201)
+      const matchCodigo = texto.match(/(?:DN-)?([A-Z]{2,4}\\d{6,12})/i);
+
+      if (matchCodigo) {
+        const codigoRaw = matchCodigo[0].toUpperCase();
+
+        // Evaluador de Aprobación (Checks verdes o notas >= 3.0)
+        const tieneCheckVerde = tarjeta.querySelectorAll(
+          'i.verde, span.verde, svg[fill*="green"], ' +
+          '.text-success, [class*="verde"], ' +
+          'i[class*="check"], span[class*="check"]'
+        ).length > 0;
+
+        // Buscar notas DEFINITIVA en el texto
+        const notasEncontradas = [...texto.matchAll(/DEFINITIVA:\\s*(\\d[.,]\\d)/gi)]
+          .map(match => parseFloat(match[1].replace(',', '.')));
+
+        const tieneNotaAprobada = notasEncontradas.some(nota => nota >= 3.0);
+
+        if (tieneCheckVerde || tieneNotaAprobada) {
+          // Normalización: Eliminar prefijo DN- para alineación con PENSUM_2020_SISTEMAS.json
+          const codigoLimpio = codigoRaw.replace(/^DN-/, '');
+
+          if (codigoRaw.startsWith('DN-')) {
+            // Es un diagnóstico: guardar ambos códigos (raw y limpio)
+            diagnosticosAprobados.add(codigoRaw);
+            diagnosticosAprobados.add(codigoLimpio);
+          } else {
+            // Es una materia regular
+            materiasAprobadas.add(codigoLimpio);
+          }
+        }
+      }
+    });
+
+    console.log('[SmartSchedule] Materias aprobadas:', Array.from(materiasAprobadas));
+    console.log('[SmartSchedule] Diagnósticos aprobados:', Array.from(diagnosticosAprobados));
+
+    return {
+      completed_subjects: Array.from(materiasAprobadas),
+      completed_diagnostics: Array.from(diagnosticosAprobados)
+    };
+  }
+
+  // ── Timeout de seguridad ───────────────────────────────────────
   setTimeout(() => {
-    observer.disconnect();
     if (!resolved && window.opener && !window.opener.closed) {
       window.opener.postMessage({
-        type: "STUDENT_PROGRESS",
-        completed: [],
-        diagnostics: [],
-        timeout: true
-      }, "*");
+        type: 'SMARTSCHEDULE_SYNC_SUCCESS',
+        payload: {
+          completed_subjects: [],
+          completed_diagnostics: [],
+          timeout: true
+        }
+      }, '*');
     }
   }, TIMEOUT_MS);
 })();

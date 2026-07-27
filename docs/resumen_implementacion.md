@@ -1,7 +1,7 @@
 # 📋 Resumen de Implementación — SmartSchedule
 
 ## 🎯 Objetivo General
-Integrar el **Pensum 2020 de Ingeniería de Sistemas** y el **Motor de Prerrequisitos** en SmartSchedule, permitiendo validar la elegibilidad de materias y sincronizar el avance académico del estudiante mediante un popup controlado hacia Academusoft.
+Integrar el **Pensum 2020 de Ingeniería de Sistemas** y el **Motor de Prerrequisitos** en SmartSchedule, permitiendo validar la elegibilidad de materias y sincronizar el avance académico del estudiante mediante un popup controlado hacia Academusoft con **auto-navegación automática**.
 
 ---
 
@@ -81,16 +81,23 @@ Integrar el **Pensum 2020 de Ingeniería de Sistemas** y el **Motor de Prerrequi
 - `setSyncStateCallback()` — Registra callback para cambios de estado
 - `CAPTURE_SCRIPT` — Script que se ejecuta dentro del popup para extraer materias aprobadas
 
-**Flujo de sincronización:**
+**Flujo de sincronización (Opción A - Auto-navegación):**
 1. Usuario hace clic en "Sincronizar mi avance"
-2. Se abre popup centrado (800x600) hacia `https://academusoft.unicundi.edu.co/con_pen_pen.jsp`
+2. Se abre popup centrado (800x600) hacia `https://plataforma.ucundinamarca.edu.co/ucundinamarca/hermesoft/vortal/o365/login`
 3. Usuario se autentica con Microsoft SSO
-4. Script interno detecta la tabla de ruta académica (MutationObserver)
-5. Extrae códigos de materias aprobadas y diagnósticos
-6. Envía datos via `window.postMessage()` al opener
-7. Popup se cierra automáticamente
-8. Frontend recibe los datos y consulta `POST /api/academic/eligibility`
-9. Diseñador se actualiza con materias bloqueadas
+4. **AUTOMÁTICO:** Script detecta `inicioSeguro.jsp` y redirige al semáforo: `cal_sem_div2.jsp?nota=0`
+5. **AUTOMÁTICO:** Al renderizarse las tarjetas del semáforo, se ejecuta `extraerMateriasAprobadasSemaforo()`
+6. Extrae códigos de materias aprobadas y diagnósticos (notas >= 3.0 o checks verdes)
+7. Normaliza códigos DN- removiendo el prefijo
+8. Envía datos via `window.postMessage()` al opener
+9. Popup se cierra automáticamente
+10. Frontend recibe los datos y consulta `POST /api/academic/eligibility`
+11. Diseñador se actualiza con materias bloqueadas
+
+**Reglas de extracción del semáforo:**
+- **Reintentos (Múltiples Definitivas):** Materias con notas reprobadas antiguas y aprobadas → se marca como completada si existe al menos una nota >= 3.0 o check verde
+- **Normalización DN-:** Códigos con prefijo `DN-` se normalizan removiendo el prefijo para alineación con el pensum
+- **Diagnósticos de 0 créditos:** Se tratan igual que materias regulares
 
 #### 2. **Componentes** (`frontend/src/components/`)
 
@@ -293,11 +300,16 @@ Abrir `http://localhost:5173/`
    - Materias elegibles (se pueden arrastrar)
    - Materias bloqueadas con 🔒 y tooltip
 
-#### Paso 3: Probar sincronización (popup)
+#### Paso 3: Probar sincronización (popup con auto-navegación)
 1. En el panel de materias, haz clic en **"🔄 Sincronizar mi avance"**
-2. Se abrirá un popup hacia Academusoft
+2. Se abrirá un popup hacia `https://plataforma.ucundinamarca.edu.co/ucundinamarca/hermesoft/vortal/o365/login`
 3. **Nota:** Necesitas credenciales reales de la universidad para probar este flujo
-4. Si el popup es bloqueado, verás un mensaje de error
+4. El flujo automático será:
+   - Te autenticas con Microsoft/UDEC
+   - El script detecta `inicioSeguro.jsp` y redirige al semáforo
+   - Extrae las materias aprobadas
+   - Cierra el popup automáticamente
+   - Actualiza el diseñador con las materias bloqueadas
 
 #### Paso 4: Probar elegibilidad con datos de prueba
 En la consola del navegador (F12):
@@ -368,17 +380,47 @@ npx vite
 
 - [x] Backend funcionando con endpoints académicos
 - [x] Frontend compilando sin errores
-- [x] Sincronización popup implementada
+- [x] Sincronización popup implementada con auto-navegación (Opción A)
 - [x] Elegibilidad funcionando
 - [x] UI de materias bloqueadas implementada
 - [x] Botones "Nueva consulta" en todos los paneles
 - [x] Datos demo para pruebas
+- [x] Script de extracción del semáforo con normalización DN-
+- [x] Reglas de negocio implementadas (reintentos, checks verdes, notas >= 3.0)
 
 ## 🔜 Próximos Pasos (Opcional)
 
-1. **Probar con datos reales de Academusoft** — Necesitas credenciales reales
-2. **Implementar script de captura** — El `CAPTURE_SCRIPT` debe ser inyectado en el popup (proxy o bookmarklet)
-3. **Mejorar selectores CSS** — Ajustar los selectores de la tabla de ruta académica según el HTML real de Academusoft
+1. **Probar con datos reales de Academusoft** — Necesitas credenciales reales de estudiante
+2. **Ajustar selectores CSS** — Según el HTML real del semáforo, puede que necesites ajustar los selectores de tarjetas
+3. **Implementar inyección del script** — El `CAPTURE_SCRIPT` debe ser inyectado en el popup (proxy o bookmarklet)
 4. **Agregar más universidades** — Actualmente solo funciona con Universidad de Cundinamarca
 5. **Implementar exportaciones** — PDF, Excel, iCalendar
 6. **Sistema de favoritos** — Guardar horarios preferidos
+
+---
+
+## 📝 Notas Técnicas
+
+### Auto-navegación (Opción A)
+El script del popup implementa la siguiente lógica:
+1. Abre la URL de login SSO: `o365/login`
+2. Detecta cuando el usuario se autentica (URL contiene `inicioSeguro.jsp`)
+3. Redirige automáticamente al semáforo: `cal_sem_div2.jsp?nota=0`
+4. Extrae las tarjetas de materias usando selectores genéricos
+5. Aplica reglas de aprobación:
+   - Check verde (clases CSS: `.verde`, `.text-success`, etc.)
+   - Nota DEFINITIVA >= 3.0
+6. Normaliza códigos DN- removiendo el prefijo
+7. Envía datos via `postMessage` con tipo `SMARTSCHEDULE_SYNC_SUCCESS`
+8. Cierra el popup automáticamente
+
+### Seguridad
+- Validación de origen en `postMessage` (solo acepta dominios de Academusoft)
+- Timeout de 5 minutos para evitar popups abiertos indefinidamente
+- Detección de cierre manual del popup
+- No se almacenan credenciales en el frontend
+
+### Compatibilidad
+- El backend es compatible con ambos formatos de mensaje (`STUDENT_PROGRESS` legacy y `SMARTSCHEDULE_SYNC_SUCCESS` nuevo)
+- El frontend maneja tanto materias regulares como diagnósticos
+- El DAG engine funciona con ambos modelos (`Pensum` legacy y `AcademicPlan` nuevo)
