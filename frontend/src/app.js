@@ -8,7 +8,7 @@ import { renderCalendarGrid, placeBlocks, setupDropListeners } from './component
 import {
   renderDesignerSubjects, renderDraftTabs, populateHourSelects, syncFilterUI,
   setOnStateChange, handleDrop, handleRemoveBlock, clearDraggedGroupData,
-  loadEligibility, isEligibilityLoaded
+  loadEligibility, isEligibilityLoaded, setCompletedSubjects
 } from './components/designer.js'
 import {
   getDrafts, getActiveDraft, getDraftNames, getDraftCount,
@@ -123,6 +123,7 @@ function restartApp() {
   catalogData = null
   resetDrafts()
   clearSavedState()
+  setCompletedSubjects(null)
 
   // Ocultar todos los paneles
   panels.forEach(p => p.hidden = true)
@@ -346,9 +347,12 @@ async function handleManualSync() {
     syncProgressPct.textContent = `${eligResult.progress_percentage}%`
     updateSyncUI(SyncState.SUCCESS, syncData)
     
+    // Registrar materias completadas para filtrar del diseñador
+    setCompletedSubjects(syncData.completed)
     await loadEligibility(syncData.completed, syncData.diagnostics)
     
-    if (!document.querySelector('#designer-panel').hidden) refreshDesigner()
+    // Forzar re-renderizado del diseñador para ocultar materias completadas
+    refreshDesigner()
     
     showDesignerMessage(`✅ Sincronización manual: ${syncData.completed.length} materias, ${syncData.diagnostics.length} diagnósticos. ${eligResult.progress_percentage}% de carrera.`, 'success')
   } catch (err) {
@@ -378,10 +382,15 @@ async function handlePdfUpload(file) {
     syncProgressPct.textContent = `${eligResult.progress_percentage}%`
     updateSyncUI(SyncState.SUCCESS, syncData)
     
+    // Registrar materias completadas para filtrar del diseñador
+    setCompletedSubjects(syncData.completed)
     await loadEligibility(syncData.completed, syncData.diagnostics)
     
-    if (!document.querySelector('#designer-panel').hidden) refreshDesigner()
+// Forzar re-renderizado del diseñador para ocultar materias completadas
+    refreshDesigner()
     syncDropzoneText.textContent = '¡PDF procesado!'
+    // Limpiar el textarea para evitar re-parseo accidental que sobreescribiría el caché
+    if (syncManualTextarea) syncManualTextarea.value = ''
     
     showDesignerMessage(`✅ Sincronización PDF: ${syncData.completed.length} materias, ${syncData.diagnostics.length} diagnósticos. ${eligResult.progress_percentage}% de carrera.`, 'success')
   } catch (err) {

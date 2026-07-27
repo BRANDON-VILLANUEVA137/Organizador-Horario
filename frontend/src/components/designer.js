@@ -10,6 +10,24 @@ let onStateChange = null
 let eligibilityCache = null
 let eligibilityLoading = false
 
+// Cache de materias completadas (aprobadas) para ocultar del diseñador
+// Siempre almacenado como Set para búsqueda O(1) con .has()
+let completedSubjectsCache = new Set()
+
+export function setCompletedSubjects(subjects) {
+  if (Array.isArray(subjects)) {
+    completedSubjectsCache = new Set(subjects)
+  } else if (subjects instanceof Set) {
+    completedSubjectsCache = subjects
+  } else {
+    completedSubjectsCache = new Set()
+  }
+}
+
+export function getCompletedSubjects() {
+  return Array.from(completedSubjectsCache)
+}
+
 export function setOnStateChange(callback) {
   onStateChange = callback
 }
@@ -76,8 +94,18 @@ export function renderDesignerSubjects(container, extractionData, drafts, active
     bySubject.get(group.subject_code).groups.push(group)
   }
 
+  // Obtener materias completadas para filtrarlas de la vista
+  const completedSubjects = new Set(completedSubjectsCache || [])
+
   let html = ''
+  let completedCount = 0
   for (const [code, subject] of bySubject) {
+    // Saltar materias completadas (aprobadas) — no se muestran en el diseñador
+    if (completedSubjects.has(code)) {
+      completedCount++
+      continue
+    }
+
     // Verificar elegibilidad de esta materia
     const elig = getEligibility(code)
     const isBlocked = elig && !elig.eligible
