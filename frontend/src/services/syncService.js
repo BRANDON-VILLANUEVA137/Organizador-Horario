@@ -160,12 +160,16 @@ export const CAPTURE_SCRIPT = `
       return false;
     }
 
-    const tarjetasMateria = document.querySelectorAll(
+    // Buscar dentro de iframes si es necesario
+    const targetDocument = buscarEnIframe(window);
+    
+    const tarjetasMateria = targetDocument.querySelectorAll(
       'div[class*="materia"], ' +
       'div[class*="card"], ' +
       '.mat-card, ' +
       'div[class*="semaforo"], ' +
-      'div[class*="calificacion"]'
+      'div[class*="calificacion"], ' +
+      'table tr'
     );
 
     if (tarjetasMateria.length > 0) {
@@ -251,6 +255,26 @@ export const CAPTURE_SCRIPT = `
       completed_subjects: Array.from(materiasAprobadas),
       completed_diagnostics: Array.from(diagnosticosAprobados)
     };
+  }
+
+  // ── Búsqueda dentro de Iframes ─────────────────────────────────
+  function buscarEnIframe(popup) {
+    try {
+      // Buscar iframe de contenido de Academusoft
+      const iframe = popup.document.querySelector(
+        'iframe[id*="IfrFormTab"], iframe[src*="academicoEstudiante"], iframe[src*="est_bus_dpe_lis_pro"]'
+      );
+
+      if (iframe && iframe.contentDocument) {
+        console.log('[SmartSchedule] Iframe detectado, accediendo al documento interno...');
+        return iframe.contentDocument;
+      }
+    } catch (e) {
+      // Same-Origin Policy: no se puede acceder al iframe
+      console.log('[SmartSchedule] No se puede acceder al iframe (Same-Origin):', e.message);
+    }
+
+    return popup.document;
   }
 
   // ── Timeout de seguridad ───────────────────────────────────────
