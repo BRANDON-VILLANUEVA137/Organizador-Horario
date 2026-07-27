@@ -118,19 +118,10 @@ export function openSyncPopup() {
 
     window.addEventListener("message", handleMessage);
 
-    // ── Redirección al Registro Extendido después del login ──────
-    // Después de 4.5 segundos (tiempo para completar el SSO), redirigir
-    // al registro académico extendido con parámetro ?programa=0
-    setTimeout(() => {
-      try {
-        if (popup && !popup.closed) {
-          console.log('[SmartSchedule] Redirigiendo al Registro Académico Extendido...');
-          popup.location.href = URL_REGISTRO_EXTENDIDO;
-        }
-      } catch (e) {
-        console.error('Error al redirigir popup:', e);
-      }
-    }, 4500);
+    // ── Monitoreo pasivo del popup ────────────────────────────────
+    // NO forzamos redirección. El usuario navega manualmente por Academusoft
+    // (Login -> inicioSeguro.jsp -> Académico Estudiante -> Calificaciones -> Registro Extendido)
+    // El script solo extrae datos cuando detecta la tabla del Registro Extendido
 
     // Polling para detectar si el usuario cerró el popup manualmente
     const checkClosed = setInterval(() => {
