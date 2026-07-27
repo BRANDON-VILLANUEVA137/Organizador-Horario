@@ -64,6 +64,40 @@
         <div class="eyebrow">PASO 02 / MATERIAS</div>
         <h2 id="subjects-title">Escoge las materias<br /><em>de este semestre.</em></h2>
         <p class="section-copy">Selecciona las asignaturas que quieres cursar. SmartSchedule buscará los grupos disponibles.</p>
+
+        <!-- Sincronización de avance académico -->
+        <div class="sync-section" id="sync-section">
+          <div class="eyebrow">📡 SINCRONIZA TU AVANCE</div>
+          <p class="sync-description">
+            Conecta con Academusoft para detectar automáticamente qué materias 
+            ya cursaste. Las materias bloqueadas por prerrequisitos se mostrarán 
+            con opacidad reducida en el diseñador.
+          </p>
+          <div class="sync-controls">
+            <button class="sync-button" id="sync-button" type="button">
+              <span class="sync-icon">🔄</span>
+              <span class="sync-label">Sincronizar mi avance</span>
+            </button>
+            <div class="sync-status" id="sync-status" hidden>
+              <span class="sync-status-icon" id="sync-status-icon"></span>
+              <span class="sync-status-text" id="sync-status-text"></span>
+            </div>
+          </div>
+          <div class="sync-result" id="sync-result" hidden>
+            <div class="sync-result-stats">
+              <span class="sync-stat">
+                <strong id="sync-count-subjects">0</strong> materias aprobadas
+              </span>
+              <span class="sync-stat">
+                <strong id="sync-count-diagnostics">0</strong> diagnósticos
+              </span>
+              <span class="sync-stat">
+                <strong id="sync-progress-pct">0%</strong> de carrera
+              </span>
+            </div>
+          </div>
+        </div>
+
         <div class="subject-filters">
           <label for="semester-filter">Filtrar por semestre</label>
           <select id="semester-filter"><option value="">Todos los semestres</option></select>
