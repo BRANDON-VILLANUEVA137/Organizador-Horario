@@ -1,8 +1,12 @@
-from fastapi import APIRouter, HTTPException
+from fastapi import APIRouter, HTTPException, UploadFile, File
+from fastapi.responses import JSONResponse
 
 from datetime import time
 from uuid import uuid4
 import traceback
+import tempfile
+import os
+import re
 
 from app.domain.models import (
     AcademicPlan,
@@ -342,3 +346,67 @@ def check_eligibility(state: StudentAcademicState) -> EligibilityResponse:
             status_code=500,
             detail=f"Error al evaluar elegibilidad: {exc}",
         )
+
+
+@router.post("/academic/parse-pdf", tags=["academic"])
+async def parse_pdf(file: UploadFile = File(...)):
+    """
+    Procesa un archivo PDF del Registro Académico Extendido.
+    
+    Extrae el texto del PDF usando pdfplumber, parsea las materias
+    con nota Definitiva >= 3.0 y devuelve la lista de códigos.
+    """
+    if not file.filename.endswith('.pdf'):
+        raise HTTPException(status_code=400, detail="Solo se aceptan archivos PDF")
+
+    try:
+        # Guardar PDF temporal
+        with tempfile.NamedTemporaryFile(delete=False, suffix='.pdf') as tmp:
+            content = await file.read()
+            tmp.write(content)
+            tmp_path = tmp.name
+
+        # Extraer texto con pdfplumber
+        import pdfplumber
+        texto_completo = ""
+        with pdfplumber.open(tmp_path) as pdf:
+            for page in pdf.pages:
+                texto_completo += page.extract_text() or ""
+
+        # Limpiar archivo temporal
+        os.unlink(tmp_path)
+
+        if not texto_completo.strip():
+            raise HTTPException(status_code=422, detail="No se pudo extraer texto del PDF")
+
+        # Parsear materias aprobadas
+        materias_aprobadas = set()
+        diagnosticos_aprobados = set()
+
+        for linea in texto_completo.split('\n'):
+            match_codigo = re.search(r'(?:DN-)?([A-Z]{2,4}\d{6,12})', linea, re.IGNORECASE)
+            if match_codigo:
+                codigo_raw = match_codigo.group(0).upper()
+                match_nota = re.search(r'DEFINITIVA:\s*(\d[.,]\d)', linea, re.IGNORECASE) or \
+                             re.search(r'\b(\d[.,]\d)\b', linea)
+                
+                if match_nota:
+                    nota = float(match_nota.group(1).replace(',', '.'))
+                    if nota >= 3.0:
+                        codigo_limpio = re.sub(r'^DN-', '', codigo_raw)
+                        if codigo_raw.startswith('DN-'):
+                            diagnosticos_aprobados.add(codigo_raw)
+                            diagnosticos_aprobados.add(codigo_limpio)
+                        else:
+                            materias_aprobadas.add(codigo_limpio)
+
+        return JSONResponse({
+            "completed": list(materias_aprobadas),
+            "diagnostics": list(diagnosticos_aprobados)
+        })
+
+    except HTTPException:
+        raise
+    except Exception as exc:
+        traceback.print_exc()
+        raise HTTPException(status_code=500, detail=f"Error al procesar PDF: {exc}")
