@@ -17,10 +17,12 @@
  * 8. Frontend recibe los datos y consulta elegibilidad
  */
 
-// URL del portal de Academusoft para inicio de sesión SSO
-const SYNC_POPUP_URL = "https://plataforma.ucundinamarca.edu.co/ucundinamarca/hermesoft/vortal/o365/login";
-const POPUP_WIDTH = 800;
-const POPUP_HEIGHT = 600;
+// URL directa del semáforo académico
+// Academusoft gestiona el SSO nativamente: si no hay sesión, redirige a Microsoft O365
+// y después de autenticarse, redirige de vuelta al semáforo automáticamente
+const SYNC_POPUP_URL = "https://plataforma.ucundinamarca.edu.co/ucundinamarca/academusoft/academicoEstudiante/vModern/sistemaEstudiante/calificaciones/semaforoEstudiante/cal_sem_div2.jsp?nota=0";
+const POPUP_WIDTH = 900;
+const POPUP_HEIGHT = 700;
 const SYNC_TIMEOUT_MS = 5 * 60 * 1000; // 5 minutos
 
 /**
@@ -112,23 +114,6 @@ export function openSyncPopup() {
     };
 
     window.addEventListener("message", handleMessage);
-
-    // ── Redirección automática desde la ventana PADRE ────────────
-    // Forzar la navegación al semáforo después de 4.5 segundos
-    // (tiempo suficiente para que el usuario complete el login SSO)
-    // NOTA: No podemos leer popup.location.href por CORS, solo podemos escribir
-    const URL_SEMAFORO = 'https://plataforma.ucundinamarca.edu.co/ucundinamarca/academusoft/academicoEstudiante/vModern/sistemaEstudiante/calificaciones/semaforoEstudiante/cal_sem_div2.jsp?nota=0';
-
-    setTimeout(() => {
-      try {
-        if (popup && !popup.closed) {
-          console.log('[SmartSchedule] Forzando redirección directa al semáforo...');
-          popup.location.href = URL_SEMAFORO;
-        }
-      } catch (e) {
-        console.error('Error al redirigir popup:', e);
-      }
-    }, 4500);
 
     // Polling para detectar si el usuario cerró el popup manualmente
     const checkClosed = setInterval(() => {
