@@ -1,5 +1,5 @@
 // ── SmartSchedule - Main Orchestrator ────────────────────────────
-import { checkHealth, fetchCatalog, runExtraction } from './services/api.js'
+import { checkHealth, fetchCatalog, runExtraction, checkEligibility } from './services/api.js'
 import { saveState, loadState, clearSavedState } from './utils/storage.js'
 import { normalizeSemesterKey } from './utils/helpers.js'
 import { showPanel, navigateTo } from './components/navigation.js'
@@ -15,6 +15,7 @@ import {
   setDrafts, setActiveDraft, resetDrafts, restoreDrafts,
   getPlacedBlocks
 } from './services/scheduler.js'
+import { openSyncPopup, parseRegistroExtendido, SyncState } from './services/syncService.js'
 
 // ── DOM refs ──────────────────────────────────────────────────────
 const statusText = document.querySelector('.status')
@@ -233,6 +234,153 @@ async function showCampusSelection(portalUrl, university) {
   } catch {
     formMessage.textContent = 'No se pudieron cargar las sedes. Verifica que el backend esté ejecutándose.'
   }
+}
+
+// ── Sincronización de avance académico ────────────────────────────
+let syncData = null // { completed, diagnostics }
+
+const syncButton = document.querySelector('#sync-button')
+const syncStatus = document.querySelector('#sync-status')
+const syncStatusIcon = document.querySelector('#sync-status-icon')
+const syncStatusText = document.querySelector('#sync-status-text')
+const syncResult = document.querySelector('#sync-result')
+const syncCountSubjects = document.querySelector('#sync-count-subjects')
+const syncCountDiagnostics = document.querySelector('#sync-count-diagnostics')
+const syncProgressPct = document.querySelector('#sync-progress-pct')
+const syncManualTextarea = document.querySelector('#sync-manual-textarea')
+const syncManualButton = document.querySelector('#sync-manual-button')
+
+function updateSyncUI(state, data) {
+  if (!syncButton || !syncStatus) return
+
+  switch (state) {
+    case SyncState.OPENING:
+      syncButton.disabled = true
+      syncButton.querySelector('.sync-label').textContent = 'Abriendo portal...'
+      syncStatus.hidden = false
+      syncStatus.className = 'sync-status loading'
+      syncStatusIcon.textContent = '⏳'
+      syncStatusText.textContent = 'Abriendo ventana de Academusoft...'
+      syncResult.hidden = true
+      break
+
+    case SyncState.WAITING:
+      syncButton.querySelector('.sync-label').textContent = 'Esperando autenticación...'
+      syncStatusText.textContent = 'Autentícate en el portal y espera mientras se cargan tus materias...'
+      break
+
+    case SyncState.SUCCESS:
+      syncButton.disabled = false
+      syncButton.querySelector('.sync-label').textContent = 'Sincronizar mi avance'
+      syncStatus.hidden = true
+
+      // Mostrar resultado
+      syncResult.hidden = false
+      syncCountSubjects.textContent = data.completed.length
+      syncCountDiagnostics.textContent = data.diagnostics.length
+      break
+
+    case SyncState.BLOCKED:
+      syncButton.disabled = false
+      syncButton.querySelector('.sync-label').textContent = 'Sincronizar mi avance'
+      syncStatus.className = 'sync-status'
+      syncStatusIcon.textContent = '⚠️'
+      syncStatusText.textContent = 'Popup bloqueado. Permite popups para este sitio.'
+      setTimeout(() => { syncStatus.hidden = true }, 5000)
+      break
+
+    case SyncState.ERROR:
+      syncButton.disabled = false
+      syncButton.querySelector('.sync-label').textContent = 'Sincronizar mi avance'
+      syncStatus.className = 'sync-status'
+      syncStatusIcon.textContent = '❌'
+      syncStatusText.textContent = data || 'Error al sincronizar. Intenta de nuevo.'
+      setTimeout(() => { syncStatus.hidden = true }, 5000)
+      break
+
+    case SyncState.TIMEOUT:
+      syncButton.disabled = false
+      syncButton.querySelector('.sync-label').textContent = 'Sincronizar mi avance'
+      syncStatus.className = 'sync-status'
+      syncStatusIcon.textContent = '⏰'
+      syncStatusText.textContent = 'Tiempo de espera agotado. Intenta de nuevo.'
+      setTimeout(() => { syncStatus.hidden = true }, 5000)
+      break
+  }
+}
+
+async function handleSyncClick() {
+  try {
+    syncData = await openSyncPopup()
+    // Sincronización exitosa, consultar elegibilidad con datos reales
+    syncProgressPct.textContent = 'Consultando...'
+    
+    const eligResult = await checkEligibility(syncData.completed, syncData.diagnostics)
+    
+    // Actualizar progreso
+    syncProgressPct.textContent = `${eligResult.progress_percentage}%`
+    
+    // Actualizar elegibilidad en el diseñador
+    await loadEligibility(syncData.completed, syncData.diagnostics)
+    
+    // Si estamos en el diseñador, refrescar
+    if (!document.querySelector('#designer-panel').hidden) {
+      refreshDesigner()
+    }
+    
+    const msg = `✅ Sincronización completa: ${syncData.completed.length} materias, ${syncData.diagnostics.length} diagnósticos. ${eligResult.progress_percentage}% de carrera.`
+    showDesignerMessage(msg, 'success')
+  } catch (err) {
+    // Error ya manejado por updateSyncUI
+    if (err.message) {
+      showDesignerMessage(err.message, 'error')
+    }
+  }
+}
+
+async function handleManualSync() {
+  const texto = syncManualTextarea.value.trim()
+  if (!texto) {
+    showDesignerMessage('Pega el texto del Registro Extendido primero.', 'error')
+    return
+  }
+
+  try {
+    syncData = parseRegistroExtendido(texto)
+    
+    if (syncData.completed.length === 0 && syncData.diagnostics.length === 0) {
+      showDesignerMessage('No se encontraron materias aprobadas en el texto.', 'warning')
+      return
+    }
+
+    // Consultar elegibilidad
+    syncProgressPct.textContent = 'Consultando...'
+    const eligResult = await checkEligibility(syncData.completed, syncData.diagnostics)
+    
+    // Actualizar progreso
+    syncProgressPct.textContent = `${eligResult.progress_percentage}%`
+    
+    // Actualizar elegibilidad en el diseñador
+    await loadEligibility(syncData.completed, syncData.diagnostics)
+    
+    // Si estamos en el diseñador, refrescar
+    if (!document.querySelector('#designer-panel').hidden) {
+      refreshDesigner()
+    }
+    
+    const msg = `✅ Sincronización manual: ${syncData.completed.length} materias, ${syncData.diagnostics.length} diagnósticos. ${eligResult.progress_percentage}% de carrera.`
+    showDesignerMessage(msg, 'success')
+  } catch (err) {
+    showDesignerMessage(err.message || 'Error al procesar el texto.', 'error')
+  }
+}
+
+if (syncButton) {
+  syncButton.addEventListener('click', handleSyncClick)
+}
+
+if (syncManualButton) {
+  syncManualButton.addEventListener('click', handleManualSync)
 }
 
 // ── Extraction ────────────────────────────────────────────────────

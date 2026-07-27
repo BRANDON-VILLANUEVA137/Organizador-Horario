@@ -4,12 +4,17 @@
   "version": "0.1.0",
   "type": "module",
   "scripts": {
-    "dev": "vite",
+    "dev": "concurrently \"vite\" \"cd ../backend && .venv\\Scripts\\python.exe -m uvicorn app.main:app --host 0.0.0.0 --port 8000 --reload\"",
+    "dev:frontend": "vite",
+    "dev:backend": "cd ../backend && .venv\\Scripts\\python.exe -m uvicorn app.main:app --host 0.0.0.0 --port 8000 --reload",
     "build": "vite build",
     "preview": "vite preview"
   },
   "dependencies": {
     "vite": "latest"
   },
-  "packageManager": "pnpm@11.16.0"
+  "packageManager": "pnpm@11.16.0",
+  "devDependencies": {
+    "concurrently": "^10.0.4"
+  }
 }
