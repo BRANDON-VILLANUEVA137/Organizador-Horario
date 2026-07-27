@@ -98,6 +98,7 @@ export function openSyncPopup() {
 
       // Mensaje válido recibido
       clearTimeout(timeoutId);
+      clearInterval(redirectCheckInterval);
       window.removeEventListener("message", handleMessage);
 
       // Cerrar popup
@@ -113,30 +114,29 @@ export function openSyncPopup() {
 
     window.addEventListener("message", handleMessage);
 
-    // Polling para detectar si el usuario cerró el popup manualmente
-    const checkClosed = setInterval(() => {
-      if (popup.closed) {
-        clearInterval(checkClosed);
-        clearTimeout(timeoutId);
-        window.removeEventListener("message", handleMessage);
-        _notifyState(SyncState.ERROR);
-        reject(new Error("Cerraste la ventana de sincronización antes de completar el proceso."));
-      }
-    }, 1000);
-  });
-}
+    // ── Redirección automática desde la ventana PADRE ────────────
+    // Monitorear la URL del popup para detectar post-login y redirigir al semáforo
+    let redirigido = false;
+    const URL_SEMAFORO = 'https://plataforma.ucundinamarca.edu.co/ucundinamarca/academusoft/academicoEstudiante/vModern/sistemaEstudiante/calificaciones/semaforoEstudiante/cal_sem_div2.jsp?nota=0';
 
-/**
- * Script de captura que se ejecuta DENTRO del popup.
- * 
- * Estrategia: Auto-navegación + Extracción del Semáforo Académico
- * 
- * 1. Abre la URL de login SSO de Academusoft
- * 2. Usuario se autentica con Microsoft/UDEC
- * 3. Script detecta inicioSeguro.jsp y redirige al semáforo
- * 4. Extrae las tarjetas del semáforo (notas >= 3.0 o checks verdes)
- * 5. Normaliza códigos DN- removiendo el prefijo
- * 6. Envía datos via postMessage y cierra el popup
+    const redirectCheckInterval = setInterval(() => {
+      try {
+        if (!popup || popup.closed) {
+          clearInterval(redirectCheckInterval);
+          return;
+        }
+
+        // Intentar leer la URL del popup
+        const currentUrl = popup.location.href;
+
+        // Si detectamos que ya pasó el login, redirigir al semáforo
+        if (!redirigido && (currentUrl.includes('inicioSeguro.jsp') || currentUrl.includes('escritorio/cnt.jsp'))) {
+          console.log('[SmartSchedule] Login exitoso detectado. Redirigiendo al semáforo...');
+          redirigido = true;
+          popup.location.href = URL_SEMAFORO;
+        }
+      } catch (e) {
+        // Es normal que caiga aquí mientras el
  */
 export const CAPTURE_SCRIPT = `
 (function() {
@@ -145,21 +145,58 @@ export const CAPTURE_SCRIPT = `
 
   let resolved = false;
 
-  // ── Lógica de Detección del Semáforo ───────────────────────────
-  // NOTA: No redirigimos automáticamente desde inicioSeguro.jsp para no
-  // interferir con MSAL.js. El script solo extrae datos cuando detecta
-  // que el usuario ya está en la página del semáforo.
+  // ── Lógica de Auto-navegación ───────────────────────────────────
+  const URL_SEMAFORO = 'https://plataforma.ucundinamarca.edu.co/ucundinamarca/academusoft/academicoEstudiante/vModern/sistemaEstudiante/calificaciones/semaforoEstudiante/cal_sem_div2.jsp?nota=0';
   
   let checkInterval = null;
+  let redirigido = false;
 
-  function intentarExtraccion() {
+  // Función de redirección directa al semáforo
+  function redirigirASemaforo() {
+    if (redirigido) return;
+    redirigido = true;
+    
+    console.log('[SmartSchedule] Redirigiendo al semáforo...');
+    setTimeout(() => {
+      window.location.href = URL_SEMAFORO;
+    }, 800);
+  }
+
+  // Detectar post-login y redirigir
+  window.addEventListener('DOMContentLoaded', () => {
     const currentUrl = window.location.href;
 
-    // Solo ejecutar en la página del semáforo
-    if (!currentUrl.includes('cal_sem_div2.jsp')) {
-      return false;
+    // Si estamos en inicioSeguro.jsp (post-login), redirigir al semáforo
+    if (currentUrl.includes('inicioSeguro.jsp')) {
+      console.log('[SmartSchedule] Login detectado, redirigiendo al semáforo...');
+      redirigirASemaforo();
+      return;
     }
 
+    // Si ya estamos en el semáforo, intentar extraer
+    if (currentUrl.includes('cal_sem_div2.jsp')) {
+      intentarExtraccion();
+    }
+  });
+
+  // Monitorear cambios de URL para detectar el semáforo
+  checkInterval = setInterval(() => {
+    const currentUrl = window.location.href;
+
+    // Si acabamos de redirigir y llegamos al semáforo
+    if (redirigido && currentUrl.includes('cal_sem_div2.jsp')) {
+      console.log('[SmartSchedule] Semáforo alcanzado, extrayendo materias...');
+      intentarExtraccion();
+      clearInterval(checkInterval);
+    }
+
+    // Si por alguna razón estamos en inicioSeguro.jsp, redirigir
+    if (!redirigido && currentUrl.includes('inicioSeguro.jsp')) {
+      redirigirASemaforo();
+    }
+  }, 500);
+
+  function intentarExtraccion() {
     // Buscar dentro de iframes si es necesario
     const targetDocument = buscarEnIframe(window);
     
@@ -194,16 +231,6 @@ export const CAPTURE_SCRIPT = `
 
     return false;
   }
-
-  // Verificar periódicamente si la página cambió al semáforo
-  checkInterval = setInterval(() => {
-    if (intentarExtraccion()) {
-      clearInterval(checkInterval);
-    }
-  }, 1000);
-
-  // Intentar una vez al cargar por si ya está en el semáforo
-  intentarExtraccion();
 
   // ── Extractor del Semáforo ─────────────────────────────────────
   function extraerMateriasAprobadasSemaforo(tarjetas) {
