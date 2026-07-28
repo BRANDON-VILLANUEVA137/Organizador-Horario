@@ -657,6 +657,92 @@ function restoreSavedState() {
   return true
 }
 
+// ── Back to top button ────────────────────────────────────────────
+const backToTopBtn = document.querySelector('#back-to-top')
+if (backToTopBtn) {
+  // Mostrar/ocultar según scroll
+  window.addEventListener('scroll', () => {
+    if (window.scrollY > 300) {
+      backToTopBtn.classList.add('visible')
+    } else {
+      backToTopBtn.classList.remove('visible')
+    }
+  })
+  
+  // Smooth scroll al hacer clic
+  backToTopBtn.addEventListener('click', () => {
+    window.scrollTo({ top: 0, behavior: 'smooth' })
+  })
+}
+
+// ── Export schedule as image ──────────────────────────────────────
+const exportButton = document.querySelector('#export-schedule')
+if (exportButton) {
+  exportButton.addEventListener('click', async () => {
+    const calendarGrid = document.querySelector('#designer-calendar-grid')
+    if (!calendarGrid) {
+      showDesignerMessage('No hay horario para exportar.', 'warning')
+      return
+    }
+
+    showDesignerMessage('Preparando exportación...', 'info')
+
+    try {
+      // Usar la API nativa de canvas para dibujar el horario
+      const canvas = document.createElement('canvas')
+      const ctx = canvas.getContext('2d')
+      
+      // Configurar dimensiones del canvas
+      const rect = calendarGrid.getBoundingClientRect()
+      const scale = 2 // Para mejor calidad
+      canvas.width = rect.width * scale
+      canvas.height = rect.height * scale
+      ctx.scale(scale, scale)
+      
+      // Fondo blanco
+      ctx.fillStyle = '#fffaf2'
+      ctx.fillRect(0, 0, rect.width, rect.height)
+      
+      // Dibujar título
+      ctx.fillStyle = '#102a43'
+      ctx.font = 'bold 16px Manrope, sans-serif'
+      ctx.fillText('Mi Horario - SmartSchedule', 10, 25)
+      
+      // Dibujar bloques del horario
+      const blocks = calendarGrid.querySelectorAll('.calendar-block')
+      ctx.font = '11px Manrope, sans-serif'
+      
+      blocks.forEach(block => {
+        const blockRect = block.getBoundingClientRect()
+        const x = blockRect.left - rect.left
+        const y = blockRect.top - rect.top
+        const w = blockRect.width
+        const h = blockRect.height
+        
+        // Color de fondo del bloque
+        ctx.fillStyle = '#c05640'
+        ctx.fillRect(x, y, w, h)
+        
+        // Texto del bloque
+        ctx.fillStyle = '#fff'
+        const text = block.querySelector('strong')?.textContent || ''
+        ctx.fillText(text.substring(0, 20), x + 4, y + 15)
+      })
+      
+      // Descargar como PNG
+      const link = document.createElement('a')
+      link.download = `horario-${new Date().toISOString().split('T')[0]}.png`
+      link.href = canvas.toDataURL('image/png')
+      link.click()
+      
+      showDesignerMessage('Horario exportado como imagen.', 'success')
+    } catch (err) {
+      console.error('Error exporting schedule:', err)
+      showDesignerMessage('Error al exportar el horario. Intenta de nuevo.', 'error')
+    }
+  })
+}
+
 // ── Bootstrap ─────────────────────────────────────────────────────
 if (!restoreSavedState()) {
   // Intentar cargar progreso académico incluso sin estado completo

@@ -132,17 +132,28 @@
           </div>
         </div>
 
-        <div class="subject-filters">
-          <label for="semester-filter">Filtrar por semestre</label>
-          <select id="semester-filter"><option value="">Todos los semestres</option></select>
-          <div class="subject-search">
-            <input type="search" id="subject-search-input" placeholder="Buscar por nombre o código..." />
+        <!-- Filtros sticky -->
+        <div class="subject-filters-sticky">
+          <div class="subject-filters">
+            <label for="semester-filter">Filtrar por semestre</label>
+            <select id="semester-filter"><option value="">Todos los semestres</option></select>
+            <div class="subject-search">
+              <input type="search" id="subject-search-input" placeholder="Buscar por nombre o código..." />
+            </div>
           </div>
         </div>
-        <div class="subject-list" id="subject-list">
-          <!-- Las materias se cargan dinámicamente desde la API -->
+        
+        <!-- Lista de materias con altura máxima -->
+        <div class="subject-list-container">
+          <div class="subject-list" id="subject-list">
+            <!-- Las materias se cargan dinámicamente desde la API -->
+          </div>
         </div>
-        <button class="primary-action next-action" id="to-designer" type="button">Diseñar horario <span aria-hidden="true">→</span></button>
+        
+        <!-- Botón sticky inferior -->
+        <div class="sticky-action-bar">
+          <button class="primary-action next-action" id="to-designer" type="button">Diseñar horario <span aria-hidden="true">→</span></button>
+        </div>
       </section>
 
       <section class="workflow-view" id="designer-panel" aria-labelledby="designer-title" hidden>
@@ -150,6 +161,7 @@
           <button class="back-button" data-back="subjects-panel" type="button">← Volver a materias</button>
           <button class="reset-button" id="reset-designer" type="button">✕ Reiniciar horario</button>
           <button class="restart-button" id="restart-from-designer" type="button">⟳ Nueva consulta</button>
+          <button class="export-button" id="export-schedule" type="button">📸 Exportar horario</button>
         </div>
         <div class="eyebrow">PASO 03 / DISEÑADOR</div>
         <h2 id="designer-title">Arrastra tus materias<br /><em>al horario.</em></h2>
@@ -218,6 +230,10 @@
 
       <footer>SEGUNDA VERSION · EXTRACCION Y OPTIMIZACION ACADEMICA</footer>
     </main>
+    
+    <!-- Back to top button -->
+    <button class="back-to-top" id="back-to-top" title="Volver arriba">↑</button>
+    
     <script type="module" src="src/app.js"></script>
   </body>
 </html>

@@ -174,6 +174,22 @@ textarea#sync-manual-textarea { background: #fffaf2; border: 1px solid #d8cbb9; 
 .reset-button { background: transparent; border: 1px solid #d8cbb9; color: #c05640; cursor: pointer; font-size: 11px; font-weight: 600; margin-left: auto; padding: 6px 12px; transition: border-color .15s; }
 .reset-button:hover { border-color: #c05640; background: rgba(192,86,64,.06); }
 
+.export-button {
+  background: #3b9c78;
+  border: 0;
+  color: #fff;
+  cursor: pointer;
+  font-size: 11px;
+  font-weight: 600;
+  padding: 6px 12px;
+  transition: background .15s;
+  margin-left: 8px;
+}
+
+.export-button:hover {
+  background: #2d7a5e;
+}
+
 .credits-counter { margin-left: 12px; padding: 6px 14px; border-radius: 999px; background: #102a43; color: #f0f4f8; font-weight: 600; font-size: 0.85rem; letter-spacing: 0.02em; white-space: nowrap; }
 .credits-counter.at-limit { background: #f0ad4e; color: #102a43; }
 .credits-counter.over-limit { background: #c05640; color: #f0f4f8; }
@@ -235,6 +251,84 @@ textarea#sync-manual-textarea { background: #fffaf2; border: 1px solid #d8cbb9; 
 }
 
 @media (max-width: 700px) { .connection { padding: 54px 20px 80px; }.connection-heading h2 { letter-spacing: -2px; }.progress-list { margin-top: 38px; } }
+
+/* ── Mejoras UX: Filtros sticky, botón sticky, back-to-top ── */
+.subject-filters-sticky {
+  position: sticky;
+  top: 0;
+  z-index: 100;
+  background: #f3f0e8;
+  padding: 12px 0;
+  border-bottom: 1px solid #d8cbb9;
+  margin-bottom: 12px;
+}
+
+.subject-list-container {
+  max-height: 50vh;
+  overflow-y: auto;
+  border: 1px solid #d8cbb9;
+  border-radius: 8px;
+  padding: 8px;
+  background: #fffaf2;
+}
+
+.sticky-action-bar {
+  position: sticky;
+  bottom: 0;
+  background: #f3f0e8;
+  padding: 16px 0;
+  border-top: 1px solid #d8cbb9;
+  margin-top: 16px;
+  z-index: 100;
+}
+
+/* Back to top button */
+.back-to-top {
+  position: fixed;
+  bottom: 24px;
+  right: 24px;
+  width: 48px;
+  height: 48px;
+  border-radius: 50%;
+  background: #102a43;
+  color: #fff;
+  border: 0;
+  font-size: 20px;
+  cursor: pointer;
+  z-index: 999;
+  opacity: 0;
+  visibility: hidden;
+  transition: opacity 0.3s, visibility 0.3s, transform 0.2s;
+  box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+}
+
+.back-to-top.visible {
+  opacity: 1;
+  visibility: visible;
+}
+
+.back-to-top:hover {
+  transform: translateY(-3px);
+  background: #1a3a5c;
+}
+
+.back-to-top:active {
+  transform: translateY(0);
+}
+
+@media (max-width: 768px) {
+  .subject-list-container {
+    max-height: 40vh;
+  }
+  
+  .back-to-top {
+    bottom: 16px;
+    right: 16px;
+    width: 44px;
+    height: 44px;
+    font-size: 18px;
+  }
+}
 
 /* ── One-tap add button (mobile UX) ── */
 .group-meta { font-size: 0.8rem; color: #64748b; margin: 4px 0; }
