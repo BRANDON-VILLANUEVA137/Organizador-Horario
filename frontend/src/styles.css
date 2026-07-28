@@ -133,9 +133,9 @@ footer { color: #829ab1; font: 500 10px 'DM Mono', monospace; letter-spacing: .1
 .designer-preferences .preference-option { background: transparent; border: 0; padding: 8px 0; }
 .designer-preferences .preference-option:has(input:checked) { background: transparent; }
 
-.designer-calendar { background: rgba(255, 250, 242, .65); border: 1px solid #d8cbb9; padding: 20px; overflow-x: auto; }
+.designer-calendar { background: rgba(255, 250, 242, .65); border: 1px solid #d8cbb9; padding: 20px; overflow-x: auto; position: relative; }
 .designer-calendar .eyebrow { margin-bottom: 16px; }
-.designer-calendar .calendar-grid { display: grid; grid-template-columns: 60px repeat(6, 1fr); gap: 2px; font-size: 11px; min-width: 720px; }
+.designer-calendar .calendar-grid { display: grid; grid-template-columns: 60px repeat(6, 1fr); gap: 2px; font-size: 11px; min-width: 720px; position: relative; }
 .designer-calendar .calendar-header { background: #102a43; color: #fff; font-weight: 700; padding: 8px 4px; text-align: center; text-transform: uppercase; letter-spacing: .04em; }
 .designer-calendar .calendar-hour { color: #627d98; font: 500 10px 'DM Mono', monospace; padding: 4px; text-align: right; }
 .designer-calendar .calendar-cell { background: #fffaf2; border: 1px solid #e8e0d4; min-height: 28px; position: relative; transition: background .15s; }
