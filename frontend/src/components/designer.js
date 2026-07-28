@@ -123,7 +123,7 @@ export function getSearchQuery() {
 }
 
 // ── Render available subjects in designer sidebar ─────────────────
-export function renderDesignerSubjects(container, extractionData, drafts, activeDraft, filters, queryOverride) {
+export function renderDesignerSubjects(container, extractionData, drafts, activeDraft, filters, queryOverride, showMessage) {
   const groups = getFilteredGroups(extractionData, filters)
 
   if (groups.length === 0) {

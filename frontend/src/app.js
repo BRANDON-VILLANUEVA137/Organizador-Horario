@@ -63,7 +63,7 @@ function refreshDesigner() {
   const grid = document.querySelector('#designer-calendar-grid')
   const draftContainer = document.querySelector('#draft-tabs')
 
-  renderDesignerSubjects(container, extractionData, getDrafts(), getActiveDraft(), designerFilters)
+  renderDesignerSubjects(container, extractionData, getDrafts(), getActiveDraft(), designerFilters, null, showDesignerMessage)
 
   // Render calendar grid and set up drop listeners
   renderCalendarGrid(grid, getPlacedBlocks(), (groupCode) => {
@@ -580,31 +580,31 @@ setOnStateChange(() => {
 // ── Filter controls ───────────────────────────────────────────────
 document.querySelector('#pref-morning')?.addEventListener('change', (e) => {
   designerFilters.preferMorning = e.target.checked
-  renderDesignerSubjects(document.querySelector('#designer-subject-list'), extractionData, getDrafts(), getActiveDraft(), designerFilters)
+  renderDesignerSubjects(document.querySelector('#designer-subject-list'), extractionData, getDrafts(), getActiveDraft(), designerFilters, null, showDesignerMessage)
 })
 document.querySelector('#pref-fridays')?.addEventListener('change', (e) => {
   designerFilters.avoidFridays = e.target.checked
-  renderDesignerSubjects(document.querySelector('#designer-subject-list'), extractionData, getDrafts(), getActiveDraft(), designerFilters)
+  renderDesignerSubjects(document.querySelector('#designer-subject-list'), extractionData, getDrafts(), getActiveDraft(), designerFilters, null, showDesignerMessage)
 })
 document.querySelector('#pref-compact')?.addEventListener('change', (e) => {
   designerFilters.compactDays = e.target.checked
-  renderDesignerSubjects(document.querySelector('#designer-subject-list'), extractionData, getDrafts(), getActiveDraft(), designerFilters)
+  renderDesignerSubjects(document.querySelector('#designer-subject-list'), extractionData, getDrafts(), getActiveDraft(), designerFilters, null, showDesignerMessage)
 })
 document.querySelectorAll('[data-day-filter]').forEach((cb) => {
   cb.addEventListener('change', (e) => {
     const day = parseInt(e.target.dataset.dayFilter)
     if (e.target.checked) { if (!designerFilters.preferredDays.includes(day)) designerFilters.preferredDays.push(day) }
     else { designerFilters.preferredDays = designerFilters.preferredDays.filter(d => d !== day) }
-    renderDesignerSubjects(document.querySelector('#designer-subject-list'), extractionData, getDrafts(), getActiveDraft(), designerFilters)
+    renderDesignerSubjects(document.querySelector('#designer-subject-list'), extractionData, getDrafts(), getActiveDraft(), designerFilters, null, showDesignerMessage)
   })
 })
 document.querySelector('#filter-min-hour')?.addEventListener('change', (e) => {
   designerFilters.minHour = parseInt(e.target.value) || 6
-  renderDesignerSubjects(document.querySelector('#designer-subject-list'), extractionData, getDrafts(), getActiveDraft(), designerFilters)
+  renderDesignerSubjects(document.querySelector('#designer-subject-list'), extractionData, getDrafts(), getActiveDraft(), designerFilters, null, showDesignerMessage)
 })
 document.querySelector('#filter-max-hour')?.addEventListener('change', (e) => {
   designerFilters.maxHour = parseInt(e.target.value) || 22
-  renderDesignerSubjects(document.querySelector('#designer-subject-list'), extractionData, getDrafts(), getActiveDraft(), designerFilters)
+  renderDesignerSubjects(document.querySelector('#designer-subject-list'), extractionData, getDrafts(), getActiveDraft(), designerFilters, null, showDesignerMessage)
 })
 
 // ── Cargar progreso académico guardado al iniciar ────────────────
