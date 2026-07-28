@@ -150,6 +150,24 @@ def create_extraction(request: ExtractionRequest) -> ExtractionResponse:
                 detail="No se pudo normalizar ninguna tabla de horarios.",
             )
 
+        # 🔥 Enriquecer grupos con créditos desde el pensum
+        # El portal no incluye la columna de créditos en las tablas HTML,
+        # pero el pensum JSON tiene esta información.
+        try:
+            pensum = pensum_service.get_pensum()
+            credits_map = {m.codigo: m.creditos for m in pensum.materias}
+            
+            enriched_count = 0
+            for group in all_groups:
+                if group.subject_code in credits_map and group.credits == 0:
+                    group.credits = credits_map[group.subject_code]
+                    enriched_count += 1
+            
+            print(f"[DEBUG] Créditos enriquecidos desde pensum: {enriched_count} grupos")
+        except Exception as exc:
+            print(f"[WARN] No se pudieron enriquecer créditos desde pensum: {exc}")
+            # Continuar con los créditos que venían del portal (probablemente 0)
+
         response = ExtractionResponse(
             extraction_id=str(uuid4()),
             portal_url=request.portal_url,
