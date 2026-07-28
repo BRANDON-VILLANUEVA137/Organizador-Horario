@@ -1,19 +1,10 @@
 # ✅ Plan de Implementación: UX y Persistencia
 
-## Pendientes
-
-- [x] 1. **storage.js** — Agregar `saveAcademicProgress()`, `loadAcademicProgress()`, `clearAcademicProgress()`
-- [x] 2. **styles.css** — Estilos para campo de búsqueda y botón de borrar avance
-- [x] 3. **index.html** — Agregar buscador en diseñador y botón "🗑️ Borrar Avance" en sync
-- [x] 4. **designer.js** — Agregar filtro por búsqueda (nombre/código) en `renderDesignerSubjects()` + export `setSearchQuery`/`getSearchQuery`
-- [x] 5. **app.js** — Integrar persistencia en handlePdfUpload / handleManualSync, cargar en initApp, conectar botón de reset + debounce en buscador
-
 ## Completados
 
-Todos los pasos completados. Archivos modificados:
-- `frontend/src/utils/storage.js`
-- `frontend/src/styles.css`
-- `frontend/index.html`
-- `frontend/src/components/designer.js`
-- `frontend/src/app.js`
-
+- [x] 1. **storage.js** — Agregar `saveAcademicProgress()`, `loadAcademicProgress()`, `clearAcademicProgress()`
+- [x] 2. **styles.css** — Estilos para campo de búsqueda en diseñador, botón de borrar avance, y materias completadas en selección
+- [x] 3. **index.html** — Ya tenía los elementos DOM necesarios (`#sync-clear-button`, `#subject-search-input`, `#designer-search-input`)
+- [x] 4. **subjects.js** — Agregar filtro de materias completadas (deshabilitadas + badge "✅ Ya cursada") en el panel de selección (Paso 02)
+- [x] 5. **designer.js** — Ya tenía `setSearchQuery()`/`getSearchQuery()` para el buscador en el diseñador
+- [x] 6. **app.js** — Integrar persistencia en handlePdfUpload/handleManualSync, cargar en initApp, conectar botón de reset y restartApp

@@ -11,6 +11,17 @@ export function getSubjectSearchQuery() {
   return subjectSearchQuery
 }
 
+// ── Completed subjects cache (from sync) ─────────────────────────
+let completedSubjectsList = []
+
+export function setCompletedSubjectsList(codes) {
+  completedSubjectsList = Array.isArray(codes) ? codes : []
+}
+
+export function getCompletedSubjectsList() {
+  return completedSubjectsList
+}
+
 // ── Apply all filters (semester + search) on subject list ─────────
 function applySubjectFilters(container) {
   const semesterFilter = document.querySelector('#semester-filter')
@@ -83,6 +94,7 @@ export function renderSubjects(container, groups, selectedSubjects = [], onCheck
   semesterFilter.onchange = () => applySubjectFilters(container)
 
   const subjects = Array.from(subjectsMap.values())
+  const completedSet = new Set(completedSubjectsList)
 
   if (subjects.length === 0) {
     container.innerHTML = '<p class="empty-message">No se encontraron materias en el portal.</p>'
@@ -92,12 +104,18 @@ export function renderSubjects(container, groups, selectedSubjects = [], onCheck
   container.innerHTML = subjects
     .map((subj) => {
       const isChecked = selectedSubjects.includes(subj.code)
+      const isCompleted = completedSet.has(subj.code)
       return `
-    <label class="subject-option" data-semesters="${Array.from(subj.semesters.keys()).join('|')}" data-subject-name="${subj.name}" data-subject-code="${subj.code}">
-      <input type="checkbox" value="${subj.code}" ${isChecked ? 'checked' : ''} />
+    <label class="subject-option ${isCompleted ? 'completed' : ''}" 
+           data-semesters="${Array.from(subj.semesters.keys()).join('|')}" 
+           data-subject-name="${subj.name}" 
+           data-subject-code="${subj.code}">
+      <input type="checkbox" value="${subj.code}" 
+             ${isChecked ? 'checked' : ''} 
+             ${isCompleted ? 'disabled' : ''} />
       <span>
         <strong>${subj.name}</strong>
-        <small>${subj.code} · ${subj.credits} créditos · ${subj.groups.length} grupo(s)</small>
+        <small>${subj.code} · ${subj.credits} créditos · ${subj.groups.length} grupo(s)${isCompleted ? ' · ✅ Ya cursada' : ''}</small>
       </span>
     </label>
   `
@@ -108,14 +126,16 @@ export function renderSubjects(container, groups, selectedSubjects = [], onCheck
     const subjectCode = option.querySelector('input')?.value
     const subject = subjectsMap.get(subjectCode)
     if (!subject) return
+    const isCompleted = completedSet.has(subjectCode)
     const semesterLabels = Array.from(subject.semesters.values())
     const semesterText = semesterLabels.length ? ` · ${semesterLabels.join(', ')}` : ''
-    option.querySelector('small').textContent = `${subject.code} · ${subject.credits} créditos · ${subject.groups.length} grupo(s)${semesterText}`
+    const completedTag = isCompleted ? ' · ✅ Ya cursada' : ''
+    option.querySelector('small').textContent = `${subject.code} · ${subject.credits} créditos · ${subject.groups.length} grupo(s)${semesterText}${completedTag}`
   })
 
-  // Attach change handlers
+  // Attach change handlers (only for non-disabled inputs)
   if (onCheckChange) {
-    container.querySelectorAll('input[type="checkbox"]').forEach((cb) => {
+    container.querySelectorAll('input[type="checkbox"]:not(:disabled)').forEach((cb) => {
       cb.addEventListener('change', onCheckChange)
     })
   }

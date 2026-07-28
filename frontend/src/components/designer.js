@@ -14,6 +14,26 @@ let eligibilityLoading = false
 // Siempre almacenado como Set para búsqueda O(1) con .has()
 let completedSubjectsCache = new Set()
 
+// ── Manual unlock state ────────────────────────────────────────────
+// Set of subject_codes that the user has manually unlocked via checkbox
+let manuallyUnlocked = new Set()
+
+export function toggleManualUnlock(subjectCode) {
+  if (manuallyUnlocked.has(subjectCode)) {
+    manuallyUnlocked.delete(subjectCode)
+  } else {
+    manuallyUnlocked.add(subjectCode)
+  }
+}
+
+export function isManuallyUnlocked(subjectCode) {
+  return manuallyUnlocked.has(subjectCode)
+}
+
+export function resetManuallyUnlocked() {
+  manuallyUnlocked = new Set()
+}
+
 export function setCompletedSubjects(subjects) {
   if (Array.isArray(subjects)) {
     completedSubjectsCache = new Set(subjects)
@@ -53,6 +73,17 @@ export async function loadEligibility(completedSubjects, completedDiagnostics = 
         missing_diagnostics: s.missing_diagnostics,
       }
     }
+
+    // 🔥 SOBRESCRIBIR: Las materias ya cursadas/aprobadas NUNCA deben aparecer como bloqueadas
+    // Aunque el backend las marque como bloqueadas (por ejemplo si el pensum cambió),
+    // el usuario ya las aprobó, así que forzamos eligible=true para que se oculten del diseñador
+    const completedSet = new Set(completedSubjects.map(c => c.toUpperCase()))
+    for (const code of Object.keys(map)) {
+      if (completedSet.has(code.toUpperCase())) {
+        map[code] = { eligible: true, reason: null, missing_requirements: [], missing_diagnostics: [] }
+      }
+    }
+
     eligibilityCache = map
     return result
   } catch (err) {
@@ -128,19 +159,30 @@ export function renderDesignerSubjects(container, extractionData, drafts, active
     // Verificar elegibilidad de esta materia
     const elig = getEligibility(code)
     const isBlocked = elig && !elig.eligible
+    const isUnlocked = manuallyUnlocked.has(code)
+    // Si está manualmente desbloqueada, se comporta como no bloqueada
+    const effectivelyBlocked = isBlocked && !isUnlocked
     const blockReason = elig ? elig.reason : null
 
-    html += `<div class="designer-subject-header ${isBlocked ? 'blocked' : ''}">${subject.name}</div>`
+    // Checkbox de desbloqueo manual (solo para materias bloqueadas)
+    const unlockCheckbox = isBlocked
+      ? `<label class="unlock-toggle" title="Desbloquear manualmente">
+           <input type="checkbox" class="unlock-checkbox" data-subject-code="${code}" ${isUnlocked ? 'checked' : ''}>
+           <span class="unlock-label">Desbloquear</span>
+         </label>`
+      : ''
+
+    html += `<div class="designer-subject-header ${effectivelyBlocked ? 'blocked' : ''}">${subject.name}${unlockCheckbox}</div>`
     for (const group of subject.groups) {
       const timeInfo = formatGroupTime(group)
       const isDiagnostico = group.subject_name?.includes('[DIAGNÓSTICO]')
       const isPlaced = placedGroupCodes.has(group.code)
-      const canDrag = !isPlaced && !isBlocked
+      const canDrag = !isPlaced && !effectivelyBlocked
 
       html += `
         <div class="designer-group-card 
              ${isPlaced ? 'placed' : ''} 
-             ${isBlocked ? 'blocked' : ''}" 
+             ${effectivelyBlocked ? 'blocked' : ''}" 
              draggable="${canDrag}"
              data-subject-code="${code}"
              data-subject-name="${subject.name}"
@@ -149,13 +191,13 @@ export function renderDesignerSubjects(container, extractionData, drafts, active
              ${blockReason ? `title="🔒 Bloqueada: ${blockReason}"` : ''}>
           <div class="group-name">
             ${isDiagnostico ? '📋 ' : ''}
-            ${isBlocked ? '🔒 ' : ''}
+            ${effectivelyBlocked ? '🔒 ' : ''}
             ${group.code} ${isPlaced ? '✓' : ''}
           </div>
           <div class="group-code">${subject.name}</div>
           <div class="group-time">${timeInfo || 'Sin horario definido'}</div>
           ${isDiagnostico ? '<span class="group-badge">Diagnóstico</span>' : ''}
-          ${isBlocked ? '<span class="group-badge blocked-badge">Bloqueada</span>' : ''}
+          ${effectivelyBlocked ? '<span class="group-badge blocked-badge">Bloqueada</span>' : ''}
         </div>
       `
     }
@@ -174,6 +216,17 @@ export function renderDesignerSubjects(container, extractionData, drafts, active
   container.querySelectorAll('.designer-group-card:not(.placed):not(.blocked)').forEach((card) => {
     card.addEventListener('dragstart', handleDragStart)
     card.addEventListener('dragend', handleDragEnd)
+  })
+
+  // Manual unlock checkbox listeners
+  container.querySelectorAll('.unlock-checkbox').forEach((cb) => {
+    cb.addEventListener('change', (e) => {
+      const subjectCode = e.target.dataset.subjectCode
+      toggleManualUnlock(subjectCode)
+      // Re-render to update drag state and visual styling
+      renderDesignerSubjects(container, extractionData, drafts, activeDraft, filters, queryOverride)
+      if (onStateChange) onStateChange()
+    })
   })
 }
 

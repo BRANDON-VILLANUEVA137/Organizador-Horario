@@ -24,7 +24,11 @@ footer { color: #829ab1; font: 500 10px 'DM Mono', monospace; letter-spacing: .1
 .connection { margin: 0 auto; max-width: 1180px; padding: 70px 32px 110px; }.connection-heading h2 { font-size: clamp(42px, 6vw, 76px); letter-spacing: -3px; line-height: 1; margin: 20px 0; }.connection-heading h2 em { color: #c05640; font-style: normal; }.connection-heading p { color: #627d98; font: 13px 'DM Mono', monospace; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; max-width: 500px; }
 .progress-list { border-left: 1px solid #d8cbb9; list-style: none; margin: 48px 0 0; max-width: 570px; padding: 0 0 0 26px; }.progress-list li { align-items: center; color: #829ab1; display: flex; font-size: 14px; gap: 15px; padding: 13px 0; transition: color .25s, transform .25s; }.progress-list li.done { color: #3b8069; transform: translateX(4px); }.progress-icon { color: #f0ad4e; font: 18px 'DM Mono', monospace; width: 17px; }.progress-list li.done .progress-icon { color: #3b8069; }.connection .form-message { margin-top: 28px; }
 .next-action { margin-top: 34px; }.workflow-view { margin: 0 auto; max-width: 1180px; padding: 70px 32px 110px; }.workflow-view h2 { font-size: clamp(42px, 6vw, 76px); letter-spacing: -3px; line-height: 1; margin: 20px 0; }.workflow-view h2 em { color: #c05640; font-style: normal; }.section-copy { color: #486581; line-height: 1.6; margin: 0 0 34px; max-width: 470px; }
-.subject-list, .preference-list { display: grid; gap: 10px; max-width: 620px; }.subject-option, .preference-option { align-items: center; background: rgba(255, 250, 242, .65); border: 1px solid #d8cbb9; cursor: pointer; display: flex; gap: 15px; padding: 17px; }.subject-option:has(input:checked), .preference-option:has(input:checked) { border-color: #7b9e8e; background: #f4eee2; }.subject-option input, .preference-option input { accent-color: #c05640; height: 17px; width: 17px; }.subject-option span, .preference-option span { display: grid; gap: 5px; }.subject-option strong, .preference-option strong, .result-card strong { font-size: 14px; }.subject-option small, .preference-option small, .result-card small { color: #627d98; font-size: 12px; }
+.subject-option, .preference-option { align-items: center; background: rgba(255, 250, 242, .65); border: 1px solid #d8cbb9; cursor: pointer; display: flex; gap: 15px; padding: 17px; }.subject-option:has(input:checked), .preference-option:has(input:checked) { border-color: #7b9e8e; background: #f4eee2; }.subject-option input, .preference-option input { accent-color: #c05640; height: 17px; width: 17px; }.subject-option span, .preference-option span { display: grid; gap: 5px; }.subject-option strong, .preference-option strong, .result-card strong { font-size: 14px; }.subject-option small, .preference-option small, .result-card small { color: #627d98; font-size: 12px; }
+/* Subject already completed (from sync) */
+.subject-option.completed { opacity: 0.5; border-color: #7b9e8e; cursor: default; background: rgba(123, 158, 142, 0.08); }
+.subject-option.completed input[type="checkbox"] { opacity: 0.4; }
+.subject-option.completed small { color: #7b9e8e; }
 .export-actions { display: flex; flex-wrap: wrap; gap: 10px; }.export-actions button { background: #102a43; border: 0; color: #fff; cursor: pointer; font-weight: 700; padding: 15px 24px; }.export-actions button:hover { background: #243b53; }
 .back-button { background: transparent; border: 0; color: #627d98; cursor: pointer; font: 500 11px 'DM Mono', monospace; padding: 0; text-transform: uppercase; }
 .setup-heading { margin: 70px 0 42px; }.setup-heading h2 { font-size: clamp(42px, 6vw, 76px); letter-spacing: -3px; line-height: 1; margin: 20px 0; }.setup-heading h2 em { color: #c05640; font-style: normal; }.setup-heading p { color: #486581; line-height: 1.6; margin: 0; }
@@ -104,6 +108,12 @@ footer { color: #829ab1; font: 500 10px 'DM Mono', monospace; letter-spacing: .1
 .designer-group-card.blocked:hover { box-shadow: none; border-color: #c05640; }
 .designer-subject-header.blocked { color: #c05640; }
 .designer-group-card .blocked-badge { display: inline-block; background: #c05640; color: #fff; font: 500 9px 'DM Mono', monospace; padding: 2px 6px; text-transform: uppercase; margin-left: 4px; }
+
+/* ── Checkbox de desbloqueo manual ── */
+.unlock-toggle { display: inline-flex; align-items: center; gap: 6px; margin-left: 12px; cursor: pointer; font-size: 11px; font-weight: 600; color: #486581; user-select: none; }
+.unlock-toggle input[type="checkbox"] { accent-color: #3b9c78; height: 14px; width: 14px; cursor: pointer; }
+.unlock-toggle .unlock-label { transition: color .15s; }
+.unlock-toggle input:checked + .unlock-label { color: #3b8069; }
 
 /* ── Draft tabs ── */
 .draft-tabs { display: flex; gap: 8px; margin-bottom: 20px; }

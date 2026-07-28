@@ -3,12 +3,13 @@ import { checkHealth, fetchCatalog, runExtraction, checkEligibility } from './se
 import { saveState, loadState, clearSavedState, saveAcademicProgress, loadAcademicProgress, clearAcademicProgress } from './utils/storage.js'
 import { normalizeSemesterKey } from './utils/helpers.js'
 import { showPanel, navigateTo } from './components/navigation.js'
-import { renderSubjects, getSelectedSubjectCodes, setSubjectSearchQuery } from './components/subjects.js'
+import { renderSubjects, getSelectedSubjectCodes, setSubjectSearchQuery, setCompletedSubjectsList } from './components/subjects.js'
 import { renderCalendarGrid, placeBlocks, setupDropListeners } from './components/calendar.js'
 import {
   renderDesignerSubjects, renderDraftTabs, populateHourSelects, syncFilterUI,
   setOnStateChange, handleDrop, handleRemoveBlock, clearDraggedGroupData,
-  loadEligibility, isEligibilityLoaded, setCompletedSubjects, setSearchQuery, getSearchQuery
+  loadEligibility, isEligibilityLoaded, setCompletedSubjects, setSearchQuery, getSearchQuery,
+  resetManuallyUnlocked
 } from './components/designer.js'
 import {
   getDrafts, getActiveDraft, getDraftNames, getDraftCount,
@@ -109,6 +110,7 @@ document.querySelector('#to-export')?.addEventListener('click', () => navigateTo
 document.querySelector('#reset-designer')?.addEventListener('click', () => {
   if (confirm('¿Estás seguro? Se borrarán todos los horarios que hayas armado.')) {
     resetDrafts()
+    resetManuallyUnlocked()
     refreshDesigner()
     showDesignerMessage('Horario reiniciado. Puedes empezar de nuevo.', 'info')
   }
@@ -125,6 +127,8 @@ function restartApp() {
   clearSavedState()
   clearAcademicProgress()
   setCompletedSubjects(null)
+  setCompletedSubjectsList([])
+  resetManuallyUnlocked()
 
   // Ocultar todos los paneles
   panels.forEach(p => p.hidden = true)
@@ -350,6 +354,7 @@ async function handleManualSync() {
     
     saveAcademicProgress(syncData.completed, syncData.diagnostics)
     setCompletedSubjects(syncData.completed)
+    setCompletedSubjectsList(syncData.completed)
     await loadEligibility(syncData.completed, syncData.diagnostics)
     
     refreshDesigner()
@@ -384,6 +389,7 @@ async function handlePdfUpload(file) {
     
     saveAcademicProgress(syncData.completed, syncData.diagnostics)
     setCompletedSubjects(syncData.completed)
+    setCompletedSubjectsList(syncData.completed)
     await loadEligibility(syncData.completed, syncData.diagnostics)
     
     refreshDesigner()
@@ -406,6 +412,7 @@ if (syncClearButton) {
     clearAcademicProgress()
     syncData = null
     setCompletedSubjects([])
+    setCompletedSubjectsList([])
     syncResult.hidden = true
     if (syncManualTextarea) syncManualTextarea.value = ''
     syncDropzoneText.textContent = 'Arrastra tu PDF aquí o haz clic para seleccionar'
@@ -497,6 +504,7 @@ async function doExtraction(payload) {
 // ── Init designer ─────────────────────────────────────────────────
 async function initDesigner() {
   resetDrafts()
+  resetManuallyUnlocked()
   designerFilters = { preferMorning: false, avoidFridays: false, compactDays: false, preferredDays: [], minHour: 6, maxHour: 22 }
   populateHourSelects()
   syncFilterUI(designerFilters)
@@ -561,6 +569,7 @@ function loadCachedAcademicProgress() {
 
   console.log('[SmartSchedule] Restaurando progreso académico desde localStorage:', completed.length, 'materias')
   setCompletedSubjects(completed)
+  setCompletedSubjectsList(completed)
   loadEligibility(completed, diagnostics)
 
   return true
