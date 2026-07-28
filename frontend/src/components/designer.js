@@ -480,13 +480,24 @@ export function handleOneTapAdd(groupData, showMessage) {
 
   const placedBlocks = getPlacedBlocks()
 
+  // Helper: mostrar mensaje local + toast global para errores/warnings
+  function notify(text, type) {
+    // Mensaje local (en el calendario)
+    showMessage(text, type)
+    // Toast global (visible en cualquier pestaña)
+    if (window.showToast) {
+      const icons = { error: '❌', warning: '⚠️', success: '✓', info: 'ℹ️' }
+      window.showToast(`${icons[type] || 'ℹ️'} ${text}`, type, 4000)
+    }
+  }
+
   // Validar si ya está colocado
   if (isGroupPlaced(placedBlocks, groupData.code)) {
-    showMessage(`El grupo "${groupData.code}" ya está en el horario.`, 'warning')
+    notify(`El grupo "${groupData.code}" ya está en el horario.`, 'warning')
     return
   }
   if (isSubjectPlaced(placedBlocks, groupData.subject_code)) {
-    showMessage(
+    notify(
       `Ya tienes "${groupData.subject_name}" con otro grupo. Quita ese primero si quieres cambiar.`,
       'warning'
     )
@@ -496,7 +507,7 @@ export function handleOneTapAdd(groupData, showMessage) {
   // Validar conflictos
   const conflict = hasConflict(placedBlocks, groupData)
   if (conflict) {
-    showMessage(
+    notify(
       `Conflicto: "${groupData.subject_name}" choca con ${conflict.group.subject_name} el ${DAY_NAMES[conflict.dayIndex]}.`,
       'error'
     )
@@ -509,7 +520,7 @@ export function handleOneTapAdd(groupData, showMessage) {
   const totalAfterAdd = currentCredits + newCredits
 
   if (totalAfterAdd > 18) {
-    showMessage(
+    notify(
       `Límite de créditos excedido: ${currentCredits} + ${newCredits} = ${totalAfterAdd} créditos. El máximo permitido es 18.`,
       'error'
     )
@@ -523,12 +534,24 @@ export function handleOneTapAdd(groupData, showMessage) {
   // Actualizar contador de créditos
   updateCreditsCounter(getPlacedBlocks())
 
-  showMessage(`"${groupData.subject_name}" (${groupData.code}) — ${blockCount} bloque(s) agregado(s). Créditos: ${totalAfterAdd}/18`, 'success')
-
-  // Mostrar toast en móviles
+  // Mostrar toast global en lugar de solo mensaje local
   if (window.showToast) {
-    window.showToast(`✓ "${groupData.subject_name}" agregado al horario`, 'success', 2500)
+    window.showToast(`✓ "${groupData.subject_name}" (${groupData.code}) agregado al horario. ${totalAfterAdd}/18 créditos`, 'success', 3000)
+  } else {
+    showMessage(`"${groupData.subject_name}" (${groupData.code}) — ${blockCount} bloque(s) agregado(s). Créditos: ${totalAfterAdd}/18`, 'success')
   }
 
   if (onStateChange) onStateChange()
+}
+
+// Interceptar showMessage para que los errores también disparen toast global
+function enhancedShowMessage(text, type = 'info', showMessageFn) {
+  // Siempre llamar al mensaje local
+  if (showMessageFn) showMessageFn(text, type)
+  
+  // Si es error o warning en móvil, disparar toast global si está disponible
+  if ((type === 'error' || type === 'warning') && window.showToast) {
+    const icon = type === 'error' ? '❌' : type === 'warning' ? '⚠️' : 'ℹ️'
+    window.showToast(`${icon} ${text}`, type, 4000)
+  }
 }
