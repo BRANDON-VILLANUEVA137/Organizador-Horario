@@ -34,7 +34,53 @@ footer { color: #829ab1; font: 500 10px 'DM Mono', monospace; letter-spacing: .1
 .setup-heading { margin: 70px 0 42px; }.setup-heading h2 { font-size: clamp(42px, 6vw, 76px); letter-spacing: -3px; line-height: 1; margin: 20px 0; }.setup-heading h2 em { color: #c05640; font-style: normal; }.setup-heading p { color: #486581; line-height: 1.6; margin: 0; }
 .setup-form { display: grid; gap: 22px 18px; grid-template-columns: repeat(2, minmax(0, 1fr)); max-width: 760px; }.setup-form label, legend { color: #486581; display: grid; font-size: 12px; font-weight: 700; gap: 9px; }.setup-form select { appearance: none; background: #fffaf2 url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='14' height='14' fill='none' stroke='%23627d98' stroke-width='2'%3E%3Cpath d='m3 5 4 4 4-4'/%3E%3C/svg%3E") no-repeat right 15px center; border: 1px solid #d8cbb9; border-radius: 0; color: #102a43; font: 500 13px 'Manrope', sans-serif; padding: 14px 38px 14px 14px; width: 100%; }.setup-form select:focus { border-color: #c05640; outline: 2px solid #e7cfae; }
 .setup-form fieldset { border: 0; display: grid; gap: 13px; grid-column: 1 / -1; margin: 9px 0 0; padding: 0; }.choice { align-items: center; display: flex !important; font-weight: 500 !important; gap: 10px !important; }.choice input { accent-color: #c05640; height: 16px; width: 16px; }.setup-form .primary-action { border: 0; grid-column: 1 / -1; justify-self: start; }.form-message { color: #3b8069; font-size: 13px; grid-column: 1 / -1; margin: -6px 0 0; }
-@media (max-width: 700px) { .topbar { padding: 22px 20px; }.status { font-size: 9px; }.hero { padding: 70px 20px 78px; } h1 { letter-spacing: -2px; }.roadmap { display: block; margin: 0 20px; }.step, .step:first-child { border-left: 0; border-right: 0; border-bottom: 1px solid #d8cbb9; min-height: auto; padding: 24px 0; }.step:last-child { border-bottom: 0; } footer { padding-left: 20px; padding-right: 20px; } }
+@media (max-width: 768px) {
+  .topbar { padding: 16px 20px; }
+  .status { font-size: 9px; }
+  .hero { padding: 50px 20px 60px; }
+  h1 { letter-spacing: -2px; font-size: clamp(36px, 8vw, 64px); }
+  .hero-copy { font-size: 14px; }
+  
+  /* Compactar roadmap */
+  .roadmap { display: block; margin: 0 20px; }
+  .step, .step:first-child { 
+    border-left: 0; 
+    border-right: 0; 
+    border-bottom: 1px solid #d8cbb9; 
+    min-height: auto; 
+    padding: 16px 0; 
+  }
+  .step:last-child { border-bottom: 0; }
+  .step-number { font-size: 10px; }
+  .step h2 { font-size: 12px; }
+  .step p { font-size: 11px; }
+  
+  /* Reducir títulos de secciones */
+  .workflow-view h2 { font-size: clamp(28px, 6vw, 48px); letter-spacing: -2px; }
+  .section-copy { font-size: 13px; }
+  
+  /* Filtros responsive - evitar overflow */
+  .subject-filters { 
+    flex-direction: column; 
+    gap: 8px;
+    max-width: 100%;
+  }
+  .subject-filters label { font-size: 11px; }
+  .subject-filters select { width: 100%; }
+  .subject-search { width: 100%; min-width: 100%; }
+  
+  /* Lista de materias más compacta */
+  .subject-list-container { max-height: 35vh; }
+  
+  /* Botón sticky más compacto */
+  .sticky-action-bar { padding: 12px 0; }
+  .sticky-action-bar .primary-action { 
+    font-size: 13px; 
+    padding: 14px 18px; 
+  }
+  
+  footer { padding-left: 20px; padding-right: 20px; font-size: 9px; }
+}
 .catalog-controls { display: grid; gap: 16px; margin-top: 28px; max-width: 500px; }
 .catalog-field { display: grid; gap: 6px; }
 .catalog-field label { color: #486581; font-size: 12px; font-weight: 700; }
