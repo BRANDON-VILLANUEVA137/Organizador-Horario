@@ -688,112 +688,20 @@ if (exportButton) {
     showDesignerMessage('Preparando exportación...', 'info')
 
     try {
-      // Usar la API nativa de canvas para dibujar el horario completo
-      const canvas = document.createElement('canvas')
-      const ctx = canvas.getContext('2d')
+      // Importar html2canvas dinámicamente
+      const html2canvas = (await import('html2canvas')).default
       
-      // Configurar dimensiones del canvas
-      const rect = calendarGrid.getBoundingClientRect()
-      const scale = 2 // Para mejor calidad
-      const padding = 60 // Espacio para título y encabezados
-      canvas.width = (rect.width + padding) * scale
-      canvas.height = (rect.height + padding) * scale
-      ctx.scale(scale, scale)
-      
-      // Fondo blanco
-      ctx.fillStyle = '#fffaf2'
-      ctx.fillRect(0, 0, rect.width + padding, rect.height + padding)
-      
-      // Dibujar título
-      ctx.fillStyle = '#102a43'
-      ctx.font = 'bold 18px Manrope, sans-serif'
-      ctx.fillText('Mi Horario - SmartSchedule', 20, 30)
-      
-      // Dibujar encabezados de días
-      const headers = calendarGrid.querySelectorAll('.calendar-header')
-      ctx.font = 'bold 12px Manrope, sans-serif'
-      ctx.fillStyle = '#102a43'
-      headers.forEach((header, i) => {
-        const headerRect = header.getBoundingClientRect()
-        const x = headerRect.left - rect.left + padding
-        const y = headerRect.top - rect.top + padding
-        ctx.fillText(header.textContent, x + 5, y + 18)
-      })
-      
-      // Dibujar horas (eje Y)
-      const hours = calendarGrid.querySelectorAll('.calendar-hour')
-      ctx.font = '10px DM Mono, monospace'
-      ctx.fillStyle = '#627d98'
-      hours.forEach(hour => {
-        const hourRect = hour.getBoundingClientRect()
-        const x = hourRect.left - rect.left + padding
-        const y = hourRect.top - rect.top + padding
-        const text = hour.textContent
-        ctx.fillText(text, x + 2, y + 10)
-      })
-      
-      // Dibujar líneas de la cuadrícula
-      ctx.strokeStyle = '#e8e0d4'
-      ctx.lineWidth = 1
-      
-      // Líneas verticales (días)
-      for (let i = 0; i <= 6; i++) {
-        const x = padding + (i * (rect.width / 6))
-        ctx.beginPath()
-        ctx.moveTo(x, padding)
-        ctx.lineTo(x, rect.height + padding)
-        ctx.stroke()
-      }
-      
-      // Líneas horizontales (horas)
-      const hourHeight = rect.height / 16 // Asumiendo 16 horas (6am - 10pm)
-      for (let i = 0; i <= 16; i++) {
-        const y = padding + (i * hourHeight)
-        ctx.beginPath()
-        ctx.moveTo(padding, y)
-        ctx.lineTo(rect.width + padding, y)
-        ctx.stroke()
-      }
-      
-      // Dibujar bloques del horario
-      const blocks = calendarGrid.querySelectorAll('.calendar-block')
-      blocks.forEach(block => {
-        const blockRect = block.getBoundingClientRect()
-        const x = blockRect.left - rect.left + padding
-        const y = blockRect.top - rect.top + padding
-        const w = blockRect.width
-        const h = blockRect.height
-        
-        // Color de fondo del bloque
-        ctx.fillStyle = '#c05640'
-        ctx.fillRect(x, y, w, h)
-        
-        // Borde del bloque
-        ctx.strokeStyle = '#102a43'
-        ctx.lineWidth = 2
-        ctx.strokeRect(x, y, w, h)
-        
-        // Texto del bloque (con wrap)
-        ctx.fillStyle = '#fff'
-        ctx.font = 'bold 11px Manrope, sans-serif'
-        const text = block.querySelector('strong')?.textContent || ''
-        const maxWidth = w - 8
-        const words = text.split(' ')
-        let line = ''
-        let lineY = y + 16
-        
-        words.forEach(word => {
-          const testLine = line + word + ' '
-          const metrics = ctx.measureText(testLine)
-          if (metrics.width > maxWidth && line !== '') {
-            ctx.fillText(line.trim(), x + 4, lineY)
-            line = word + ' '
-            lineY += 14
-          } else {
-            line = testLine
-          }
-        })
-        ctx.fillText(line.trim(), x + 4, lineY)
+      // Capturar el contenedor del calendario con todos sus estilos
+      const canvas = await html2canvas(calendarGrid, {
+        scale: 2, // Alta resolución
+        useCORS: true,
+        backgroundColor: '#fffaf2',
+        logging: false,
+        // Asegurar que capture toda la cuadrícula incluyendo scroll
+        windowWidth: calendarGrid.scrollWidth,
+        windowHeight: calendarGrid.scrollHeight,
+        scrollX: 0,
+        scrollY: 0,
       })
       
       // Descargar como PNG

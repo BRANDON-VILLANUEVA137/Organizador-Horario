@@ -11,6 +11,7 @@
     "preview": "vite preview"
   },
   "dependencies": {
+    "html2canvas": "^1.4.1",
     "vite": "latest"
   },
   "packageManager": "pnpm@11.16.0"
