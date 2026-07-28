@@ -677,8 +677,6 @@ if (backToTopBtn) {
 
 // ── Toast notification system ─────────────────────────────────────
 function showToast(message, type = 'info', duration = 3000) {
-  // Exponer globalmente para que designer.js pueda llamarlo
-  window.showToast = showToast
   // Remover toast anterior si existe
   const existingToast = document.querySelector('.toast-notification')
   if (existingToast) existingToast.remove()
@@ -699,6 +697,9 @@ function showToast(message, type = 'info', duration = 3000) {
     setTimeout(() => toast.remove(), 300)
   }, duration)
 }
+
+// Exponer showToast globalmente para que designer.js pueda llamarlo
+window.showToast = showToast
 
 // ── Mobile tabs for designer ──────────────────────────────────────
 const mobileTabs = document.querySelectorAll('.mobile-tab')
