@@ -355,9 +355,19 @@ async function handleManualSync() {
     saveAcademicProgress(syncData.completed, syncData.diagnostics)
     setCompletedSubjects(syncData.completed)
     setCompletedSubjectsList(syncData.completed)
+    
+    // Debug: Log para ver qué materias se detectaron
+    console.log('[app.js] syncData.completed:', syncData.completed)
+    console.log('[app.js] syncData.diagnostics:', syncData.diagnostics)
+    
     await loadEligibility(syncData.completed, syncData.diagnostics)
     
     refreshDesigner()
+    
+    // 🔥 Re-renderizar lista de materias para aplicar filtro de completadas
+    renderSubjects(document.querySelector('#subject-list'), extractionData.groups, getSelectedSubjectCodes(), () => {
+      saveState(extractionData, catalogData, getDrafts(), getActiveDraft(), designerFilters)
+    })
     
     showDesignerMessage(`Sincronización manual: ${syncData.completed.length} materias, ${syncData.diagnostics.length} diagnósticos. ${eligResult.progress_percentage}% de carrera.`, 'success')
   } catch (err) {
@@ -390,9 +400,20 @@ async function handlePdfUpload(file) {
     saveAcademicProgress(syncData.completed, syncData.diagnostics)
     setCompletedSubjects(syncData.completed)
     setCompletedSubjectsList(syncData.completed)
+    
+    // Debug: Log para ver qué materias se detectaron
+    console.log('[app.js] syncData.completed:', syncData.completed)
+    console.log('[app.js] syncData.diagnostics:', syncData.diagnostics)
+    
     await loadEligibility(syncData.completed, syncData.diagnostics)
     
     refreshDesigner()
+    
+    // 🔥 Re-renderizar lista de materias para aplicar filtro de completadas
+    renderSubjects(document.querySelector('#subject-list'), extractionData.groups, getSelectedSubjectCodes(), () => {
+      saveState(extractionData, catalogData, getDrafts(), getActiveDraft(), designerFilters)
+    })
+    
     syncDropzoneText.textContent = 'PDF procesado!'
     if (syncManualTextarea) syncManualTextarea.value = ''
     
@@ -419,6 +440,12 @@ if (syncClearButton) {
     syncProgressPct.textContent = '0%'
     loadEligibility([], [])
     refreshDesigner()
+    
+    // 🔥 Re-renderizar lista de materias para mostrar todas las materias nuevamente
+    renderSubjects(document.querySelector('#subject-list'), extractionData.groups, getSelectedSubjectCodes(), () => {
+      saveState(extractionData, catalogData, getDrafts(), getActiveDraft(), designerFilters)
+    })
+    
     showDesignerMessage('Avance académico borrado. Todas las materias están visibles.', 'info')
   })
 }
