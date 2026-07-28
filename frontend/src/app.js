@@ -9,7 +9,7 @@ import {
   renderDesignerSubjects, renderDraftTabs, populateHourSelects, syncFilterUI,
   setOnStateChange, handleDrop, handleRemoveBlock, clearDraggedGroupData,
   loadEligibility, isEligibilityLoaded, setCompletedSubjects, setSearchQuery, getSearchQuery,
-  resetManuallyUnlocked, calculateTotalCredits, updateCreditsCounter
+  resetManuallyUnlocked, calculateTotalCredits, updateCreditsCounter, handleOneTapAdd
 } from './components/designer.js'
 import {
   getDrafts, getActiveDraft, getDraftNames, getDraftCount,

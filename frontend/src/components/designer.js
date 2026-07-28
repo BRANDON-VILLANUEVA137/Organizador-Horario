@@ -203,6 +203,15 @@ export function renderDesignerSubjects(container, extractionData, drafts, active
           </div>
           <div class="group-code">${subject.name}</div>
           <div class="group-time">${timeInfo || 'Sin horario definido'}</div>
+          <div class="group-meta">${group.blocks.length} día(s) · ${group.credits} créditos</div>
+          <div class="group-actions">
+            ${isPlaced 
+              ? '<span class="added-badge">✓ Añadido</span>' 
+              : effectivelyBlocked 
+                ? '<span class="blocked-action">Bloqueada</span>' 
+                : `<button class="add-button" data-group-code="${group.code}" data-group-json='${encodeGroupData(group)}' ${canDrag ? '' : 'disabled'}>➕ Añadir</button>`
+            }
+          </div>
           ${isDiagnostico ? '<span class="group-badge">Diagnóstico</span>' : ''}
           ${effectivelyBlocked ? '<span class="group-badge blocked-badge">Bloqueada</span>' : ''}
         </div>
@@ -233,6 +242,21 @@ export function renderDesignerSubjects(container, extractionData, drafts, active
       // Re-render to update drag state and visual styling
       renderDesignerSubjects(container, extractionData, drafts, activeDraft, filters, queryOverride)
       if (onStateChange) onStateChange()
+    })
+  })
+
+  // 🔥 One-tap add button listeners (para móviles)
+  container.querySelectorAll('.add-button').forEach((btn) => {
+    btn.addEventListener('click', (e) => {
+      e.preventDefault()
+      e.stopPropagation()
+      
+      try {
+        const groupData = JSON.parse(btn.dataset.groupJson)
+        handleOneTapAdd(groupData, showDesignerMessage)
+      } catch (err) {
+        console.error('Error parsing group data:', err)
+      }
     })
   })
 }
@@ -448,4 +472,58 @@ export function updateCreditsCounter(placedBlocks) {
   } else {
     counterElement.className = 'credits-counter'
   }
+}
+
+// ── One-tap add: validar y colocar automáticamente en el horario ──
+export function handleOneTapAdd(groupData, showMessage) {
+  if (!groupData) return
+
+  const placedBlocks = getPlacedBlocks()
+
+  // Validar si ya está colocado
+  if (isGroupPlaced(placedBlocks, groupData.code)) {
+    showMessage(`El grupo "${groupData.code}" ya está en el horario.`, 'warning')
+    return
+  }
+  if (isSubjectPlaced(placedBlocks, groupData.subject_code)) {
+    showMessage(
+      `Ya tienes "${groupData.subject_name}" con otro grupo. Quita ese primero si quieres cambiar.`,
+      'warning'
+    )
+    return
+  }
+
+  // Validar conflictos
+  const conflict = hasConflict(placedBlocks, groupData)
+  if (conflict) {
+    showMessage(
+      `Conflicto: "${groupData.subject_name}" choca con ${conflict.group.subject_name} el ${DAY_NAMES[conflict.dayIndex]}.`,
+      'error'
+    )
+    return
+  }
+
+  // Validar límite de 18 créditos
+  const newCredits = groupData.credits || 0
+  const currentCredits = calculateTotalCredits(placedBlocks)
+  const totalAfterAdd = currentCredits + newCredits
+
+  if (totalAfterAdd > 18) {
+    showMessage(
+      `Límite de créditos excedido: ${currentCredits} + ${newCredits} = ${totalAfterAdd} créditos. El máximo permitido es 18.`,
+      'error'
+    )
+    return
+  }
+
+  // Colocar grupo
+  placeGroup(placedBlocks, groupData)
+  const blockCount = groupData.blocks.length
+
+  // Actualizar contador de créditos
+  updateCreditsCounter(getPlacedBlocks())
+
+  showMessage(`"${groupData.subject_name}" (${groupData.code}) — ${blockCount} bloque(s) agregado(s). Créditos: ${totalAfterAdd}/18`, 'success')
+
+  if (onStateChange) onStateChange()
 }
