@@ -9,7 +9,7 @@ import {
   renderDesignerSubjects, renderDraftTabs, populateHourSelects, syncFilterUI,
   setOnStateChange, handleDrop, handleRemoveBlock, clearDraggedGroupData,
   loadEligibility, isEligibilityLoaded, setCompletedSubjects, setSearchQuery, getSearchQuery,
-  resetManuallyUnlocked
+  resetManuallyUnlocked, calculateTotalCredits, updateCreditsCounter
 } from './components/designer.js'
 import {
   getDrafts, getActiveDraft, getDraftNames, getDraftCount,
@@ -77,6 +77,10 @@ function refreshDesigner() {
     setActiveDraft(index)
     refreshDesigner()
   })
+  
+  // Actualizar contador de créditos
+  updateCreditsCounter(getPlacedBlocks())
+  
   saveState(extractionData, catalogData, getDrafts(), getActiveDraft(), designerFilters)
 }
 
@@ -362,6 +366,9 @@ async function handleManualSync() {
     
     await loadEligibility(syncData.completed, syncData.diagnostics)
     
+    // Debug: Verificar el estado de elegibilidad después de cargar
+    console.log('[app.js] Elegibilidad cargada, verificando materias bloqueadas...')
+    
     refreshDesigner()
     
     // 🔥 Re-renderizar lista de materias para aplicar filtro de completadas
@@ -406,6 +413,9 @@ async function handlePdfUpload(file) {
     console.log('[app.js] syncData.diagnostics:', syncData.diagnostics)
     
     await loadEligibility(syncData.completed, syncData.diagnostics)
+    
+    // Debug: Verificar el estado de elegibilidad después de cargar
+    console.log('[app.js] Elegibilidad cargada, verificando materias bloqueadas...')
     
     refreshDesigner()
     
@@ -536,16 +546,28 @@ async function initDesigner() {
   populateHourSelects()
   syncFilterUI(designerFilters)
 
-  showDesignerMessage('Cargando elegibilidad de materias...', 'info')
-  await loadEligibility([], [])
-  showDesignerMessage(
-    isEligibilityLoaded()
-      ? 'Elegibilidad cargada. Las materias bloqueadas se muestran con opacidad reducida.'
-      : 'No se pudo cargar la elegibilidad. Todas las materias estarán disponibles.',
-    isEligibilityLoaded() ? 'success' : 'warning'
-  )
+  // Si ya tenemos elegibilidad cacheada con datos de sincronización, no recargar con arrays vacíos
+  if (isEligibilityLoaded() && syncData && syncData.completed && syncData.completed.length > 0) {
+    showDesignerMessage('Elegibilidad ya cargada desde sincronización. Usando datos guardados.', 'success')
+  } else {
+    showDesignerMessage('Cargando elegibilidad de materias...', 'info')
+    // Usar syncData si está disponible para calcular elegibilidad correctamente
+    const completed = syncData?.completed || []
+    const diagnostics = syncData?.diagnostics || []
+    await loadEligibility(completed, diagnostics)
+    showDesignerMessage(
+      isEligibilityLoaded()
+        ? 'Elegibilidad cargada. Las materias bloqueadas se muestran con opacidad reducida.'
+        : 'No se pudo cargar la elegibilidad. Todas las materias estarán disponibles.',
+      isEligibilityLoaded() ? 'success' : 'warning'
+    )
+  }
 
   refreshDesigner()
+  
+  // 🔥 Actualizar contador de créditos después de inicializar
+  updateCreditsCounter(getPlacedBlocks())
+  
   saveState(extractionData, catalogData, getDrafts(), getActiveDraft(), designerFilters)
 }
 

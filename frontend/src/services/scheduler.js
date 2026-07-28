@@ -63,6 +63,9 @@ export function placeGroup(placedBlocks, group) {
       startHour: sTime.hour, endHour: eTime.hour,
       startMin: sTime.minute, endMin: eTime.minute,
       groupCode: group.code,
+      subjectCode: group.subject_code,
+      subjectName: group.subject_name,
+      credits: group.credits || 0,
     })
   }
 }

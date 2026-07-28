@@ -59,6 +59,9 @@ export function clearDraggedGroupData() { draggedGroupData = null }
 export async function loadEligibility(completedSubjects, completedDiagnostics = []) {
   eligibilityLoading = true
   try {
+    // Limpiar cache anterior para evitar datos obsoletos de extracciones previas
+    eligibilityCache = null
+    
     const result = await checkEligibility(completedSubjects, completedDiagnostics)
     // Construir mapa: subject_code -> info de elegibilidad
     const map = {}
@@ -80,9 +83,13 @@ export async function loadEligibility(completedSubjects, completedDiagnostics = 
     const completedSet = new Set(completedSubjects.map(c => c.toUpperCase()))
     for (const code of Object.keys(map)) {
       if (completedSet.has(code.toUpperCase())) {
+        console.log('[designer.js] Override: materia completada detectada:', code)
         map[code] = { eligible: true, reason: null, missing_requirements: [], missing_diagnostics: [] }
       }
     }
+    
+    // 🔥 DEBUG: Log del estado de elegibilidad
+    console.log('[designer.js] Materias bloqueadas:', Object.entries(map).filter(([k,v]) => !v.eligible).map(([k,v]) => ({code: k, reason: v.reason})))
 
     eligibilityCache = map
     return result
@@ -312,10 +319,28 @@ export function handleDrop(dayIndex, showMessage) {
     return
   }
 
+  // 🔥 Validar límite de 18 créditos por semestre
+  const newCredits = draggedGroupData.credits || 0
+  const currentCredits = calculateTotalCredits(placedBlocks)
+  const totalAfterAdd = currentCredits + newCredits
+  
+  if (totalAfterAdd > 18) {
+    showMessage(
+      `Límite de créditos excedido: ${currentCredits} + ${newCredits} = ${totalAfterAdd} créditos. El máximo permitido es 18.`,
+      'error'
+    )
+    clearDraggedGroupData()
+    return
+  }
+
   // Place all blocks
   placeGroup(placedBlocks, draggedGroupData)
   const blockCount = draggedGroupData.blocks.length
-  showMessage(`"${draggedGroupData.subject_name}" (${draggedGroupData.code}) — ${blockCount} bloque(s) agregado(s).`, 'success')
+  
+  // Actualizar contador de créditos
+  updateCreditsCounter(getPlacedBlocks())
+  
+  showMessage(`"${draggedGroupData.subject_name}" (${draggedGroupData.code}) — ${blockCount} bloque(s) agregado(s). Créditos: ${totalAfterAdd}/18`, 'success')
   clearDraggedGroupData()
 
   if (onStateChange) onStateChange()
@@ -324,9 +349,16 @@ export function handleDrop(dayIndex, showMessage) {
 // ── Remove block ──────────────────────────────────────────────────
 export function handleRemoveBlock(groupCode, showMessage) {
   const placedBlocks = getPlacedBlocks()
+  const creditsBefore = calculateTotalCredits(placedBlocks)
+  
   if (removeGroup(placedBlocks, groupCode)) {
+    const creditsAfter = calculateTotalCredits(placedBlocks)
+    
+    // Actualizar contador de créditos
+    updateCreditsCounter(getPlacedBlocks())
+    
     if (onStateChange) onStateChange()
-    showMessage('Bloque eliminado del horario.', 'info')
+    showMessage(`Bloque eliminado del horario. Créditos: ${creditsAfter}/18`, 'info')
   }
 }
 
@@ -372,4 +404,48 @@ export function syncFilterUI(filters) {
   })
   document.querySelector('#filter-min-hour').value = filters.minHour
   document.querySelector('#filter-max-hour').value = filters.maxHour
+}
+
+// ── Calcular créditos totales del horario ─────────────────────────
+export function calculateTotalCredits(placedBlocks) {
+  if (!placedBlocks || !Array.isArray(placedBlocks)) return 0
+  
+  console.log('[credits] Calculando créditos de placedBlocks:', placedBlocks.length, 'bloques')
+  
+  // Usar un Set para evitar contar créditos duplicados de la misma materia
+  const uniqueSubjects = new Set(placedBlocks.map(pb => pb.subjectCode))
+  console.log('[credits] Materias únicas:', Array.from(uniqueSubjects))
+  
+  let totalCredits = 0
+  for (const subjectCode of uniqueSubjects) {
+    // Buscar el grupo colocado para obtener sus créditos
+    const placedBlock = placedBlocks.find(pb => pb.subjectCode === subjectCode)
+    console.log('[credits] Buscando créditos para', subjectCode, ':', placedBlock?.credits)
+    if (placedBlock && placedBlock.credits) {
+      totalCredits += placedBlock.credits
+    }
+  }
+  
+  console.log('[credits] Total calculado:', totalCredits)
+  return totalCredits
+}
+
+// ── Actualizar contador de créditos en la UI ──────────────────────
+export function updateCreditsCounter(placedBlocks) {
+  const counterElement = document.querySelector('#credits-counter')
+  if (!counterElement) return
+  
+  const totalCredits = calculateTotalCredits(placedBlocks)
+  const remaining = 18 - totalCredits
+  
+  counterElement.textContent = `${totalCredits}/18 créditos`
+  
+  // Cambiar color según el estado
+  if (totalCredits > 18) {
+    counterElement.className = 'credits-counter over-limit'
+  } else if (totalCredits === 18) {
+    counterElement.className = 'credits-counter at-limit'
+  } else {
+    counterElement.className = 'credits-counter'
+  }
 }
