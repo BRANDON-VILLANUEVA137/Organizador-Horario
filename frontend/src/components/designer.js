@@ -525,5 +525,10 @@ export function handleOneTapAdd(groupData, showMessage) {
 
   showMessage(`"${groupData.subject_name}" (${groupData.code}) — ${blockCount} bloque(s) agregado(s). Créditos: ${totalAfterAdd}/18`, 'success')
 
+  // Mostrar toast en móviles
+  if (window.showToast) {
+    window.showToast(`✓ "${groupData.subject_name}" agregado al horario`, 'success', 2500)
+  }
+
   if (onStateChange) onStateChange()
 }

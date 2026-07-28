@@ -675,6 +675,92 @@ if (backToTopBtn) {
   })
 }
 
+// ── Toast notification system ─────────────────────────────────────
+function showToast(message, type = 'info', duration = 3000) {
+  // Exponer globalmente para que designer.js pueda llamarlo
+  window.showToast = showToast
+  // Remover toast anterior si existe
+  const existingToast = document.querySelector('.toast-notification')
+  if (existingToast) existingToast.remove()
+  
+  const toast = document.createElement('div')
+  toast.className = `toast-notification ${type}`
+  toast.textContent = message
+  document.body.appendChild(toast)
+  
+  // Mostrar con animación
+  requestAnimationFrame(() => {
+    toast.classList.add('visible')
+  })
+  
+  // Ocultar después del tiempo especificado
+  setTimeout(() => {
+    toast.classList.remove('visible')
+    setTimeout(() => toast.remove(), 300)
+  }, duration)
+}
+
+// ── Mobile tabs for designer ──────────────────────────────────────
+const mobileTabs = document.querySelectorAll('.mobile-tab')
+const designerSidebar = document.querySelector('.designer-sidebar')
+const designerCalendar = document.querySelector('.designer-calendar')
+
+function switchMobileTab(tabName) {
+  // Actualizar tabs activas
+  mobileTabs.forEach(tab => {
+    tab.classList.toggle('active', tab.dataset.tab === tabName)
+  })
+  
+  // Mostrar/ocultar secciones
+  if (designerSidebar) {
+    designerSidebar.classList.toggle('mobile-visible', tabName === 'subjects')
+  }
+  if (designerCalendar) {
+    designerCalendar.classList.toggle('mobile-visible', tabName === 'schedule')
+  }
+  
+  // Scroll al inicio de la sección visible
+  if (tabName === 'schedule' && designerCalendar) {
+    designerCalendar.scrollIntoView({ behavior: 'smooth', block: 'start' })
+  }
+}
+
+mobileTabs.forEach(tab => {
+  tab.addEventListener('click', () => {
+    switchMobileTab(tab.dataset.tab)
+  })
+})
+
+// ── Update instruction text based on device ───────────────────────
+const instructionElement = document.querySelector('#designer-instruction')
+if (instructionElement) {
+  const isMobile = window.innerWidth <= 768
+  if (isMobile) {
+    instructionElement.textContent = 'Selecciona o añade los grupos para construir tu horario ideal.'
+  }
+}
+
+// ── Scroll indicator for calendar ─────────────────────────────────
+const calendarGrid = document.querySelector('#designer-calendar-grid')
+if (calendarGrid) {
+  // Agregar indicador de scroll si el contenido es más ancho que el contenedor
+  const checkScroll = () => {
+    const calendar = document.querySelector('.designer-calendar')
+    if (!calendar) return
+    
+    const scrollHint = document.querySelector('.calendar-scroll-hint')
+    if (!scrollHint && calendar.scrollWidth > calendar.clientWidth) {
+      const hint = document.createElement('div')
+      hint.className = 'calendar-scroll-hint'
+      hint.textContent = '← Desliza para ver más días →'
+      calendar.parentNode.insertBefore(hint, calendar.nextSibling)
+    }
+  }
+  
+  // Verificar después de renderizar
+  setTimeout(checkScroll, 1000)
+}
+
 // ── Export schedule as image ──────────────────────────────────────
 const exportButton = document.querySelector('#export-schedule')
 if (exportButton) {
