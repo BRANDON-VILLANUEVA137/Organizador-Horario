@@ -161,8 +161,15 @@ document.querySelectorAll('.restart-button').forEach(btn => {
 // ── Form submission ───────────────────────────────────────────────
 connectForm.addEventListener('submit', async (event) => {
   event.preventDefault()
+  
+  // Validar que se haya seleccionado una universidad
+  const university = document.querySelector('#university').value
+  if (!university) {
+    formMessage.textContent = 'Debes seleccionar una universidad para continuar.'
+    return
+  }
+  
   const portalUrl = normalizePortalUrl(document.querySelector('#portal-url').value)
-  const university = document.querySelector('#university').value || ''
 
   connectionUrl.textContent = portalUrl
   hero.hidden = true
@@ -173,24 +180,9 @@ connectForm.addEventListener('submit', async (event) => {
   if (university === 'Universidad de Cundinamarca') {
     await showCampusSelection(portalUrl, university)
   } else {
-    // Si no se seleccionó universidad, intentar detectar por dominio
-    const detectedUniversity = university || detectUniversityFromUrl(portalUrl)
-    await doExtraction({ portal_url: portalUrl, university: detectedUniversity })
+    await doExtraction({ portal_url: portalUrl, university })
   }
 })
-
-// Detectar universidad por dominio de la URL
-function detectUniversityFromUrl(url) {
-  try {
-    const hostname = new URL(url).hostname.toLowerCase()
-    if (hostname.includes('ucundinamarca')) return 'Universidad de Cundinamarca'
-    if (hostname.includes('academusoft')) return 'Universidad de Cundinamarca'
-    // Fallback genérico
-    return ''
-  } catch {
-    return ''
-  }
-}
 
 function normalizePortalUrl(value) {
   const CANONICAL = 'https://plataforma.ucundinamarca.edu.co/aplicacionesB/condicionales/apl_gen_public.jsp?id=ConsultaHorario'

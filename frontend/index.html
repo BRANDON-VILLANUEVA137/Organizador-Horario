@@ -20,11 +20,10 @@
         <form class="connect-form" id="connect-form">
           <label for="portal-url">URL del portal de horarios</label>
           <input id="portal-url" name="portal-url" type="url" placeholder="https://..." autocomplete="url" required />
-          <label for="university">Universidad compatible <span>(opcional)</span></label>
-          <select id="university" name="university">
+          <label for="university">Universidad</label>
+          <select id="university" name="university" required>
             <option value="">Selecciona una universidad</option>
             <option value="Universidad de Cundinamarca">Universidad de Cundinamarca</option>
-            <option value="Otra universidad">Otra universidad</option>
           </select>
           <button class="primary-action" type="submit">Conectar <span aria-hidden="true">→</span></button>
         </form>
