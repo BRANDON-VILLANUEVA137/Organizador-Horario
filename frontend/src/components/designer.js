@@ -253,7 +253,7 @@ export function renderDesignerSubjects(container, extractionData, drafts, active
       
       try {
         const groupData = JSON.parse(btn.dataset.groupJson)
-        handleOneTapAdd(groupData, showDesignerMessage)
+        handleOneTapAdd(groupData, showMessage)
       } catch (err) {
         console.error('Error parsing group data:', err)
       }
