@@ -777,27 +777,20 @@ if (exportButton) {
       // Importar html2canvas dinámicamente
       const html2canvas = (await import('html2canvas')).default
       
-      // Capturar el contenedor del calendario con todos sus estilos
-      // Usar el contenedor padre .designer-calendar para incluir headers correctamente
-      const calendarContainer = document.querySelector('.designer-calendar')
-      
-      const canvas = await html2canvas(calendarContainer || calendarGrid, {
+      // Capturar SOLO el grid del calendario (sin padding ni columna de horas extra)
+      // El grid tiene position: relative y los bloques están posicionados absolutamente dentro de él
+      const canvas = await html2canvas(calendarGrid, {
         scale: 2, // Alta resolución
         useCORS: true,
         backgroundColor: '#fffaf2',
         logging: false,
-        // Capturar el área completa sin scroll offsets
-        x: 0,
-        y: 0,
-        width: calendarContainer ? calendarContainer.scrollWidth : calendarGrid.scrollWidth,
-        height: calendarContainer ? calendarContainer.scrollHeight : calendarGrid.scrollHeight,
+        // Capturar el área completa del grid
+        width: calendarGrid.scrollWidth,
+        height: calendarGrid.scrollHeight,
         scrollX: 0,
         scrollY: 0,
-        // Asegurar que se respeten las posiciones absolutas
-        ignoreElements: (element) => {
-          // No ignorar nada, capturar todo
-          return false
-        }
+        windowWidth: calendarGrid.scrollWidth,
+        windowHeight: calendarGrid.scrollHeight,
       })
       
       // Descargar como PNG
