@@ -114,8 +114,17 @@ export function isEligibilityLoaded() {
 // ── Búsqueda de materias por nombre o código ──────────────────────
 let searchQuery = ''
 
+// Normalizar texto: minúsculas + eliminar acentos/tildes para búsqueda insensible
+function normalizeText(text) {
+  return (text || '')
+    .toLowerCase()
+    .trim()
+    .normalize('NFD')
+    .replace(/[\u0300-\u036f]/g, '')
+}
+
 export function setSearchQuery(query) {
-  searchQuery = (query || '').toLowerCase().trim()
+  searchQuery = normalizeText(query)
 }
 
 export function getSearchQuery() {
@@ -146,8 +155,8 @@ export function renderDesignerSubjects(container, extractionData, drafts, active
   // Obtener materias completadas para filtrarlas de la vista
   const completedSubjects = new Set(completedSubjectsCache || [])
 
-  // Aplicar filtro de búsqueda por nombre o código (case-insensitive)
-  const q = (queryOverride ?? searchQuery ?? '').toString().toLowerCase().trim()
+  // Aplicar filtro de búsqueda (case-insensitive + sin tildes)
+  const q = normalizeText(queryOverride ?? searchQuery ?? '')
 
   let html = ''
   let completedCount = 0
@@ -158,8 +167,10 @@ export function renderDesignerSubjects(container, extractionData, drafts, active
       continue
     }
 
-    // Filtrar por búsqueda: coincidencia en nombre o código
-    if (q && !subject.name.toLowerCase().includes(q) && !subject.code.toLowerCase().includes(q)) {
+    // Filtrar por búsqueda: coincidencia en nombre o código (normalizado)
+    const subjectNameNorm = normalizeText(subject.name)
+    const subjectCodeNorm = normalizeText(subject.code)
+    if (q && !subjectNameNorm.includes(q) && !subjectCodeNorm.includes(q)) {
       continue
     }
 
