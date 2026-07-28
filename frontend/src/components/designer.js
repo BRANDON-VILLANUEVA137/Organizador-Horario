@@ -147,7 +147,7 @@ export function renderDesignerSubjects(container, extractionData, drafts, active
   const completedSubjects = new Set(completedSubjectsCache || [])
 
   // Aplicar filtro de búsqueda por nombre o código (case-insensitive)
-  const q = (queryOverride !== undefined ? queryOverride : searchQuery).toLowerCase().trim()
+  const q = (queryOverride ?? searchQuery ?? '').toString().toLowerCase().trim()
 
   let html = ''
   let completedCount = 0
